@@ -48,7 +48,11 @@ function generateId(stageIdx: number, jobIdx: number) {
   return `TB-${String(stageIdx + 1).padStart(2, "0")}${String(jobIdx + 1).padStart(2, "0")}`;
 }
 
-// Seed-stable generation
+// Deterministic generation ensuring jobs in every color bucket
+// Default thresholds: green 0-3d, orange 4-7d, red 8d+
+const ageDayPattern = [1, 2, 3, 5, 6, 7, 10, 14, 20, 25]; // 3 green, 3 orange, 4 red
+const urgentPattern = [false, false, false, false, false, false, false, false, true, true]; // last 2 urgent
+
 const allJobs: Job[] = [];
 
 stages.forEach((stage, si) => {
@@ -59,9 +63,9 @@ stages.forEach((stage, si) => {
       id: generateId(si, ji),
       client: clients[clientIdx],
       jobName: jobTypes[jobIdx],
-      value: randomBetween(5, 250) * 100,
-      ageDays: randomBetween(1, 30),
-      urgent: (si * 10 + ji) % 5 === 0, // ~20%
+      value: ((si * 10 + ji) % 25 + 5) * 100,
+      ageDays: ageDayPattern[ji],
+      urgent: urgentPattern[ji],
       stage,
     });
   }
