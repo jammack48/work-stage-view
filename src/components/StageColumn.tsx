@@ -37,19 +37,19 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         "flex flex-col rounded-xl overflow-hidden cursor-pointer transition-all duration-200",
         "bg-secondary/50 hover:bg-secondary/80",
         isExpanded && "ring-2 ring-primary/50 shadow-[0_0_20px_hsl(var(--glow-primary)/0.15)]",
-        isVertical ? "min-w-[220px] w-full" : "min-w-[180px] w-[180px] shrink-0"
+        isVertical ? "min-w-[220px] w-full" : "flex-1 min-w-0"
       )}
       onClick={onToggle}
     >
-      {/* Header */}
-      <div className="px-3 py-2.5 flex items-center justify-between bg-[hsl(var(--stage-header))] text-primary-foreground font-bold text-sm min-h-[52px]">
-        <div className="leading-tight min-w-0">
-          <div>{(STAGE_LABELS[stage as keyof typeof STAGE_LABELS] ?? [stage])[0]}</div>
-          {STAGE_LABELS[stage as keyof typeof STAGE_LABELS]?.[1] && (
-            <div className="text-xs font-medium opacity-70">{STAGE_LABELS[stage as keyof typeof STAGE_LABELS][1]}</div>
-          )}
+      {/* Header — fixed height, always 2 lines worth */}
+      <div className="px-3 py-2 flex items-start justify-between bg-[hsl(var(--stage-header))] text-primary-foreground font-bold text-sm h-[52px]">
+        <div className="leading-snug min-w-0">
+          <div className="truncate">{(STAGE_LABELS[stage as keyof typeof STAGE_LABELS] ?? [stage])[0]}</div>
+          <div className="text-xs font-medium opacity-70 truncate h-[16px]">
+            {STAGE_LABELS[stage as keyof typeof STAGE_LABELS]?.[1] ?? "\u00A0"}
+          </div>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0 mt-0.5">
           <span className="bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-semibold">
             {jobs.length}
           </span>
