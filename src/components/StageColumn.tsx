@@ -1,4 +1,5 @@
 import type { Job } from "@/data/dummyJobs";
+import { STAGE_LABELS } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
 import { useThresholds } from "@/contexts/ThresholdContext";
 import { ThresholdSettings } from "@/components/ThresholdSettings";
@@ -42,7 +43,12 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
     >
       {/* Header */}
       <div className="px-3 py-2.5 flex items-center justify-between bg-[hsl(var(--stage-header))] text-primary-foreground font-bold text-sm">
-        <span className="leading-tight text-center">{stage}</span>
+        <div className="leading-tight text-center min-w-0">
+          <div>{(STAGE_LABELS[stage as keyof typeof STAGE_LABELS] ?? [stage])[0]}</div>
+          {STAGE_LABELS[stage as keyof typeof STAGE_LABELS]?.[1] && (
+            <div className="text-[10px] font-normal opacity-70">{STAGE_LABELS[stage as keyof typeof STAGE_LABELS][1]}</div>
+          )}
+        </div>
         <div className="flex items-center gap-1">
           <span className="bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-semibold">
             {jobs.length}
