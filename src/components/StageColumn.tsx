@@ -40,7 +40,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         isExpanded && "ring-2 ring-primary/50 shadow-[0_0_20px_hsl(var(--glow-primary)/0.15)]",
         isVertical ? "min-w-[220px] w-full" : "flex-1 min-w-0"
       )}
-      style={{ backgroundColor: "hsl(210 30% 45% / 0.15)" }}
+      style={{ backgroundColor: "hsl(210 40% 50% / 0.25)" }}
       onClick={onToggle}
     >
       {/* Header — arrow-shaped pointing right */}
@@ -58,9 +58,9 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
           </div>
         </div>
         <div className="flex items-center gap-1 shrink-0 mt-0.5 mr-2">
-          <span className="flex shrink-0 opacity-50 -space-x-1.5">
-            <ChevronRight className="w-3 h-3" />
-            <ChevronRight className="w-3 h-3" />
+          <span className="flex shrink-0 opacity-60 -space-x-2">
+            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-5 h-5" />
           </span>
           <span className="bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-semibold">
             {jobs.length}
