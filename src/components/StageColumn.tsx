@@ -36,10 +36,11 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
     <div
       className={cn(
         "flex flex-col rounded-xl overflow-hidden cursor-pointer transition-all duration-200",
-        "bg-secondary/50 hover:bg-secondary/80",
+        "hover:bg-secondary/80",
         isExpanded && "ring-2 ring-primary/50 shadow-[0_0_20px_hsl(var(--glow-primary)/0.15)]",
         isVertical ? "min-w-[220px] w-full" : "flex-1 min-w-0"
       )}
+      style={{ backgroundColor: "hsl(var(--stage-header) / 0.08)" }}
       onClick={onToggle}
     >
       {/* Header — arrow-shaped pointing right */}
