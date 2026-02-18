@@ -22,6 +22,8 @@ interface StageColumnProps {
 export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horizontal" }: StageColumnProps) {
   const isVertical = layout === "vertical";
   const counts = countByStatus(jobs);
+  const firstGreen = jobs.find(j => !j.urgent && j.ageDays <= 14);
+  const firstOther = jobs.find(j => j.urgent || j.ageDays > 14);
 
   return (
     <div
@@ -41,34 +43,39 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         </span>
       </div>
 
-      {/* 3 stacked color indicator cards */}
-      <div className="p-3 flex justify-center">
-        <div className="relative w-24 h-16">
-          {/* Green card (back) */}
-          <div className={cn(
-            "absolute inset-x-0 top-0 h-10 rounded-md bg-[hsl(var(--status-green))] shadow-sm",
-            "flex items-center justify-center text-xs font-bold text-white/90",
-            counts.green === 0 && "opacity-30"
-          )}>
-            {counts.green}
-          </div>
-          {/* Orange card (middle) */}
-          <div className={cn(
-            "absolute inset-x-1 top-3 h-10 rounded-md bg-[hsl(var(--status-orange))] shadow-md",
-            "flex items-center justify-center text-xs font-bold text-white/90",
-            counts.orange === 0 && "opacity-30"
-          )}>
-            {counts.orange}
-          </div>
-          {/* Red card (front) */}
-          <div className={cn(
-            "absolute inset-x-2 top-6 h-10 rounded-md bg-[hsl(var(--status-red))] shadow-lg",
-            "flex items-center justify-center text-xs font-bold text-white/90",
-            counts.red === 0 && "opacity-30"
-          )}>
-            {counts.red}
-          </div>
+      {/* 3 color cards with counts */}
+      <div className="p-2 flex flex-col gap-1.5">
+        <div className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 flex items-center justify-between">
+          <span className="text-xs font-semibold text-white/90">Green</span>
+          <span className="text-sm font-bold text-white">{counts.green}</span>
         </div>
+        <div className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 flex items-center justify-between">
+          <span className="text-xs font-semibold text-white/90">Orange</span>
+          <span className="text-sm font-bold text-white">{counts.orange}</span>
+        </div>
+        <div className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 flex items-center justify-between">
+          <span className="text-xs font-semibold text-white/90">Red</span>
+          <span className="text-sm font-bold text-white">{counts.red}</span>
+        </div>
+      </div>
+
+      {/* Preview: first green & first non-green job */}
+      <div className="px-2 pb-2 flex flex-col gap-1">
+        {firstGreen && (
+          <div className="rounded-md bg-card px-2.5 py-1.5 border-l-3 border-l-[hsl(var(--status-green))] text-xs">
+            <div className="font-semibold text-card-foreground truncate">{firstGreen.client}</div>
+            <div className="text-muted-foreground truncate">{firstGreen.jobName}</div>
+          </div>
+        )}
+        {firstOther && (
+          <div className={cn(
+            "rounded-md bg-card px-2.5 py-1.5 border-l-3 text-xs",
+            firstOther.urgent ? "border-l-[hsl(var(--status-red))]" : "border-l-[hsl(var(--status-orange))]"
+          )}>
+            <div className="font-semibold text-card-foreground truncate">{firstOther.client}</div>
+            <div className="text-muted-foreground truncate">{firstOther.jobName}</div>
+          </div>
+        )}
       </div>
     </div>
   );
