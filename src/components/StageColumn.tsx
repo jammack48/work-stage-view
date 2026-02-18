@@ -1,11 +1,14 @@
-import { AlertTriangle } from "lucide-react";
 import type { Job } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
 
-function getStatusBorder(job: Job): string {
-  if (job.urgent) return "border-l-[hsl(var(--status-red))]";
-  if (job.ageDays > 14) return "border-l-[hsl(var(--status-orange))]";
-  return "border-l-[hsl(var(--status-green))]";
+function countByStatus(jobs: Job[]) {
+  let red = 0, orange = 0, green = 0;
+  for (const j of jobs) {
+    if (j.urgent) red++;
+    else if (j.ageDays > 14) orange++;
+    else green++;
+  }
+  return { red, orange, green };
 }
 
 interface StageColumnProps {
@@ -18,6 +21,7 @@ interface StageColumnProps {
 
 export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horizontal" }: StageColumnProps) {
   const isVertical = layout === "vertical";
+  const counts = countByStatus(jobs);
 
   return (
     <div
@@ -25,7 +29,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         "flex flex-col rounded-xl overflow-hidden cursor-pointer transition-all duration-200",
         "bg-secondary/50 hover:bg-secondary/80",
         isExpanded && "ring-2 ring-primary/50 shadow-[0_0_20px_hsl(var(--glow-primary)/0.15)]",
-        isVertical ? "min-w-[220px] w-full" : "min-w-[180px] flex-1"
+        isVertical ? "min-w-[220px] w-full" : "min-w-[160px] flex-1"
       )}
       onClick={onToggle}
     >
@@ -37,30 +41,34 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         </span>
       </div>
 
-      {/* Mini job cards */}
-      <div className={cn(
-        "flex-1 p-2 flex flex-col gap-1.5 overflow-y-auto",
-        isVertical ? "max-h-[300px]" : "max-h-[280px]"
-      )}>
-        {jobs.map((job) => (
-          <div
-            key={job.id}
-            className={cn(
-              "rounded-md bg-card px-2.5 py-1.5 border-l-3 shadow-sm transition-transform hover:scale-[1.02] text-xs",
-              getStatusBorder(job)
-            )}
-          >
-            <div className="flex items-center justify-between gap-1">
-              <span className="font-semibold text-card-foreground truncate">{job.client}</span>
-              {job.urgent && <AlertTriangle className="w-3 h-3 text-destructive shrink-0" />}
-            </div>
-            <div className="text-muted-foreground truncate">{job.jobName}</div>
-            <div className="flex items-center justify-between mt-0.5">
-              <span className="font-semibold text-card-foreground">${job.value.toLocaleString()}</span>
-              <span className="text-muted-foreground">{job.ageDays}d</span>
-            </div>
+      {/* 3 stacked color indicator cards */}
+      <div className="p-3 flex justify-center">
+        <div className="relative w-24 h-16">
+          {/* Green card (back) */}
+          <div className={cn(
+            "absolute inset-x-0 top-0 h-10 rounded-md bg-[hsl(var(--status-green))] shadow-sm",
+            "flex items-center justify-center text-xs font-bold text-white/90",
+            counts.green === 0 && "opacity-30"
+          )}>
+            {counts.green}
           </div>
-        ))}
+          {/* Orange card (middle) */}
+          <div className={cn(
+            "absolute inset-x-1 top-3 h-10 rounded-md bg-[hsl(var(--status-orange))] shadow-md",
+            "flex items-center justify-center text-xs font-bold text-white/90",
+            counts.orange === 0 && "opacity-30"
+          )}>
+            {counts.orange}
+          </div>
+          {/* Red card (front) */}
+          <div className={cn(
+            "absolute inset-x-2 top-6 h-10 rounded-md bg-[hsl(var(--status-red))] shadow-lg",
+            "flex items-center justify-center text-xs font-bold text-white/90",
+            counts.red === 0 && "opacity-30"
+          )}>
+            {counts.red}
+          </div>
+        </div>
       </div>
     </div>
   );
