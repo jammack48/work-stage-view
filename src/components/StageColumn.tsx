@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import type { Job } from "@/data/dummyJobs";
 import { STAGE_LABELS } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
@@ -46,7 +47,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         className="relative px-3 py-2 flex items-start justify-between text-primary-foreground font-bold text-sm h-[52px]"
         style={{
           backgroundColor: "hsl(var(--stage-header))",
-          backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 8px, hsl(var(--border) / 0.4) 8px, hsl(var(--border) / 0.4) 9px)",
+          backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 8px, hsl(var(--border) / 0.2) 8px, hsl(var(--border) / 0.2) 9px)",
         }}
       >
         <div className="leading-snug min-w-0">
@@ -56,6 +57,10 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
           </div>
         </div>
         <div className="flex items-center gap-1 shrink-0 mt-0.5 mr-2">
+          <span className="flex shrink-0 opacity-50 -space-x-1.5">
+            <ChevronRight className="w-3 h-3" />
+            <ChevronRight className="w-3 h-3" />
+          </span>
           <span className="bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-semibold">
             {jobs.length}
           </span>
@@ -67,7 +72,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
           style={{
             clipPath: "polygon(0 0, 0 100%, 100% 50%)",
             backgroundColor: "hsl(var(--stage-header))",
-            backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 8px, hsl(var(--border) / 0.4) 8px, hsl(var(--border) / 0.4) 9px)",
+            backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 8px, hsl(var(--border) / 0.2) 8px, hsl(var(--border) / 0.2) 9px)",
           }}
         />
       </div>
