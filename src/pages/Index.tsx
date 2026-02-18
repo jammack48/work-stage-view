@@ -138,7 +138,7 @@ const Index = () => {
             <div ref={emblaRef} className="overflow-hidden">
               <div className="flex">
                 {STAGES.map((stage) => (
-                  <div key={stage} className="flex-[0_0_85%] min-w-0 px-2">
+                  <div key={stage} className="flex-[0_0_85%] max-w-[320px] min-w-0 px-2">
                     <StageColumn
                       stage={stage}
                       jobs={jobsByStage(stage)}
