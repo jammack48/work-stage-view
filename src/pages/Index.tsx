@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
-import { Zap, ChevronRight, LayoutGrid, Columns } from "lucide-react";
+import { Zap, ChevronRight, LayoutGrid, Columns, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,11 @@ type Layout = "horizontal" | "vertical";
 const Index = () => {
   const [expandedStage, setExpandedStage] = useState<Stage | null>(null);
   const [layout, setLayout] = useState<Layout>("horizontal");
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("light", !isDark);
+  }, [isDark]);
 
   const handleToggle = (stage: Stage) => {
     setExpandedStage((prev) => (prev === stage ? null : stage));
@@ -26,6 +31,14 @@ const Index = () => {
             Toolbelt
           </h1>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsDark((d) => !d)}
+          className="h-8 w-8 p-0"
+        >
+          {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </Button>
       </header>
 
       <main className="p-4 lg:p-6 space-y-4">
