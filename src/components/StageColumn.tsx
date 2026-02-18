@@ -41,20 +41,28 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
       )}
       onClick={onToggle}
     >
-      {/* Header — fixed height, always 2 lines worth */}
-      <div className="px-3 py-2 flex items-start justify-between bg-[hsl(var(--stage-header))] text-primary-foreground font-bold text-sm h-[52px]">
+      {/* Header — arrow-shaped pointing right */}
+      <div className="relative px-3 py-2 flex items-start justify-between bg-[hsl(var(--stage-header))] text-primary-foreground font-bold text-sm h-[52px]">
         <div className="leading-snug min-w-0">
           <div className="truncate">{(STAGE_LABELS[stage as keyof typeof STAGE_LABELS] ?? [stage])[0]}</div>
           <div className="text-xs font-medium opacity-70 truncate h-[16px]">
             {STAGE_LABELS[stage as keyof typeof STAGE_LABELS]?.[1] ?? "\u00A0"}
           </div>
         </div>
-        <div className="flex items-center gap-1 shrink-0 mt-0.5">
+        <div className="flex items-center gap-1 shrink-0 mt-0.5 mr-2">
           <span className="bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-semibold">
             {jobs.length}
           </span>
           <ThresholdSettings stage={stage} />
         </div>
+        {/* Right arrow point */}
+        <div
+          className="absolute right-0 top-0 h-full w-[14px] translate-x-[7px] z-10"
+          style={{
+            clipPath: "polygon(0 0, 0 100%, 100% 50%)",
+            background: "hsl(var(--stage-header))",
+          }}
+        />
       </div>
 
       {/* Color cards with count + first job details */}
