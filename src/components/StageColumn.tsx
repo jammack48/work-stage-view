@@ -23,7 +23,8 @@ interface StageColumnProps {
 
 export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horizontal" }: StageColumnProps) {
   const isVertical = layout === "vertical";
-  const { thresholds, getLabel } = useThresholds();
+  const { getThresholds, getLabel } = useThresholds();
+  const thresholds = getThresholds(stage);
   const counts = countByStatus(jobs, thresholds.greenMax, thresholds.orangeMax);
   const firstGreen = jobs.find(j => !j.urgent && j.ageDays <= thresholds.greenMax);
   const firstOrange = jobs.find(j => !j.urgent && j.ageDays > thresholds.greenMax && j.ageDays <= thresholds.orangeMax);
@@ -46,7 +47,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
           <span className="bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-semibold">
             {jobs.length}
           </span>
-          <ThresholdSettings />
+          <ThresholdSettings stage={stage} />
         </div>
       </div>
 
@@ -55,41 +56,47 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         {/* Green */}
         <div className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white/90">{getLabel("green")}</span>
+            <span className="text-xs font-semibold text-white/90">{getLabel(stage, "green")}</span>
             <span className="text-sm font-bold text-white">{counts.green}</span>
           </div>
-          {firstGreen && (
+          {firstGreen ? (
             <div className="mt-1 text-[11px] text-white/80 leading-tight">
               <div className="font-semibold truncate">{firstGreen.client}</div>
               <div className="truncate opacity-75">{firstGreen.jobName}</div>
             </div>
-          )}
+          ) : counts.green === 0 ? (
+            <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
+          ) : null}
         </div>
         {/* Orange */}
         <div className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white/90">{getLabel("orange")}</span>
+            <span className="text-xs font-semibold text-white/90">{getLabel(stage, "orange")}</span>
             <span className="text-sm font-bold text-white">{counts.orange}</span>
           </div>
-          {firstOrange && (
+          {firstOrange ? (
             <div className="mt-1 text-[11px] text-white/80 leading-tight">
               <div className="font-semibold truncate">{firstOrange.client}</div>
               <div className="truncate opacity-75">{firstOrange.jobName}</div>
             </div>
-          )}
+          ) : counts.orange === 0 ? (
+            <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
+          ) : null}
         </div>
         {/* Red */}
         <div className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white/90">{getLabel("red")}</span>
+            <span className="text-xs font-semibold text-white/90">{getLabel(stage, "red")}</span>
             <span className="text-sm font-bold text-white">{counts.red}</span>
           </div>
-          {firstRed && (
+          {firstRed ? (
             <div className="mt-1 text-[11px] text-white/80 leading-tight">
               <div className="font-semibold truncate">{firstRed.client}</div>
               <div className="truncate opacity-75">{firstRed.jobName}</div>
             </div>
-          )}
+          ) : counts.red === 0 ? (
+            <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
+          ) : null}
         </div>
       </div>
     </div>

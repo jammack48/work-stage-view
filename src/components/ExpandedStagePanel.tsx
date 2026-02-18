@@ -26,7 +26,8 @@ function sortByStatus(jobs: Job[], greenMax: number, orangeMax: number): Job[] {
 }
 
 export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelProps) {
-  const { thresholds } = useThresholds();
+  const { getThresholds } = useThresholds();
+  const thresholds = getThresholds(stage);
   const sorted = sortByStatus(jobs, thresholds.greenMax, thresholds.orangeMax);
 
   return (
@@ -65,27 +66,16 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
             key={job.id}
             className="grid grid-cols-[auto_1fr_1fr_100px_80px_70px] gap-4 px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm"
           >
-            {/* Status dot */}
             <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job, thresholds.greenMax, thresholds.orangeMax))} />
-
-            {/* Client */}
             <div className="flex items-center gap-2">
               <span className="font-semibold text-card-foreground truncate">{job.client}</span>
               {job.urgent && <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0" />}
             </div>
-
-            {/* Job name */}
             <span className="text-muted-foreground truncate">{job.jobName}</span>
-
-            {/* Value */}
             <span className="text-right font-semibold text-card-foreground">
               ${job.value.toLocaleString()}
             </span>
-
-            {/* Age */}
             <span className="text-right text-muted-foreground">{job.ageDays}d ago</span>
-
-            {/* ID */}
             <span className="text-right font-mono text-muted-foreground text-xs">{job.id}</span>
           </div>
         ))}
