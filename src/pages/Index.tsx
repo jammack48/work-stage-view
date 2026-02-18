@@ -2,7 +2,7 @@ import { useState } from "react";
 import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
-import { Zap } from "lucide-react";
+import { Zap, ChevronRight } from "lucide-react";
 
 const Index = () => {
   const [expandedStage, setExpandedStage] = useState<Stage | null>(null);
@@ -21,11 +21,22 @@ const Index = () => {
             Toolbelt
           </h1>
         </div>
-        <span className="text-xs text-muted-foreground">Pipeline Dashboard</span>
       </header>
 
-      {/* Pipeline Board */}
       <main className="p-4 lg:p-6 space-y-4">
+        {/* Pipeline heading with flow arrows */}
+        <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
+          <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
+          <div className="flex items-center gap-0.5 ml-3 opacity-50">
+            <span className="text-xs">Lead</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-3.5 h-3.5 -ml-2" />
+            <ChevronRight className="w-3.5 h-3.5 -ml-2" />
+            <span className="text-xs">Paid</span>
+          </div>
+        </div>
+
+        {/* Pipeline Board — stacked cards */}
         <div className="flex gap-2 overflow-x-auto pb-2">
           {STAGES.map((stage) => (
             <StageColumn
@@ -38,7 +49,7 @@ const Index = () => {
           ))}
         </div>
 
-        {/* Expanded Detail Panel */}
+        {/* Expanded Detail Panel — row-based */}
         {expandedStage && (
           <ExpandedStagePanel
             key={expandedStage}
