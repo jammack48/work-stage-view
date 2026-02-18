@@ -130,4 +130,15 @@
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground));
   }
+
+  .pipeline-flow-banner {
+    background-color: hsl(var(--secondary));
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 8px,
+      hsl(var(--border) / 0.4) 8px,
+      hsl(var(--border) / 0.4) 9px
+    );
+  }
 }
