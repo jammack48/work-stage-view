@@ -3,19 +3,33 @@ import { Settings } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useThresholds } from "@/contexts/ThresholdContext";
 
-export function ThresholdSettings() {
-  const { thresholds, setThresholds, getLabel } = useThresholds();
-  const [greenMax, setGreenMax] = useState(thresholds.greenMax);
-  const [orangeMax, setOrangeMax] = useState(thresholds.orangeMax);
+interface ThresholdSettingsProps {
+  stage: string;
+}
+
+export function ThresholdSettings({ stage }: ThresholdSettingsProps) {
+  const { getThresholds, setThresholds } = useThresholds();
+  const current = getThresholds(stage);
+  const [open, setOpen] = useState(false);
+  const [greenMax, setGreenMax] = useState(current.greenMax);
+  const [orangeMax, setOrangeMax] = useState(current.orangeMax);
 
   const handleApply = () => {
     if (greenMax > 0 && orangeMax > greenMax) {
-      setThresholds({ greenMax, orangeMax });
+      setThresholds(stage, { greenMax, orangeMax });
     }
+    setOpen(false);
   };
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={(v) => {
+      setOpen(v);
+      if (v) {
+        const t = getThresholds(stage);
+        setGreenMax(t.greenMax);
+        setOrangeMax(t.orangeMax);
+      }
+    }}>
       <PopoverTrigger asChild>
         <button
           onClick={(e) => e.stopPropagation()}
@@ -30,7 +44,6 @@ export function ThresholdSettings() {
       >
         <p className="text-xs font-semibold text-card-foreground">Priority Thresholds (days)</p>
 
-        {/* Green */}
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[hsl(var(--status-green))] shrink-0" />
           <span className="text-xs text-muted-foreground w-12">0 –</span>
@@ -44,7 +57,6 @@ export function ThresholdSettings() {
           />
         </div>
 
-        {/* Orange */}
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[hsl(var(--status-orange))] shrink-0" />
           <span className="text-xs text-muted-foreground w-12">{greenMax + 1} –</span>
@@ -57,7 +69,6 @@ export function ThresholdSettings() {
           />
         </div>
 
-        {/* Red */}
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[hsl(var(--status-red))] shrink-0" />
           <span className="text-xs text-muted-foreground">{orangeMax + 1}d+</span>
