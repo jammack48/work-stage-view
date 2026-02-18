@@ -23,7 +23,8 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
   const isVertical = layout === "vertical";
   const counts = countByStatus(jobs);
   const firstGreen = jobs.find(j => !j.urgent && j.ageDays <= 14);
-  const firstOther = jobs.find(j => j.urgent || j.ageDays > 14);
+  const firstOrange = jobs.find(j => !j.urgent && j.ageDays > 14);
+  const firstRed = jobs.find(j => j.urgent);
 
   return (
     <div
@@ -43,39 +44,47 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         </span>
       </div>
 
-      {/* 3 color cards with counts */}
+      {/* Color cards with count + first job details */}
       <div className="p-2 flex flex-col gap-1.5">
-        <div className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 flex items-center justify-between">
-          <span className="text-xs font-semibold text-white/90">Green</span>
-          <span className="text-sm font-bold text-white">{counts.green}</span>
-        </div>
-        <div className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 flex items-center justify-between">
-          <span className="text-xs font-semibold text-white/90">Orange</span>
-          <span className="text-sm font-bold text-white">{counts.orange}</span>
-        </div>
-        <div className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 flex items-center justify-between">
-          <span className="text-xs font-semibold text-white/90">Red</span>
-          <span className="text-sm font-bold text-white">{counts.red}</span>
-        </div>
-      </div>
-
-      {/* Preview: first green & first non-green job */}
-      <div className="px-2 pb-2 flex flex-col gap-1">
-        {firstGreen && (
-          <div className="rounded-md bg-card px-2.5 py-1.5 border-l-3 border-l-[hsl(var(--status-green))] text-xs">
-            <div className="font-semibold text-card-foreground truncate">{firstGreen.client}</div>
-            <div className="text-muted-foreground truncate">{firstGreen.jobName}</div>
+        {/* Green */}
+        <div className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-white/90">Green</span>
+            <span className="text-sm font-bold text-white">{counts.green}</span>
           </div>
-        )}
-        {firstOther && (
-          <div className={cn(
-            "rounded-md bg-card px-2.5 py-1.5 border-l-3 text-xs",
-            firstOther.urgent ? "border-l-[hsl(var(--status-red))]" : "border-l-[hsl(var(--status-orange))]"
-          )}>
-            <div className="font-semibold text-card-foreground truncate">{firstOther.client}</div>
-            <div className="text-muted-foreground truncate">{firstOther.jobName}</div>
+          {firstGreen && (
+            <div className="mt-1 text-[11px] text-white/80 leading-tight">
+              <div className="font-semibold truncate">{firstGreen.client}</div>
+              <div className="truncate opacity-75">{firstGreen.jobName}</div>
+            </div>
+          )}
+        </div>
+        {/* Orange */}
+        <div className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-white/90">Orange</span>
+            <span className="text-sm font-bold text-white">{counts.orange}</span>
           </div>
-        )}
+          {firstOrange && (
+            <div className="mt-1 text-[11px] text-white/80 leading-tight">
+              <div className="font-semibold truncate">{firstOrange.client}</div>
+              <div className="truncate opacity-75">{firstOrange.jobName}</div>
+            </div>
+          )}
+        </div>
+        {/* Red */}
+        <div className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-white/90">Red</span>
+            <span className="text-sm font-bold text-white">{counts.red}</span>
+          </div>
+          {firstRed && (
+            <div className="mt-1 text-[11px] text-white/80 leading-tight">
+              <div className="font-semibold truncate">{firstRed.client}</div>
+              <div className="truncate opacity-75">{firstRed.jobName}</div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
