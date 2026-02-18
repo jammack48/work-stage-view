@@ -8,23 +8,18 @@ interface ExpandedStagePanelProps {
   onClose: () => void;
 }
 
-function getCardBorderColor(job: Job): string {
-  if (job.urgent) return "border-l-[hsl(var(--status-red))]";
-  if (job.ageDays > 14) return "border-l-[hsl(var(--status-orange))]";
-  return "border-l-[hsl(var(--status-green))]";
-}
-
-function getCardGlow(job: Job): string {
-  if (job.urgent) return "hover:shadow-[0_4px_20px_hsl(var(--status-red)/0.15)]";
-  if (job.ageDays > 14) return "hover:shadow-[0_4px_20px_hsl(var(--status-orange)/0.1)]";
-  return "hover:shadow-[0_4px_20px_hsl(var(--status-green)/0.1)]";
+function getStatusDot(job: Job): string {
+  if (job.urgent) return "bg-[hsl(var(--status-red))]";
+  if (job.ageDays > 14) return "bg-[hsl(var(--status-orange))]";
+  return "bg-[hsl(var(--status-green))]";
 }
 
 export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelProps) {
   return (
-    <div className="animate-fade-in bg-card rounded-xl shadow-2xl border border-border p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-card-foreground flex items-center gap-2">
+    <div className="animate-fade-in bg-card rounded-xl shadow-2xl border border-border overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+        <h2 className="text-base font-bold text-card-foreground flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-primary" />
           {stage}
           <span className="text-muted-foreground font-normal text-sm">
@@ -39,36 +34,45 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
         </button>
       </div>
 
-      {/* Cards flowing left to right like Fergus */}
-      <div className="flex flex-wrap gap-3">
+      {/* Column headers */}
+      <div className="grid grid-cols-[auto_1fr_1fr_100px_80px_70px] gap-4 px-5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/50">
+        <span className="w-3" />
+        <span>Client</span>
+        <span>Job</span>
+        <span className="text-right">Value</span>
+        <span className="text-right">Age</span>
+        <span className="text-right">ID</span>
+      </div>
+
+      {/* Job rows — info left to right like Fergus */}
+      <div className="divide-y divide-border/30">
         {jobs.map((job) => (
           <div
             key={job.id}
-            className={cn(
-              "bg-secondary rounded-lg p-4 border-l-4 shadow-sm transition-all w-[240px]",
-              "hover:scale-[1.02]",
-              getCardBorderColor(job),
-              getCardGlow(job)
-            )}
+            className="grid grid-cols-[auto_1fr_1fr_100px_80px_70px] gap-4 px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm"
           >
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div>
-                <p className="font-bold text-sm text-card-foreground">{job.client}</p>
-                <p className="text-sm text-muted-foreground">{job.jobName}</p>
-              </div>
-              {job.urgent && (
-                <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-              )}
+            {/* Status dot */}
+            <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job))} />
+
+            {/* Client */}
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-card-foreground truncate">{job.client}</span>
+              {job.urgent && <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0" />}
             </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
-              <span className="font-bold text-sm text-card-foreground">
-                ${job.value.toLocaleString()}
-              </span>
-              <div className="flex items-center gap-2">
-                <span>{job.ageDays}d ago</span>
-                <span className="font-mono opacity-60">{job.id}</span>
-              </div>
-            </div>
+
+            {/* Job name */}
+            <span className="text-muted-foreground truncate">{job.jobName}</span>
+
+            {/* Value */}
+            <span className="text-right font-semibold text-card-foreground">
+              ${job.value.toLocaleString()}
+            </span>
+
+            {/* Age */}
+            <span className="text-right text-muted-foreground">{job.ageDays}d ago</span>
+
+            {/* ID */}
+            <span className="text-right font-mono text-muted-foreground text-xs">{job.id}</span>
           </div>
         ))}
       </div>

@@ -1,11 +1,10 @@
-import { AlertTriangle } from "lucide-react";
 import type { Job } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
 
-function getStatusColor(job: Job): string {
-  if (job.urgent) return "border-l-[hsl(var(--status-red))] bg-[hsl(var(--status-red)/0.06)]";
-  if (job.ageDays > 14) return "border-l-[hsl(var(--status-orange))] bg-[hsl(var(--status-orange)/0.06)]";
-  return "border-l-[hsl(var(--status-green))] bg-[hsl(var(--status-green)/0.06)]";
+function getStatusBg(job: Job): string {
+  if (job.urgent) return "bg-[hsl(var(--status-red))]";
+  if (job.ageDays > 14) return "bg-[hsl(var(--status-orange))]";
+  return "bg-[hsl(var(--status-green))]";
 }
 
 interface StageColumnProps {
@@ -19,7 +18,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle }: StageColumnPr
   return (
     <div
       className={cn(
-        "flex flex-col min-w-[140px] flex-1 rounded-xl overflow-hidden cursor-pointer transition-all duration-200",
+        "flex flex-col min-w-[130px] flex-1 rounded-xl overflow-hidden cursor-pointer transition-all duration-200",
         "bg-secondary/50 hover:bg-secondary/80",
         isExpanded && "ring-2 ring-primary/50 shadow-[0_0_20px_hsl(var(--glow-primary)/0.15)]"
       )}
@@ -33,33 +32,24 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle }: StageColumnPr
         </span>
       </div>
 
-      {/* Mini cards */}
-      <div className="flex-1 overflow-y-auto p-1.5 space-y-1 max-h-[280px]">
-        {jobs.map((job) => (
-          <MiniCard key={job.id} job={job} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function MiniCard({ job }: { job: Job }) {
-  return (
-    <div
-      className={cn(
-        "rounded-lg px-2.5 py-1.5 text-xs space-y-0.5 border-l-[3px] transition-all hover:translate-x-0.5",
-        "bg-card shadow-sm hover:shadow-md",
-        getStatusColor(job)
-      )}
-    >
-      <div className="flex items-center justify-between gap-1">
-        <span className="font-semibold text-card-foreground truncate">{job.client}</span>
-        {job.urgent && <AlertTriangle className="w-3 h-3 text-destructive shrink-0" />}
-      </div>
-      <p className="text-muted-foreground truncate text-[11px]">{job.jobName}</p>
-      <div className="flex items-center justify-between text-muted-foreground">
-        <span className="font-semibold text-card-foreground">${job.value.toLocaleString()}</span>
-        <span className="text-[10px] opacity-60">{job.ageDays}d · {job.id}</span>
+      {/* Stacked overlapping cards — no details, just colored blocks */}
+      <div className="flex-1 p-3 flex flex-col items-stretch">
+        <div className="relative" style={{ height: `${Math.min(jobs.length * 18 + 30, 220)}px` }}>
+          {jobs.map((job, i) => (
+            <div
+              key={job.id}
+              className={cn(
+                "absolute left-0 right-0 h-[28px] rounded-md shadow-sm border border-white/10 transition-transform hover:scale-[1.03]",
+                getStatusBg(job),
+                "opacity-90"
+              )}
+              style={{
+                top: `${i * 18}px`,
+                zIndex: jobs.length - i,
+              }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
