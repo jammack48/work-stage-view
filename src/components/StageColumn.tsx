@@ -42,7 +42,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
     >
       {/* Header */}
       <div className="px-3 py-2.5 flex items-center justify-between bg-[hsl(var(--stage-header))] text-primary-foreground font-bold text-sm">
-        <span className="truncate">{stage}</span>
+        <span className="leading-tight text-center">{stage}</span>
         <div className="flex items-center gap-1">
           <span className="bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-semibold">
             {jobs.length}
