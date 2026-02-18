@@ -66,17 +66,15 @@ const Index = () => {
       <main className="p-3 sm:p-4 lg:p-6 space-y-4">
         {/* Pipeline heading with flow arrows + layout toggle */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium flex-wrap">
             <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
-            {!isMobile && (
-              <div className="flex items-center gap-0.5 ml-3 opacity-50">
-                <span className="text-xs">Lead</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-                <ChevronRight className="w-3.5 h-3.5 -ml-2" />
-                <ChevronRight className="w-3.5 h-3.5 -ml-2" />
-                <span className="text-xs">Paid</span>
-              </div>
-            )}
+            <div className="flex items-center gap-0.5 opacity-50">
+              <span className="text-xs">Lead</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-3.5 h-3.5 -ml-2" />
+              <ChevronRight className="w-3.5 h-3.5 -ml-2" />
+              <span className="text-xs">Paid</span>
+            </div>
           </div>
 
           {/* Layout toggle — hide on mobile */}
