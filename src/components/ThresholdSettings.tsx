@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings } from "lucide-react";
+import { Settings, ChevronUp, ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useThresholds } from "@/contexts/ThresholdContext";
 
@@ -47,26 +47,38 @@ export function ThresholdSettings({ stage }: ThresholdSettingsProps) {
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[hsl(var(--status-green))] shrink-0" />
           <span className="text-xs text-muted-foreground w-12">0 –</span>
-          <input
-            type="number"
-            min={1}
-            max={orangeMax - 1}
-            value={greenMax}
-            onChange={(e) => setGreenMax(Number(e.target.value))}
-            className="w-14 h-7 rounded-md border border-input bg-background px-2 text-xs text-card-foreground"
-          />
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              min={1}
+              max={orangeMax - 1}
+              value={greenMax}
+              onChange={(e) => setGreenMax(Number(e.target.value))}
+              className="w-14 h-7 rounded-md border border-input bg-background px-2 text-xs text-card-foreground"
+            />
+            <div className="flex flex-col">
+              <button type="button" onClick={() => setGreenMax((v) => Math.min(v + 1, orangeMax - 1))} className="p-0.5 rounded hover:bg-muted"><ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /></button>
+              <button type="button" onClick={() => setGreenMax((v) => Math.max(v - 1, 1))} className="p-0.5 rounded hover:bg-muted"><ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /></button>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[hsl(var(--status-orange))] shrink-0" />
           <span className="text-xs text-muted-foreground w-12">{greenMax + 1} –</span>
-          <input
-            type="number"
-            min={greenMax + 1}
-            value={orangeMax}
-            onChange={(e) => setOrangeMax(Number(e.target.value))}
-            className="w-14 h-7 rounded-md border border-input bg-background px-2 text-xs text-card-foreground"
-          />
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              min={greenMax + 1}
+              value={orangeMax}
+              onChange={(e) => setOrangeMax(Number(e.target.value))}
+              className="w-14 h-7 rounded-md border border-input bg-background px-2 text-xs text-card-foreground"
+            />
+            <div className="flex flex-col">
+              <button type="button" onClick={() => setOrangeMax((v) => v + 1)} className="p-0.5 rounded hover:bg-muted"><ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /></button>
+              <button type="button" onClick={() => setOrangeMax((v) => Math.max(v - 1, greenMax + 1))} className="p-0.5 rounded hover:bg-muted"><ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /></button>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
