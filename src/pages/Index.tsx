@@ -88,7 +88,7 @@ const Index = () => {
         {/* Pipeline Board */}
         {layout === "horizontal" ? (
           <div className="space-y-4">
-            <div className="flex gap-2 overflow-x-auto pb-2 flex-nowrap">
+            <div className="grid grid-cols-8 gap-2 overflow-x-auto pb-2">
               {STAGES.map((stage) => (
                 <StageColumn
                   key={stage}
