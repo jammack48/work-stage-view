@@ -19,6 +19,17 @@ const stages = [
   "Invoice Paid",
 ] as const;
 
+export const STAGE_LABELS: Record<Stage, [string, string?]> = {
+  "Lead": ["Lead"],
+  "To Quote": ["To Quote"],
+  "Quote Sent": ["Quote Sent", "Awaiting Acceptance"],
+  "Quote Accepted": ["Quote Accepted", "To Schedule"],
+  "In Progress": ["In Progress"],
+  "To Invoice": ["To Invoice"],
+  "Invoiced": ["Invoiced", "Awaiting Payment"],
+  "Invoice Paid": ["Invoice Paid"],
+};
+
 export type Stage = (typeof stages)[number];
 
 export const STAGES = stages;
