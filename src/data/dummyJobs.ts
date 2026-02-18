@@ -24,7 +24,7 @@ export const STAGE_LABELS: Record<Stage, [string, string?]> = {
   "To Quote": ["To Quote"],
   "Quote Sent": ["Quote Sent", "Awaiting Acceptance"],
   "Quote Accepted": ["Quote Accepted", "To Schedule"],
-  "In Progress": ["In Progress"],
+  "In Progress": ["Scheduled", "Job In Progress"],
   "To Invoice": ["To Invoice"],
   "Invoiced": ["Invoiced", "Awaiting Payment"],
   "Invoice Paid": ["Invoice Paid"],
