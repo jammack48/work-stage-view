@@ -5,7 +5,7 @@ import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { Zap, ChevronRight, LayoutGrid, Columns, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ThresholdProvider } from "@/contexts/ThresholdContext";
+
 
 type Layout = "horizontal" | "vertical";
 
@@ -23,7 +23,6 @@ const Index = () => {
   };
 
   return (
-    <ThresholdProvider>
     <div className="min-h-screen bg-background">
       {/* Top Bar */}
       <header className="px-6 py-3 border-b border-border bg-card flex items-center justify-between">
@@ -144,7 +143,6 @@ const Index = () => {
         )}
       </main>
     </div>
-    </ThresholdProvider>
   );
 };
 
