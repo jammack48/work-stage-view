@@ -1,3 +1,4 @@
+/* ThresholdContext — per-stage priority thresholds */
 import { createContext, useContext, useState, type ReactNode } from "react";
 
 export interface Thresholds {
