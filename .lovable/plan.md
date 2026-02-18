@@ -1,25 +1,20 @@
 
+## Make Column Body Visibly Blue-Tinted
 
-## Enhance Pipeline Visual Flow
+The column body background is currently `hsl(210 20% 32% / 0.2)` which blends into the dark background and looks black. The fix is to increase the blue intensity so it's clearly distinguishable.
 
-### What's Changing
+### Change
+In `src/components/StageColumn.tsx`, update the inline `backgroundColor` on the outer `div` from:
+```
+hsl(210 20% 32% / 0.2)
+```
+to a more saturated, lighter blue at higher opacity:
+```
+hsl(210 30% 45% / 0.15)
+```
 
-Two improvements based on your feedback:
+This bumps the saturation (20% to 30%), lightness (32% to 45%), and keeps enough opacity to read as distinctly blue rather than black. The three traffic light cards will sit on a clearly blue-tinted surface that visually ties to the header.
 
-1. **Double chevrons in the flow banner** -- Replace the single `ChevronRight` between stage names with two overlapping chevrons (`>>`) for a stronger directional feel.
-
-2. **Diagonal stripe texture on stage headers** -- Apply the same subtle diagonal scratch/stripe pattern (currently only on the flow banner) to the stage column headers as well. This ties the header visually to the conveyor belt banner above.
-
-### Technical Details
-
-**`src/components/PipelineFlowBanner.tsx`**
-- Change from one `ChevronRight` to two stacked/overlapping `ChevronRight` icons between each stage name (using negative margin to overlap them like `>>`)
-
-**`src/components/StageColumn.tsx`**
-- Add the same `repeating-linear-gradient` diagonal stripe pattern to the stage header background
-- Layer it on top of the existing `--stage-header` color using a CSS `backgroundImage` style alongside the solid `backgroundColor`
-- Keep the arrow point clip-path intact
-
-**`src/index.css`**
-- No changes needed -- the gradient pattern will be applied inline on the header div, reusing the same stripe approach as `.pipeline-flow-banner`
-
+### Technical Detail
+- File: `src/components/StageColumn.tsx`, line 43
+- Change the `style` prop value on the outer column `div`
