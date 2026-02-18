@@ -27,9 +27,9 @@ export function ThresholdProvider({ children }: { children: ReactNode }) {
 
   const getLabel = (stage: string, color: "green" | "orange" | "red") => {
     const t = getThresholds(stage);
-    if (color === "green") return `0–${t.greenMax}d`;
-    if (color === "orange") return `${t.greenMax + 1}–${t.orangeMax}d`;
-    return `${t.orangeMax + 1}d+`;
+    if (color === "green") return `0–${t.greenMax} days old`;
+    if (color === "orange") return `${t.greenMax + 1}–${t.orangeMax} days old`;
+    return `${t.orangeMax + 1}+ days old`;
   };
 
   return (
