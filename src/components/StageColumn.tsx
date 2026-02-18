@@ -40,7 +40,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         isExpanded && "ring-2 ring-primary/50 shadow-[0_0_20px_hsl(var(--glow-primary)/0.15)]",
         isVertical ? "min-w-[220px] w-full" : "flex-1 min-w-0"
       )}
-      style={{ backgroundColor: "hsl(var(--stage-header) / 0.08)" }}
+      style={{ background: "linear-gradient(to bottom, hsl(var(--stage-header) / 0.15), hsl(var(--stage-header) / 0.06))" }}
       onClick={onToggle}
     >
       {/* Header — arrow-shaped pointing right */}
