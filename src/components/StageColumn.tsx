@@ -37,7 +37,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         "flex flex-col rounded-xl overflow-hidden cursor-pointer transition-all duration-200",
         "bg-secondary/50 hover:bg-secondary/80",
         isExpanded && "ring-2 ring-primary/50 shadow-[0_0_20px_hsl(var(--glow-primary)/0.15)]",
-        isVertical ? "min-w-[220px] w-full" : "min-w-[160px] flex-1"
+        isVertical ? "min-w-[220px] w-full" : "min-w-[180px] w-[180px] shrink-0"
       )}
       onClick={onToggle}
     >
