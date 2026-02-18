@@ -1,46 +1,50 @@
 
-# Toolbelt — Pipeline Dashboard Prototype
 
-## Overview
-A single-screen visual pipeline board for trade job management. 8 stage columns displayed horizontally, each showing a count of jobs as mini cards. Clicking a stage expands its jobs below the pipeline; clicking again collapses them. No menus, no tables — just a workflow command center.
+## Add Workflow Direction Indicator to Pipeline
 
-## Visual Design
-- **Background:** Warm neutral (#F4F1DE) across the whole page
-- **Cards:** White, rounded corners, soft shadow
-- **Typography:** Bold stage headers, clean readable job text, minimal decoration
-- **Color system (traffic light):**
-  - Early stages (Lead, To Quote): muted green tones
-  - Mid stages (Quote Sent, Quote Accepted, In Progress): burnt orange tones
-  - Late/attention stages (To Invoice, Invoiced): orange-red tones
-  - Completed (Invoice Paid): solid green
-- Column headers use solid stage color; column backgrounds use a light tint of the same color
+### Problem
+The pipeline columns don't visually communicate the left-to-right workflow progression from Lead through to Invoice Paid.
 
-## Pipeline Board (Top Section)
-- **8 horizontal columns**, all visible simultaneously, equal width
-- Stages: Lead → To Quote → Quote Sent → Quote Accepted → In Progress → To Invoice → Invoiced → Invoice Paid
-- Each column shows:
-  - Colored header with stage name + job count badge
-  - Mini job cards stacked vertically within the column (scrollable if many)
-- Each mini card shows: **Client name, Job name, Job value ($), Job ID, age indicator (e.g. "3d"), urgency icon** (warning triangle for items needing attention)
-- 10 dummy jobs per stage = 80 total dummy jobs
+### Solution
+Add a subtle chevron/arrow banner running across the top of the pipeline board, sitting just above the stage columns. This creates a clear visual flow direction without cluttering the cards themselves.
 
-## Interaction: Stage Expand/Collapse
-- Clicking a stage column (or a specific card) expands a detail panel **below the pipeline board**
-- The panel shows all jobs for that stage as larger, more detailed cards in a list/grid
-- Clicking the stage again (or a close button) collapses the panel
-- Only one stage can be expanded at a time
-- Smooth animation for expand/collapse
+### Design Approach
+- A thin banner strip above the columns with repeating chevron arrows (like a hazard/conveyor belt pattern)
+- Uses the earthy muted palette -- subtle background chevrons in a slightly lighter/darker shade
+- Stage names appear inline within the banner connected by arrow indicators
+- The banner spans the full width of the pipeline, reinforcing the left-to-right flow
 
-## Top Bar
-- Simple header with "Toolbelt" branding on the left
-- Minimal — no complex navigation for this prototype
+### What It Will Look Like
 
-## Responsive Consideration
-- Designed for desktop-first (wide screens to see all 8 columns)
-- Columns will have a minimum width and horizontal scroll on smaller screens
+```text
+|  Lead  -->  To Quote  -->  Quote Sent  -->  Quote Accepted  -->  In Progress  -->  To Invoice  -->  Invoiced  -->  Invoice Paid  |
+|  [col]      [col]          [col]            [col]               [col]             [col]           [col]          [col]           |
+```
 
-## Dummy Data
-- 10 realistic trade jobs per stage with NZ-style names, addresses, and job types (plumbing, electrical, HVAC, roofing, etc.)
-- Job values ranging from $500 to $25,000
-- Random age indicators (1d to 30d)
-- ~20% of jobs flagged with urgency icons
+The banner will be a single horizontal bar with:
+- Stage names in sequence separated by chevron arrows
+- A subtle gradient or repeating chevron pattern in the background (CSS-based, no images)
+- Muted colors so it guides the eye without distracting from the data below
+- Highlights the currently expanded stage if one is selected
+
+### Technical Details
+
+**Files to modify:**
+
+1. **`src/pages/Index.tsx`** -- Add a `<PipelineFlowBanner>` component above the grid in horizontal layout. It receives the list of stages and the currently expanded stage.
+
+2. **`src/components/PipelineFlowBanner.tsx`** (new file) -- A horizontal bar component that:
+   - Maps over `STAGES` and renders each label with a `ChevronRight` icon between them
+   - Uses a repeating CSS chevron/stripe background pattern (diagonal stripes via `background-image: repeating-linear-gradient(...)`) for the hazard/conveyor feel
+   - Highlights the active stage with a brighter text color or underline
+   - Uses `grid-cols-8` matching the columns below so stage names align directly above their respective columns
+
+3. **`src/index.css`** -- Add a subtle repeating chevron/stripe background utility if needed for the banner pattern.
+
+### Visual Details
+- Banner background: slightly darker than page background with diagonal stripe pattern (like a subtle conveyor belt)
+- Arrow icons: `ChevronRight` from lucide-react between each stage name
+- Active stage: highlighted with primary color
+- Font: small, uppercase, muted -- functional not decorative
+- Height: approximately 32-36px, compact
+
