@@ -20,10 +20,11 @@ interface StageColumnProps {
   jobs: Job[];
   isExpanded: boolean;
   onToggle: () => void;
+  onNext?: () => void;
   layout?: "horizontal" | "vertical";
 }
 
-export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horizontal" }: StageColumnProps) {
+export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout = "horizontal" }: StageColumnProps) {
   const isVertical = layout === "vertical";
   const { getThresholds, getLabel } = useThresholds();
   const thresholds = getThresholds(stage);
@@ -58,7 +59,15 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
           </div>
         </div>
         <div className="flex items-center gap-1 shrink-0 mt-0.5 mr-2">
-          <span className="flex shrink-0 opacity-60 -space-x-2">
+          <span
+            className="flex shrink-0 opacity-60 -space-x-2 cursor-pointer hover:opacity-100 transition-opacity"
+            onClick={(e) => {
+              if (onNext) {
+                e.stopPropagation();
+                onNext();
+              }
+            }}
+          >
             <ChevronRight className="w-5 h-5" />
             <ChevronRight className="w-5 h-5" />
           </span>

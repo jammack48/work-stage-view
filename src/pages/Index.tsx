@@ -144,6 +144,7 @@ const Index = () => {
                       jobs={jobsByStage(stage)}
                       isExpanded={expandedStage === stage}
                       onToggle={() => handleToggle(stage)}
+                      onNext={scrollNext}
                       layout="horizontal"
                     />
                   </div>
