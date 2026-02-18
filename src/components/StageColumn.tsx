@@ -42,14 +42,14 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
       onClick={onToggle}
     >
       {/* Header */}
-      <div className="px-3 py-2.5 flex items-center justify-between bg-[hsl(var(--stage-header))] text-primary-foreground font-bold text-sm">
-        <div className="leading-tight text-center min-w-0">
+      <div className="px-3 py-2.5 flex items-center justify-between bg-[hsl(var(--stage-header))] text-primary-foreground font-bold text-sm min-h-[52px]">
+        <div className="leading-tight min-w-0">
           <div>{(STAGE_LABELS[stage as keyof typeof STAGE_LABELS] ?? [stage])[0]}</div>
           {STAGE_LABELS[stage as keyof typeof STAGE_LABELS]?.[1] && (
-            <div className="text-[10px] font-normal opacity-70">{STAGE_LABELS[stage as keyof typeof STAGE_LABELS][1]}</div>
+            <div className="text-xs font-medium opacity-70">{STAGE_LABELS[stage as keyof typeof STAGE_LABELS][1]}</div>
           )}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <span className="bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-semibold">
             {jobs.length}
           </span>
@@ -60,7 +60,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
       {/* Color cards with count + first job details */}
       <div className="p-2 flex flex-col gap-1.5">
         {/* Green */}
-        <div className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5">
+        <div className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 h-[72px]">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/90">{getLabel(stage, "green")}</span>
             <span className="text-sm font-bold text-white">{counts.green}</span>
@@ -75,7 +75,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
           ) : null}
         </div>
         {/* Orange */}
-        <div className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5">
+        <div className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 h-[72px]">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/90">{getLabel(stage, "orange")}</span>
             <span className="text-sm font-bold text-white">{counts.orange}</span>
@@ -90,7 +90,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
           ) : null}
         </div>
         {/* Red */}
-        <div className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5">
+        <div className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 h-[72px]">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/90">{getLabel(stage, "red")}</span>
             <span className="text-sm font-bold text-white">{counts.red}</span>
