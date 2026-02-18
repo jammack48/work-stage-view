@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
+import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
 import { Zap, ChevronRight, LayoutGrid, Columns, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -87,8 +88,9 @@ const Index = () => {
 
         {/* Pipeline Board */}
         {layout === "horizontal" ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-8 gap-2 overflow-x-auto pb-2">
+          <div className="space-y-0">
+            <PipelineFlowBanner activeStage={expandedStage} />
+            <div className="grid grid-cols-8 gap-2 overflow-x-auto pb-2 pt-2">
               {STAGES.map((stage) => (
                 <StageColumn
                   key={stage}
