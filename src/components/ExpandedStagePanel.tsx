@@ -1,6 +1,7 @@
 import { AlertTriangle, X } from "lucide-react";
 import type { Job } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
+import { useThresholds } from "@/contexts/ThresholdContext";
 
 interface ExpandedStagePanelProps {
   stage: string;
@@ -8,24 +9,25 @@ interface ExpandedStagePanelProps {
   onClose: () => void;
 }
 
-function getStatusDot(job: Job): string {
-  if (job.urgent) return "bg-[hsl(var(--status-red))]";
-  if (job.ageDays > 14) return "bg-[hsl(var(--status-orange))]";
+function getStatusDot(job: Job, greenMax: number, orangeMax: number): string {
+  if (job.urgent || job.ageDays > orangeMax) return "bg-[hsl(var(--status-red))]";
+  if (job.ageDays > greenMax) return "bg-[hsl(var(--status-orange))]";
   return "bg-[hsl(var(--status-green))]";
 }
 
-function statusPriority(job: Job): number {
-  if (job.urgent) return 2;
-  if (job.ageDays > 14) return 1;
+function statusPriority(job: Job, greenMax: number, orangeMax: number): number {
+  if (job.urgent || job.ageDays > orangeMax) return 2;
+  if (job.ageDays > greenMax) return 1;
   return 0;
 }
 
-function sortByStatus(jobs: Job[]): Job[] {
-  return [...jobs].sort((a, b) => statusPriority(a) - statusPriority(b));
+function sortByStatus(jobs: Job[], greenMax: number, orangeMax: number): Job[] {
+  return [...jobs].sort((a, b) => statusPriority(a, greenMax, orangeMax) - statusPriority(b, greenMax, orangeMax));
 }
 
 export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelProps) {
-  const sorted = sortByStatus(jobs);
+  const { thresholds } = useThresholds();
+  const sorted = sortByStatus(jobs, thresholds.greenMax, thresholds.orangeMax);
 
   return (
     <div className="animate-fade-in bg-card rounded-xl shadow-2xl border border-border overflow-hidden">
@@ -64,7 +66,7 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
             className="grid grid-cols-[auto_1fr_1fr_100px_80px_70px] gap-4 px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm"
           >
             {/* Status dot */}
-            <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job))} />
+            <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job, thresholds.greenMax, thresholds.orangeMax))} />
 
             {/* Client */}
             <div className="flex items-center gap-2">

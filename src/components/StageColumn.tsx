@@ -1,11 +1,13 @@
 import type { Job } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
+import { useThresholds } from "@/contexts/ThresholdContext";
+import { ThresholdSettings } from "@/components/ThresholdSettings";
 
-function countByStatus(jobs: Job[]) {
+function countByStatus(jobs: Job[], greenMax: number, orangeMax: number) {
   let red = 0, orange = 0, green = 0;
   for (const j of jobs) {
-    if (j.urgent) red++;
-    else if (j.ageDays > 14) orange++;
+    if (j.urgent || j.ageDays > orangeMax) red++;
+    else if (j.ageDays > greenMax) orange++;
     else green++;
   }
   return { red, orange, green };
@@ -21,10 +23,11 @@ interface StageColumnProps {
 
 export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horizontal" }: StageColumnProps) {
   const isVertical = layout === "vertical";
-  const counts = countByStatus(jobs);
-  const firstGreen = jobs.find(j => !j.urgent && j.ageDays <= 14);
-  const firstOrange = jobs.find(j => !j.urgent && j.ageDays > 14);
-  const firstRed = jobs.find(j => j.urgent);
+  const { thresholds, getLabel } = useThresholds();
+  const counts = countByStatus(jobs, thresholds.greenMax, thresholds.orangeMax);
+  const firstGreen = jobs.find(j => !j.urgent && j.ageDays <= thresholds.greenMax);
+  const firstOrange = jobs.find(j => !j.urgent && j.ageDays > thresholds.greenMax && j.ageDays <= thresholds.orangeMax);
+  const firstRed = jobs.find(j => j.urgent || j.ageDays > thresholds.orangeMax);
 
   return (
     <div
@@ -39,9 +42,12 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
       {/* Header */}
       <div className="px-3 py-2.5 flex items-center justify-between bg-[hsl(var(--stage-header))] text-primary-foreground font-bold text-sm">
         <span className="truncate">{stage}</span>
-        <span className="ml-1 bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-semibold">
-          {jobs.length}
-        </span>
+        <div className="flex items-center gap-1">
+          <span className="bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-semibold">
+            {jobs.length}
+          </span>
+          <ThresholdSettings />
+        </div>
       </div>
 
       {/* Color cards with count + first job details */}
@@ -49,7 +55,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         {/* Green */}
         <div className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white/90">Green</span>
+            <span className="text-xs font-semibold text-white/90">{getLabel("green")}</span>
             <span className="text-sm font-bold text-white">{counts.green}</span>
           </div>
           {firstGreen && (
@@ -62,7 +68,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         {/* Orange */}
         <div className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white/90">Orange</span>
+            <span className="text-xs font-semibold text-white/90">{getLabel("orange")}</span>
             <span className="text-sm font-bold text-white">{counts.orange}</span>
           </div>
           {firstOrange && (
@@ -75,7 +81,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
         {/* Red */}
         <div className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white/90">Red</span>
+            <span className="text-xs font-semibold text-white/90">{getLabel("red")}</span>
             <span className="text-sm font-bold text-white">{counts.red}</span>
           </div>
           {firstRed && (

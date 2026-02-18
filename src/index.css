@@ -34,8 +34,8 @@
 
     --radius: 0.75rem;
 
-    /* Stage header — earthy sage */
-    --stage-header: 145 20% 35%;
+    /* Stage header — earthy blue */
+    --stage-header: 210 20% 32%;
 
     /* Card status indicators — muted earthy */
     --status-green: 145 18% 38%;
@@ -85,7 +85,7 @@
     --input: 35 12% 82%;
     --ring: 145 20% 36%;
 
-    --stage-header: 145 16% 32%;
+    --stage-header: 210 18% 38%;
 
     --status-green: 145 16% 42%;
     --status-orange: 30 35% 50%;
