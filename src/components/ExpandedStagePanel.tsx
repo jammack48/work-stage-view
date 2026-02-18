@@ -14,7 +14,19 @@ function getStatusDot(job: Job): string {
   return "bg-[hsl(var(--status-green))]";
 }
 
+function statusPriority(job: Job): number {
+  if (job.urgent) return 2;
+  if (job.ageDays > 14) return 1;
+  return 0;
+}
+
+function sortByStatus(jobs: Job[]): Job[] {
+  return [...jobs].sort((a, b) => statusPriority(a) - statusPriority(b));
+}
+
 export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelProps) {
+  const sorted = sortByStatus(jobs);
+
   return (
     <div className="animate-fade-in bg-card rounded-xl shadow-2xl border border-border overflow-hidden">
       {/* Header */}
@@ -44,9 +56,9 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
         <span className="text-right">ID</span>
       </div>
 
-      {/* Job rows — info left to right like Fergus */}
+      {/* Job rows sorted green → orange → red */}
       <div className="divide-y divide-border/30">
-        {jobs.map((job) => (
+        {sorted.map((job) => (
           <div
             key={job.id}
             className="grid grid-cols-[auto_1fr_1fr_100px_80px_70px] gap-4 px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm"
