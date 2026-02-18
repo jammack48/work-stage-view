@@ -50,13 +50,13 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
       </div>
 
       {/* Column headers */}
-      <div className="grid grid-cols-[auto_1fr_1fr_100px_80px_70px] gap-4 px-5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/50">
+      <div className="grid grid-cols-[auto_1fr_80px_60px] sm:grid-cols-[auto_1fr_1fr_100px_80px_70px] gap-2 sm:gap-4 px-4 sm:px-5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/50">
         <span className="w-3" />
         <span>Client</span>
-        <span>Job</span>
+        <span className="hidden sm:inline">Job</span>
         <span className="text-right">Value</span>
         <span className="text-right">Age</span>
-        <span className="text-right">ID</span>
+        <span className="hidden sm:inline text-right">ID</span>
       </div>
 
       {/* Job rows sorted green → orange → red */}
@@ -64,19 +64,19 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
         {sorted.map((job) => (
           <div
             key={job.id}
-            className="grid grid-cols-[auto_1fr_1fr_100px_80px_70px] gap-4 px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm"
+            className="grid grid-cols-[auto_1fr_80px_60px] sm:grid-cols-[auto_1fr_1fr_100px_80px_70px] gap-2 sm:gap-4 px-4 sm:px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm"
           >
             <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job, thresholds.greenMax, thresholds.orangeMax))} />
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <span className="font-semibold text-card-foreground truncate">{job.client}</span>
               {job.urgent && <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0" />}
             </div>
-            <span className="text-muted-foreground truncate">{job.jobName}</span>
+            <span className="hidden sm:inline text-muted-foreground truncate">{job.jobName}</span>
             <span className="text-right font-semibold text-card-foreground">
               ${job.value.toLocaleString()}
             </span>
-            <span className="text-right text-muted-foreground">{job.ageDays}d ago</span>
-            <span className="text-right font-mono text-muted-foreground text-xs">{job.id}</span>
+            <span className="text-right text-muted-foreground whitespace-nowrap">{job.ageDays}d ago</span>
+            <span className="hidden sm:inline text-right font-mono text-muted-foreground text-xs">{job.id}</span>
           </div>
         ))}
       </div>
