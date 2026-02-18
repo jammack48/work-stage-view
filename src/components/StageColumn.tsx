@@ -42,7 +42,13 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
       onClick={onToggle}
     >
       {/* Header — arrow-shaped pointing right */}
-      <div className="relative px-3 py-2 flex items-start justify-between bg-[hsl(var(--stage-header))] text-primary-foreground font-bold text-sm h-[52px]">
+      <div
+        className="relative px-3 py-2 flex items-start justify-between text-primary-foreground font-bold text-sm h-[52px]"
+        style={{
+          backgroundColor: "hsl(var(--stage-header))",
+          backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 8px, hsl(var(--border) / 0.4) 8px, hsl(var(--border) / 0.4) 9px)",
+        }}
+      >
         <div className="leading-snug min-w-0">
           <div className="truncate">{(STAGE_LABELS[stage as keyof typeof STAGE_LABELS] ?? [stage])[0]}</div>
           <div className="text-xs font-medium opacity-70 truncate h-[16px]">
@@ -60,7 +66,8 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, layout = "horiz
           className="absolute right-0 top-0 h-full w-[14px] translate-x-[7px] z-10"
           style={{
             clipPath: "polygon(0 0, 0 100%, 100% 50%)",
-            background: "hsl(var(--stage-header))",
+            backgroundColor: "hsl(var(--stage-header))",
+            backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 8px, hsl(var(--border) / 0.4) 8px, hsl(var(--border) / 0.4) 9px)",
           }}
         />
       </div>

@@ -22,7 +22,10 @@ export const PipelineFlowBanner = ({ activeStage }: PipelineFlowBannerProps) => 
           >
             <span className="truncate">{stage}</span>
             {i < STAGES.length - 1 && (
-              <ChevronRight className="w-3 h-3 shrink-0 opacity-40" />
+              <span className="flex shrink-0 opacity-40 -space-x-1.5">
+                <ChevronRight className="w-3 h-3" />
+                <ChevronRight className="w-3 h-3" />
+              </span>
             )}
           </div>
         ))}
