@@ -1,16 +1,17 @@
-import { ClipboardList, Package, StickyNote, Camera, Clock, FileText, Columns, LayoutGrid } from "lucide-react";
+import { ClipboardList, Package, StickyNote, Camera, Clock, FileText, DollarSign, ClipboardCheck, Columns, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "invoice";
+export type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms";
 
 const TABS: { id: JobTab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: ClipboardList },
+  { id: "quote", label: "Quote", icon: DollarSign },
   { id: "materials", label: "Materials", icon: Package },
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "photos", label: "Photos", icon: Camera },
   { id: "time", label: "Time", icon: Clock },
+  { id: "forms", label: "Forms", icon: ClipboardCheck },
   { id: "invoice", label: "Invoice", icon: FileText },
 ];
 
@@ -48,13 +49,13 @@ export function JobSidebar({ activeTab, onTabChange, mobileLayout, onMobileLayou
     );
   }
 
-  // Mobile: bottom bar or collapsible side
+  // Mobile: collapsible side
   if (mobileLayout === "side") {
     return (
-      <nav className="fixed left-0 top-[calc(3.5rem+2rem)] bottom-0 z-40 w-14 bg-card border-r border-border flex flex-col items-center gap-1 py-2">
+      <nav className="fixed left-0 top-[calc(3.5rem+2rem)] bottom-0 z-40 w-14 bg-card border-r border-border flex flex-col items-center gap-1 py-2 overflow-y-auto">
         <button
           onClick={() => onMobileLayoutChange("bottom")}
-          className="p-2 mb-2 rounded-lg text-muted-foreground hover:bg-accent"
+          className="p-2 mb-2 rounded-lg text-muted-foreground hover:bg-accent shrink-0"
         >
           <Columns className="w-4 h-4" />
         </button>
@@ -63,7 +64,7 @@ export function JobSidebar({ activeTab, onTabChange, mobileLayout, onMobileLayou
             key={id}
             onClick={() => onTabChange(id)}
             className={cn(
-              "flex flex-col items-center justify-center w-11 h-11 rounded-lg transition-colors",
+              "flex flex-col items-center justify-center w-11 h-11 rounded-lg transition-colors shrink-0",
               activeTab === id
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-accent"
@@ -77,12 +78,12 @@ export function JobSidebar({ activeTab, onTabChange, mobileLayout, onMobileLayou
     );
   }
 
-  // Mobile bottom tab bar (default)
+  // Mobile bottom tab bar (default) — scrollable for 8 tabs
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border flex items-center justify-around px-1 py-1 safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border flex items-center px-1 py-1 safe-area-pb overflow-x-auto gap-0.5">
       <button
         onClick={() => onMobileLayoutChange("side")}
-        className="p-2 rounded-lg text-muted-foreground hover:bg-accent"
+        className="p-2 rounded-lg text-muted-foreground hover:bg-accent shrink-0"
       >
         <LayoutGrid className="w-4 h-4" />
       </button>
@@ -91,7 +92,7 @@ export function JobSidebar({ activeTab, onTabChange, mobileLayout, onMobileLayou
           key={id}
           onClick={() => onTabChange(id)}
           className={cn(
-            "flex flex-col items-center justify-center min-w-[44px] min-h-[44px] rounded-lg transition-colors gap-0.5",
+            "flex flex-col items-center justify-center min-w-[44px] min-h-[44px] rounded-lg transition-colors gap-0.5 shrink-0",
             activeTab === id
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:bg-accent"

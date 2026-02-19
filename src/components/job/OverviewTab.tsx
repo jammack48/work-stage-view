@@ -1,7 +1,6 @@
-import { MapPin, Users, Calendar, AlertTriangle } from "lucide-react";
+import { MapPin, Users, Calendar, AlertTriangle, Phone, Mail, User, Briefcase } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { JobDetail } from "@/data/dummyJobDetails";
-import { cn } from "@/lib/utils";
 
 interface OverviewTabProps {
   job: JobDetail;
@@ -9,14 +8,82 @@ interface OverviewTabProps {
 
 export function OverviewTab({ job }: OverviewTabProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      {/* Job Summary */}
+    <div className="flex flex-col gap-4 max-w-2xl">
+      {/* 1. Job Summary */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Job Summary</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Briefcase className="w-4 h-4" /> Job Summary
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">{job.description}</p>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Job</span>
+            <span className="text-card-foreground font-medium">{job.jobName}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Stage</span>
+            <span className="text-card-foreground font-medium">{job.stage}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Value</span>
+            <span className="text-card-foreground font-bold">${job.value.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">ID</span>
+            <span className="text-card-foreground font-mono text-xs">{job.id}</span>
+          </div>
+          {job.description && (
+            <p className="text-sm text-muted-foreground pt-1 border-t border-border/50">{job.description}</p>
+          )}
+          {(job.urgent || job.ageDays > 7) && (
+            <div className={`flex items-center gap-2 p-3 rounded-lg text-sm font-medium ${
+              job.urgent
+                ? "bg-destructive/10 text-destructive"
+                : "bg-[hsl(var(--status-orange)/0.15)] text-[hsl(var(--status-orange))]"
+            }`}>
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              {job.urgent ? "Urgent — requires immediate attention" : `Overdue — ${job.ageDays} days in stage`}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 2. Customer Details */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <User className="w-4 h-4" /> Customer Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Name</span>
+            <span className="text-card-foreground font-medium">{job.client || "—"}</span>
+          </div>
+          <div className="flex justify-between text-sm items-center">
+            <span className="text-muted-foreground">Phone</span>
+            <a href={`tel:${job.clientPhone}`} className="text-primary font-medium flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5" /> {job.clientPhone || "—"}
+            </a>
+          </div>
+          <div className="flex justify-between text-sm items-center">
+            <span className="text-muted-foreground">Email</span>
+            <a href={`mailto:${job.clientEmail}`} className="text-primary font-medium flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5" /> {job.clientEmail || "—"}
+            </a>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 3. Site / Contact Details */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <MapPin className="w-4 h-4" /> Site Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
           <div className="flex items-start gap-2 text-sm">
             <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-muted-foreground" />
             <span className="text-card-foreground">{job.address || "No address set"}</span>
@@ -28,11 +95,11 @@ export function OverviewTab({ job }: OverviewTabProps) {
         </CardContent>
       </Card>
 
-      {/* Assigned Staff */}
+      {/* 4. Assigned Staff */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Users className="w-4 h-4" /> Staff
+            <Users className="w-4 h-4" /> Assigned Staff
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -56,7 +123,7 @@ export function OverviewTab({ job }: OverviewTabProps) {
         </CardContent>
       </Card>
 
-      {/* Schedule */}
+      {/* 5. Schedule */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
@@ -76,30 +143,6 @@ export function OverviewTab({ job }: OverviewTabProps) {
             <span className="text-muted-foreground">Age</span>
             <span className="text-card-foreground font-medium">{job.ageDays} days</span>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Alerts */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" /> Alerts
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {job.urgent ? (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm font-medium">
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              Urgent — requires immediate attention
-            </div>
-          ) : job.ageDays > 7 ? (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-[hsl(var(--status-orange)/0.15)] text-[hsl(var(--status-orange))] text-sm font-medium">
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              Overdue — {job.ageDays} days in stage
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No alerts</p>
-          )}
         </CardContent>
       </Card>
     </div>
