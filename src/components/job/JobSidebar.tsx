@@ -1,11 +1,12 @@
-import { ClipboardList, Package, StickyNote, Camera, Clock, FileText, DollarSign, ClipboardCheck, Columns, LayoutGrid } from "lucide-react";
+import { ClipboardList, Package, StickyNote, Camera, Clock, FileText, DollarSign, ClipboardCheck, Columns, LayoutGrid, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms";
+export type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history";
 
 const TABS: { id: JobTab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: ClipboardList },
+  { id: "history", label: "History", icon: History },
   { id: "quote", label: "Quote", icon: DollarSign },
   { id: "materials", label: "Materials", icon: Package },
   { id: "notes", label: "Notes", icon: StickyNote },
