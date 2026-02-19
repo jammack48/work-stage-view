@@ -1,152 +1,55 @@
 
 
-# Job Card Screen - Full-Screen Job Workspace
+# Overview Tab Redesign - Single-Screen Desktop Layout
 
-## What We're Building
-A full-screen job workspace that opens when you tap any job in the pipeline or use the action boxes. It replaces the dashboard entirely and gives you a single-focus control panel for one job -- Overview, Materials, Notes, Photos, Time, and Invoice tabs.
+## The Problem
+Currently the Overview tab has 5 separate stacked cards that require scrolling on desktop. The content should all be visible at once without scrolling.
 
-## How It Works
+## The New Layout
 
-### Opening the Job Card
-- Tapping any job card on the pipeline navigates to `/job/:id`
-- Tapping an action box (Add Customer, New Quote, etc.) navigates to `/job/new?stage=Lead` (or whichever stage)
-- The pipeline disappears completely -- full screen is the job
+The Overview becomes a single-screen layout using a 2-column grid on desktop (single column on mobile):
 
-### Closing the Job Card
-- Back button in the top strip returns to the pipeline dashboard
-- Browser back also works (uses react-router)
-
----
-
-## Screen Layout
-
-### Top Strip (always fixed at top)
+### Structure
 ```text
-+---------------------------------------------------------------+
-|  <- Back  |  Job Name  |  Status Badge  |  Client  |  $Value  |
-|           |            |                |  Address  |  [Call] [Msg] [Nav] [Status] |
-+---------------------------------------------------------------+
++------------------------------------------+---------------------------+
+| STATUS CARD                              | STAFF + SCHEDULE          |
+| Stage badge (Lead/Quote/Job/Invoice)     | Assigned staff avatars    |
+| Summary line (contextual to stage)       | Start / Due / Age         |
+| Job name, value, ID                      |                           |
+| Alert banner (if urgent/overdue)         |                           |
++------------------------------------------+---------------------------+
+| CUSTOMER DETAILS                         | SITE DETAILS              |
+| Name                                     | Address                   |
+| Phone (tap to call)                      | Map placeholder           |
+| Email (tap to email)                     |                           |
++------------------------------------------+---------------------------+
 ```
-- Fixed position, never scrolls
-- Left: back arrow + job title
-- Center: status pill (color-coded using existing theme), client name
-- Right: action icons (Phone, MessageSquare, Navigation, status dropdown)
-- Address shown on tap/hover of client name
 
-### Left Sidebar (always visible on desktop)
-```text
-+----------+
-| Overview |
-| Materials|
-| Notes    |
-| Photos   |
-| Time     |
-| Invoice  |
-+----------+
-```
-- Icon + label, vertical stack
-- Large touch targets (48px+ height)
-- Active tab highlighted with primary color
-- Never collapses on desktop (fixed ~200px width)
+### Key Changes
 
-### Main Panel
-- Takes remaining space
-- Content swaps based on selected tab
-- Only one tab visible at a time
+1. **Single status card at top-left** -- stage badge is prominent, with a contextual summary line:
+   - Lead: "Lead to follow up"
+   - Quote Sent: "Quote awaiting acceptance"  
+   - In Progress: "Job in progress"
+   - To Invoice: "Ready to invoice"
+   - etc.
 
----
+2. **Staff and Schedule merged** into one card (top-right) -- staff avatars inline, schedule dates below
 
-## Mobile Layout Options
+3. **Customer and Site side-by-side** on the bottom row -- removes the large map placeholder to save vertical space (small inline map icon instead)
 
-The user wants both horizontal and vertical sidebar options on mobile:
+4. **No max-width constraint** -- currently capped at `max-w-2xl`, will be removed so it uses all available main panel space
 
-- **Default: Bottom tab bar** -- 6 icons in a fixed row at the bottom (standard mobile pattern)
-- **Toggle to side tabs** -- a small layout switcher lets you flip to a narrow left sidebar with icons
-- Same layout toggle pattern already used on the pipeline dashboard (Top/Left buttons)
-
----
-
-## Tab Content (Rich Dummy Data)
-
-### 1. Overview
-- Job summary card (title, description, address on a map placeholder)
-- Assigned staff list (avatar + name, dummy data)
-- Schedule section (start date, due date, duration)
-- Alerts section (overdue warning if age > threshold, using existing status colors)
-
-### 2. Materials
-- Table/list of items: name, quantity, unit price, total
-- Supplier name with link placeholder
-- "Add Material" button at bottom
-- Dummy data: 5-8 typical trade materials
-
-### 3. Notes
-- List of text notes with timestamps
-- "Add Note" input area
-- Voice note indicator (microphone icon + duration, visual only)
-- Dummy data: 3-4 sample notes
-
-### 4. Photos
-- Photo grid (placeholder images using colored boxes with camera icon)
-- "Upload Photo" button (visual only)
-- Tap to expand placeholder
-- Dummy data: 4-6 photo placeholders with captions
-
-### 5. Time
-- Time log entries: date, staff, hours, description
-- "Start Timer" button with play icon (toggles to stop, visual only)
-- Running timer display
-- Dummy data: 5-6 time entries totaling realistic hours
-
-### 6. Invoice
-- Cost breakdown table: labour, materials, extras
-- Subtotal, GST, Total
-- "Generate Invoice" button
-- Status indicator (Draft / Sent / Paid)
-- Dummy data populated from materials + time entries
-
----
-
-## Design Rules (Following Existing Theme)
-
-- Same earthy color palette (dark/light mode support)
-- Status colors: sage green, earthy tan, terracotta (already defined as CSS variables)
-- Card backgrounds use `bg-card` with existing border styling
-- Tab active state uses `bg-primary text-primary-foreground`
-- Large buttons, minimal text, strong visual hierarchy
-- Touch-friendly: minimum 44px tap targets on all interactive elements
-
----
+5. **Compact card padding** -- tighter spacing so everything fits on one screen
 
 ## Technical Details
 
-### New Files
-| File | Purpose |
-|------|---------|
-| `src/pages/JobCard.tsx` | Main job card page with layout, top strip, sidebar, and tab routing |
-| `src/components/job/JobTopStrip.tsx` | Fixed header with job info and action buttons |
-| `src/components/job/JobSidebar.tsx` | Left sidebar / bottom tabs navigation |
-| `src/components/job/OverviewTab.tsx` | Overview tab content |
-| `src/components/job/MaterialsTab.tsx` | Materials list tab |
-| `src/components/job/NotesTab.tsx` | Notes tab |
-| `src/components/job/PhotosTab.tsx` | Photos gallery tab |
-| `src/components/job/TimeTab.tsx` | Time tracking tab |
-| `src/components/job/InvoiceTab.tsx` | Invoice/billing tab |
-| `src/data/dummyJobDetails.ts` | Rich dummy data for all tab content |
+### File Changed
+`src/components/job/OverviewTab.tsx` -- restructured from 5 vertical cards to a 2x2 grid layout
 
-### Modified Files
-| File | Change |
-|------|--------|
-| `src/App.tsx` | Add route `/job/:id` pointing to JobCard |
-| `src/components/StageColumn.tsx` | Make job cards clickable (navigate to `/job/:id`) |
-| `src/components/ExpandedStagePanel.tsx` | Make job rows clickable |
-| `src/pages/Index.tsx` | Wire action boxes to navigate to `/job/new?stage=X` |
-
-### Routing
-- `/` -- Pipeline Dashboard (existing)
-- `/job/:id` -- Job Card (new)
-- `/job/new?stage=Lead` -- New job entry (new, same component with empty state)
-
-### No New Dependencies
-Everything built with existing stack: React Router, Lucide icons, Tailwind, shadcn/ui components.
+### Layout Classes
+- Desktop: `grid grid-cols-2 gap-3` with `h-full` to fill the panel
+- Mobile: `grid grid-cols-1 gap-3` (scrollable, since single-screen isn't feasible on small screens)
+- Cards use compact padding (`p-3` instead of `p-6`)
+- Map placeholder shrunk to a small icon row instead of a 128px block
 
