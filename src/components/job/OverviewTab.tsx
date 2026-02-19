@@ -1,6 +1,7 @@
-import { MapPin, Users, Calendar, AlertTriangle, Briefcase } from "lucide-react";
+import { MapPin, Users, Calendar, AlertTriangle, Briefcase, Phone, Mail, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 import type { JobDetail } from "@/data/dummyJobDetails";
 
 interface OverviewTabProps {
@@ -18,6 +19,8 @@ function getStageSummary(stage: string): string {
 }
 
 export function OverviewTab({ job }: OverviewTabProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full">
       {/* Status Card */}
@@ -50,6 +53,42 @@ export function OverviewTab({ job }: OverviewTabProps) {
             }`}>
               <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
               {job.urgent ? "Urgent — immediate attention" : `Overdue — ${job.ageDays} days`}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Customer Details */}
+      <Card>
+        <CardContent className="p-3 space-y-2">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <User className="w-4 h-4 text-muted-foreground" /> Customer
+          </div>
+          <button
+            className="text-sm font-semibold text-primary hover:underline text-left"
+            onClick={() => {
+              const custId = job.client.replace(/\s/g, "").toLowerCase();
+              navigate(`/customer/1`);
+            }}
+          >
+            {job.client || "No client assigned"}
+          </button>
+          {job.clientPhone && (
+            <div className="flex items-center gap-2 text-sm">
+              <Phone className="w-3.5 h-3.5 text-muted-foreground" />
+              <a href={`tel:${job.clientPhone}`} className="hover:text-primary transition-colors">{job.clientPhone}</a>
+            </div>
+          )}
+          {job.clientEmail && (
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+              <a href={`mailto:${job.clientEmail}`} className="hover:text-primary transition-colors truncate">{job.clientEmail}</a>
+            </div>
+          )}
+          {job.address && (
+            <div className="flex items-start gap-2 text-sm">
+              <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-muted-foreground" />
+              <span>{job.address}</span>
             </div>
           )}
         </CardContent>
