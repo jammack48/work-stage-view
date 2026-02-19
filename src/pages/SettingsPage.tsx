@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Sun, Moon, Zap, Users, Building2, Bell, Palette, Shield, CreditCard, Wrench } from "lucide-react";
+import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Building2, Bell, Palette, Shield, CreditCard, Wrench } from "lucide-react";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations";
 
@@ -98,34 +98,15 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
 }
 
 export default function SettingsPage() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<SettingsTab>("business");
   const [isDark, setIsDark] = useState(true);
   const isMobile = useIsMobile();
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="px-4 sm:px-6 py-3 border-b border-border bg-card flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate("/")}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <Zap className="w-5 h-5 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight text-card-foreground">Settings</h1>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/customers")} className="h-8 px-2 gap-1.5 text-xs">
-            <Users className="w-4 h-4" />
-            {!isMobile && "Customers"}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => setIsDark((d) => !d)} className="h-8 w-8 p-0">
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </Button>
-        </div>
-      </header>
+      <AppHeader title="Settings" isDark={isDark} onToggleDark={() => setIsDark((d) => !d)} />
 
       <div className={cn("flex", isMobile ? "flex-col" : "flex-row")}>
-        {/* Sidebar */}
         {!isMobile && (
           <nav className="w-[200px] shrink-0 flex flex-col gap-1 py-2 border-r border-border">
             {TABS.map(({ id, label, icon: Icon }) => (
@@ -146,7 +127,6 @@ export default function SettingsPage() {
           </nav>
         )}
 
-        {/* Mobile tabs */}
         {isMobile && (
           <div className="flex gap-1 p-2 overflow-x-auto border-b border-border">
             {TABS.map(({ id, label, icon: Icon }) => (

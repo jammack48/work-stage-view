@@ -4,10 +4,11 @@ import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
-import { Zap, ChevronRight, LayoutGrid, Columns, Sun, Moon, ChevronLeft, Plus, Users, Settings } from "lucide-react";
+import { ChevronRight, LayoutGrid, Columns, ChevronLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AppHeader } from "@/components/AppHeader";
 import useEmblaCarousel from "embla-carousel-react";
 
 
@@ -55,42 +56,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Bar */}
-      <header className="px-4 sm:px-6 py-3 border-b border-border bg-card flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Zap className="w-5 h-5 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight text-card-foreground">
-            Toolbelt
-          </h1>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/customers")}
-            className="h-8 px-2 gap-1.5 text-xs"
-          >
-            <Users className="w-4 h-4" />
-            {!isMobile && "Customers"}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/settings")}
-            className="h-8 px-2 gap-1.5 text-xs"
-          >
-            <Settings className="w-4 h-4" />
-            {!isMobile && "Settings"}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsDark((d) => !d)}
-            className="h-8 w-8 p-0"
-          >
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </Button>
-        </div>
-      </header>
+      <AppHeader title="Toolbelt" isDark={isDark} onToggleDark={() => setIsDark((d) => !d)} />
 
       <main className="p-3 sm:p-4 lg:p-6 space-y-4">
         {/* Pipeline heading with flow arrows + layout toggle */}
