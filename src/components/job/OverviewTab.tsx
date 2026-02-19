@@ -1,4 +1,4 @@
-import { MapPin, Users, Calendar, AlertTriangle, Phone, Mail, Briefcase } from "lucide-react";
+import { MapPin, Users, Calendar, AlertTriangle, Briefcase } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { JobDetail } from "@/data/dummyJobDetails";
@@ -91,31 +91,6 @@ export function OverviewTab({ job }: OverviewTabProps) {
               <span>Age:</span>
               <span className="text-card-foreground font-medium">{job.ageDays} days</span>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Customer Details */}
-      <Card>
-        <CardContent className="p-3 space-y-2">
-          <div className="text-sm font-medium flex items-center gap-2">
-            <Mail className="w-4 h-4 text-muted-foreground" /> Customer
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Name</span>
-            <span className="font-medium">{job.client || "—"}</span>
-          </div>
-          <div className="flex justify-between text-sm items-center">
-            <span className="text-muted-foreground">Phone</span>
-            <a href={`tel:${job.clientPhone}`} className="text-primary font-medium flex items-center gap-1">
-              <Phone className="w-3 h-3" /> {job.clientPhone || "—"}
-            </a>
-          </div>
-          <div className="flex justify-between text-sm items-center">
-            <span className="text-muted-foreground">Email</span>
-            <a href={`mailto:${job.clientEmail}`} className="text-primary font-medium flex items-center gap-1 text-xs">
-              <Mail className="w-3 h-3" /> {job.clientEmail || "—"}
-            </a>
           </div>
         </CardContent>
       </Card>

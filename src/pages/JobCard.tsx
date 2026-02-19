@@ -11,6 +11,7 @@ import { TimeTab } from "@/components/job/TimeTab";
 import { InvoiceTab } from "@/components/job/InvoiceTab";
 import { QuoteTab } from "@/components/job/QuoteTab";
 import { FormsTab } from "@/components/job/FormsTab";
+import { HistoryTab } from "@/components/job/HistoryTab";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ export default function JobCard() {
 
   const tabContent: Record<JobTab, React.ReactNode> = {
     overview: <OverviewTab job={job} />,
+    history: <HistoryTab job={job} />,
     quote: <QuoteTab job={job} />,
     materials: <MaterialsTab materials={job.materials} />,
     notes: <NotesTab notes={job.notes} />,
