@@ -3,7 +3,7 @@ import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
-import { Zap, ChevronRight, LayoutGrid, Columns, Sun, Moon, ChevronLeft } from "lucide-react";
+import { Zap, ChevronRight, LayoutGrid, Columns, Sun, Moon, ChevronLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,6 +11,13 @@ import useEmblaCarousel from "embla-carousel-react";
 
 
 type Layout = "horizontal" | "vertical";
+
+const ACTION_BOXES: Record<string, string> = {
+  "Lead": "Add Customer",
+  "Quote Sent": "New Quote",
+  "In Progress": "New Job",
+  "To Invoice": "New Invoice",
+};
 
 const Index = () => {
   const [expandedStage, setExpandedStage] = useState<Stage | null>(null);
@@ -163,16 +170,26 @@ const Index = () => {
         ) : layout === "horizontal" ? (
           <div className="space-y-0">
             <PipelineFlowBanner activeStage={expandedStage} />
-            <div className="grid grid-cols-8 gap-2 overflow-x-auto pb-2 pt-2">
+            <div className="flex gap-2 overflow-x-auto pb-2 pt-2">
               {STAGES.map((stage) => (
-                <StageColumn
-                  key={stage}
-                  stage={stage}
-                  jobs={jobsByStage(stage)}
-                  isExpanded={expandedStage === stage}
-                  onToggle={() => handleToggle(stage)}
-                  layout="horizontal"
-                />
+                <div key={stage} className="min-w-[160px] flex-1 flex flex-col gap-2">
+                  <StageColumn
+                    stage={stage}
+                    jobs={jobsByStage(stage)}
+                    isExpanded={expandedStage === stage}
+                    onToggle={() => handleToggle(stage)}
+                    layout="horizontal"
+                  />
+                  {ACTION_BOXES[stage] && (
+                    <button
+                      className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer"
+                      onClick={() => {}}
+                    >
+                      <Plus className="w-5 h-5" />
+                      <span className="text-xs font-medium">{ACTION_BOXES[stage]}</span>
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
             {expandedStage && (
