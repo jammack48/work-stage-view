@@ -9,6 +9,8 @@ import { NotesTab } from "@/components/job/NotesTab";
 import { PhotosTab } from "@/components/job/PhotosTab";
 import { TimeTab } from "@/components/job/TimeTab";
 import { InvoiceTab } from "@/components/job/InvoiceTab";
+import { QuoteTab } from "@/components/job/QuoteTab";
+import { FormsTab } from "@/components/job/FormsTab";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -33,10 +35,12 @@ export default function JobCard() {
 
   const tabContent: Record<JobTab, React.ReactNode> = {
     overview: <OverviewTab job={job} />,
+    quote: <QuoteTab job={job} />,
     materials: <MaterialsTab materials={job.materials} />,
     notes: <NotesTab notes={job.notes} />,
     photos: <PhotosTab photos={job.photos} />,
     time: <TimeTab timeEntries={job.timeEntries} />,
+    forms: <FormsTab />,
     invoice: <InvoiceTab job={job} />,
   };
 
@@ -48,11 +52,9 @@ export default function JobCard() {
         className={cn(
           "flex",
           isMobile ? "flex-col" : "flex-row",
-          // Top strip height offset
           isMobile ? "pt-[5.5rem]" : "pt-14"
         )}
       >
-        {/* Desktop sidebar or mobile side layout */}
         {(!isMobile || mobileLayout === "side") && (
           <div className={cn(isMobile && "pl-14")} />
         )}
@@ -64,7 +66,6 @@ export default function JobCard() {
           onMobileLayoutChange={setMobileLayout}
         />
 
-        {/* Main content */}
         <main
           className={cn(
             "flex-1 min-w-0 p-4 sm:p-6",
