@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, UserPlus, Search, Phone, Mail, MapPin, ArrowLeft, Sun, Moon, Zap, Settings } from "lucide-react";
+import { Users, UserPlus, Phone, Mail, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AppHeader } from "@/components/AppHeader";
+import { DUMMY_CUSTOMERS } from "@/data/dummyCustomers";
 
 type CustomerTab = "all" | "leads" | "active" | "archived";
 
@@ -12,17 +14,6 @@ const TABS: { id: CustomerTab; label: string }[] = [
   { id: "leads", label: "Leads" },
   { id: "active", label: "Active" },
   { id: "archived", label: "Archived" },
-];
-
-const DUMMY_CUSTOMERS = [
-  { id: 1, name: "Dave Thompson", phone: "021 555 1234", email: "dave@example.com", address: "12 Queen St, Auckland", jobs: 3, status: "active" },
-  { id: 2, name: "Sarah Mitchell", phone: "027 555 5678", email: "sarah@example.com", address: "45 Cuba St, Wellington", jobs: 5, status: "active" },
-  { id: 3, name: "Mike O'Brien", phone: "022 555 9012", email: "mike@example.com", address: "8 Riccarton Rd, Christchurch", jobs: 1, status: "leads" },
-  { id: 4, name: "Jenny Wu", phone: "021 555 3456", email: "jenny@example.com", address: "23 Devonport Rd, Tauranga", jobs: 0, status: "leads" },
-  { id: 5, name: "Rangi Patel", phone: "027 555 7890", email: "rangi@example.com", address: "67 Colombo St, Christchurch", jobs: 8, status: "active" },
-  { id: 6, name: "Tama Williams", phone: "022 555 2345", email: "tama@example.com", address: "15 Molesworth St, Wellington", jobs: 2, status: "archived" },
-  { id: 7, name: "Lisa Chen", phone: "021 555 6789", email: "lisa@example.com", address: "90 Ponsonby Rd, Auckland", jobs: 4, status: "active" },
-  { id: 8, name: "Hemi Brown", phone: "027 555 0123", email: "hemi@example.com", address: "33 Cameron Rd, Tauranga", jobs: 0, status: "leads" },
 ];
 
 export default function Customers() {
@@ -37,28 +28,9 @@ export default function Customers() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="px-4 sm:px-6 py-3 border-b border-border bg-card flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate("/")}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <Zap className="w-5 h-5 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight text-card-foreground">Customers</h1>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/settings")} className="h-8 px-2 gap-1.5 text-xs">
-            <Settings className="w-4 h-4" />
-            {!isMobile && "Settings"}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => setIsDark((d) => !d)} className="h-8 w-8 p-0">
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </Button>
-        </div>
-      </header>
+      <AppHeader title="Customers" isDark={isDark} onToggleDark={() => setIsDark((d) => !d)} />
 
       <div className={cn("flex", isMobile ? "flex-col" : "flex-row")}>
-        {/* Sidebar */}
         {!isMobile && (
           <nav className="w-[200px] shrink-0 flex flex-col gap-1 py-2 border-r border-border">
             {TABS.map(({ id, label }) => (
@@ -78,7 +50,6 @@ export default function Customers() {
           </nav>
         )}
 
-        {/* Mobile tabs */}
         {isMobile && (
           <div className="flex gap-1 p-2 overflow-x-auto border-b border-border">
             {TABS.map(({ id, label }) => (
@@ -98,7 +69,6 @@ export default function Customers() {
           </div>
         )}
 
-        {/* Main content */}
         <main className="flex-1 min-w-0 p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm text-muted-foreground">{filtered.length} customers</span>
@@ -112,6 +82,7 @@ export default function Customers() {
             {filtered.map((c) => (
               <div
                 key={c.id}
+                onClick={() => navigate(`/customer/${c.id}`)}
                 className="flex items-center gap-4 p-3 rounded-lg bg-card border border-border hover:bg-accent/50 cursor-pointer transition-colors"
               >
                 <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
