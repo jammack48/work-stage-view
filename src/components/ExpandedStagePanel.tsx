@@ -1,4 +1,5 @@
 import { AlertTriangle, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { Job } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
 import { useThresholds } from "@/contexts/ThresholdContext";
@@ -26,6 +27,7 @@ function sortByStatus(jobs: Job[], greenMax: number, orangeMax: number): Job[] {
 }
 
 export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelProps) {
+  const navigate = useNavigate();
   const { getThresholds } = useThresholds();
   const thresholds = getThresholds(stage);
   const sorted = sortByStatus(jobs, thresholds.greenMax, thresholds.orangeMax);
@@ -64,7 +66,8 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
         {sorted.map((job) => (
           <div
             key={job.id}
-            className="grid grid-cols-[auto_1fr_80px_60px] sm:grid-cols-[auto_1fr_1fr_100px_80px_70px] gap-2 sm:gap-4 px-4 sm:px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm"
+            className="grid grid-cols-[auto_1fr_80px_60px] sm:grid-cols-[auto_1fr_1fr_100px_80px_70px] gap-2 sm:gap-4 px-4 sm:px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm cursor-pointer"
+            onClick={() => navigate(`/job/${job.id}`)}
           >
             <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job, thresholds.greenMax, thresholds.orangeMax))} />
             <div className="flex items-center gap-2 min-w-0">

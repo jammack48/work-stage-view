@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
@@ -20,6 +21,7 @@ const ACTION_BOXES: Record<string, string> = {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
   const [expandedStage, setExpandedStage] = useState<Stage | null>(null);
   const [layout, setLayout] = useState<Layout>("horizontal");
   const [isDark, setIsDark] = useState(true);
@@ -183,7 +185,7 @@ const Index = () => {
                   {ACTION_BOXES[stage] && (
                     <button
                       className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer"
-                      onClick={() => {}}
+                      onClick={() => navigate(`/job/new?stage=${encodeURIComponent(stage)}`)}
                     >
                       <Plus className="w-5 h-5" />
                       <span className="text-xs font-medium">{ACTION_BOXES[stage]}</span>
