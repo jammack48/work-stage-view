@@ -4,7 +4,7 @@ import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
-import { Zap, ChevronRight, LayoutGrid, Columns, Sun, Moon, ChevronLeft, Plus } from "lucide-react";
+import { Zap, ChevronRight, LayoutGrid, Columns, Sun, Moon, ChevronLeft, Plus, Users, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -62,14 +62,34 @@ const Index = () => {
             Toolbelt
           </h1>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsDark((d) => !d)}
-          className="h-8 w-8 p-0"
-        >
-          {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/customers")}
+            className="h-8 px-2 gap-1.5 text-xs"
+          >
+            <Users className="w-4 h-4" />
+            {!isMobile && "Customers"}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/settings")}
+            className="h-8 px-2 gap-1.5 text-xs"
+          >
+            <Settings className="w-4 h-4" />
+            {!isMobile && "Settings"}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsDark((d) => !d)}
+            className="h-8 w-8 p-0"
+          >
+            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </Button>
+        </div>
       </header>
 
       <main className="p-3 sm:p-4 lg:p-6 space-y-4">
@@ -145,7 +165,7 @@ const Index = () => {
             <div ref={emblaRef} className="overflow-hidden">
               <div className="flex">
                 {STAGES.map((stage) => (
-                  <div key={stage} className="flex-[0_0_85%] max-w-[320px] min-w-0 px-2">
+                  <div key={stage} className="flex-[0_0_85%] max-w-[320px] min-w-0 px-2 flex flex-col gap-2">
                     <StageColumn
                       stage={stage}
                       jobs={jobsByStage(stage)}
@@ -154,6 +174,15 @@ const Index = () => {
                       onNext={scrollNext}
                       layout="horizontal"
                     />
+                    {ACTION_BOXES[stage] && (
+                      <button
+                        className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer"
+                        onClick={() => navigate(`/job/new?stage=${encodeURIComponent(stage)}`)}
+                      >
+                        <Plus className="w-5 h-5" />
+                        <span className="text-xs font-medium">{ACTION_BOXES[stage]}</span>
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
