@@ -1,4 +1,5 @@
 import { ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { Job } from "@/data/dummyJobs";
 import { STAGE_LABELS } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ interface StageColumnProps {
 
 export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout = "horizontal" }: StageColumnProps) {
   const isVertical = layout === "vertical";
+  const navigate = useNavigate();
   const { getThresholds, getLabel } = useThresholds();
   const thresholds = getThresholds(stage);
   const counts = countByStatus(jobs, thresholds.greenMax, thresholds.orangeMax);
@@ -90,7 +92,10 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
       {/* Color cards with count + first job details */}
       <div className="p-2 flex flex-col gap-1.5">
         {/* Green */}
-        <div className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 h-[72px]">
+        <div
+          className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 h-[72px] cursor-pointer hover:brightness-110 transition-all"
+          onClick={(e) => { if (firstGreen) { e.stopPropagation(); navigate(`/job/${firstGreen.id}`); } }}
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/90">{getLabel(stage, "green")}</span>
             <span className="text-sm font-bold text-white">{counts.green}</span>
@@ -105,7 +110,10 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
           ) : null}
         </div>
         {/* Orange */}
-        <div className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 h-[72px]">
+        <div
+          className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 h-[72px] cursor-pointer hover:brightness-110 transition-all"
+          onClick={(e) => { if (firstOrange) { e.stopPropagation(); navigate(`/job/${firstOrange.id}`); } }}
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/90">{getLabel(stage, "orange")}</span>
             <span className="text-sm font-bold text-white">{counts.orange}</span>
@@ -120,7 +128,10 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
           ) : null}
         </div>
         {/* Red */}
-        <div className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 h-[72px]">
+        <div
+          className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 h-[72px] cursor-pointer hover:brightness-110 transition-all"
+          onClick={(e) => { if (firstRed) { e.stopPropagation(); navigate(`/job/${firstRed.id}`); } }}
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/90">{getLabel(stage, "red")}</span>
             <span className="text-sm font-bold text-white">{counts.red}</span>
