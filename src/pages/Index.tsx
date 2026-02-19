@@ -172,7 +172,7 @@ const Index = () => {
             <PipelineFlowBanner activeStage={expandedStage} />
             <div className="flex gap-2 overflow-x-auto pb-2 pt-2">
               {STAGES.map((stage) => (
-                <div key={stage} className="min-w-[160px] flex-1 flex flex-col gap-2">
+                <div key={stage} className="min-w-[200px] w-[200px] flex-shrink-0 flex flex-col gap-2">
                   <StageColumn
                     stage={stage}
                     jobs={jobsByStage(stage)}
