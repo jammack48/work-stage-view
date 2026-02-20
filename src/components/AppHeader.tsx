@@ -3,20 +3,21 @@ import { Zap, Users, Settings as SettingsIcon, Sun, Moon, ArrowLeft } from "luci
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/contexts/ThemeContext";
+import { ThemePicker } from "@/components/ThemePicker";
 
 interface AppHeaderProps {
   title?: string;
   showBack?: boolean;
   backTo?: string;
-  isDark: boolean;
-  onToggleDark: () => void;
   children?: React.ReactNode;
 }
 
-export function AppHeader({ title = "Toolbelt", showBack, backTo = "/", isDark, onToggleDark, children }: AppHeaderProps) {
+export function AppHeader({ title = "Toolbelt", showBack, backTo = "/", children }: AppHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { isDark, setIsDark } = useTheme();
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -60,7 +61,8 @@ export function AppHeader({ title = "Toolbelt", showBack, backTo = "/", isDark, 
           <SettingsIcon className="w-4 h-4" />
           {!isMobile && "Settings"}
         </Button>
-        <Button variant="ghost" size="sm" onClick={onToggleDark} className="h-8 w-8 p-0">
+        <ThemePicker />
+        <Button variant="ghost" size="sm" onClick={() => setIsDark(!isDark)} className="h-8 w-8 p-0">
           {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </Button>
       </div>

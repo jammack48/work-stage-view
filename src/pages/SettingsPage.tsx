@@ -99,12 +99,11 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("business");
-  const [isDark, setIsDark] = useState(true);
   const isMobile = useIsMobile();
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader title="Settings" isDark={isDark} onToggleDark={() => setIsDark((d) => !d)} />
+      <AppHeader title="Settings" />
 
       <div className={cn("flex", isMobile ? "flex-col" : "flex-row")}>
         {!isMobile && (
