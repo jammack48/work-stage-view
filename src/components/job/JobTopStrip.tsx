@@ -1,11 +1,9 @@
-import { ArrowLeft, Sun, Moon } from "lucide-react";
+import { ArrowLeft, Phone, MessageSquare, Navigation, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { JobDetail } from "@/data/dummyJobDetails";
 import { useState } from "react";
-import { useTheme } from "@/contexts/ThemeContext";
-import { ThemePicker } from "@/components/ThemePicker";
 
 interface JobTopStripProps {
   job: JobDetail;
@@ -21,7 +19,6 @@ function statusColor(stage: string) {
 export function JobTopStrip({ job }: JobTopStripProps) {
   const navigate = useNavigate();
   const [showAddress, setShowAddress] = useState(false);
-  const { isDark, setIsDark } = useTheme();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-3 sm:px-5">
@@ -59,14 +56,23 @@ export function JobTopStrip({ job }: JobTopStripProps) {
           </button>
         </div>
 
-        {/* Right: Value + Theme + Dark mode */}
+        {/* Right: Value + Actions */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <span className="text-sm font-bold text-card-foreground hidden sm:inline">
             ${job.value.toLocaleString()}
           </span>
-          <ThemePicker />
-          <Button variant="ghost" size="sm" onClick={() => setIsDark(!isDark)} className="h-8 w-8 p-0">
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+            <Phone className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+            <MessageSquare className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hidden sm:flex">
+            <Navigation className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-8 px-2 gap-1 text-xs">
+            <span className={cn("w-2 h-2 rounded-full", statusColor(job.stage))} />
+            <ChevronDown className="w-3 h-3" />
           </Button>
         </div>
       </div>
