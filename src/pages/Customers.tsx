@@ -19,7 +19,6 @@ const TABS: { id: CustomerTab; label: string }[] = [
 export default function Customers() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<CustomerTab>("all");
-  const [isDark, setIsDark] = useState(true);
   const isMobile = useIsMobile();
 
   const filtered = activeTab === "all"
@@ -28,7 +27,7 @@ export default function Customers() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader title="Customers" isDark={isDark} onToggleDark={() => setIsDark((d) => !d)} />
+      <AppHeader title="Customers" />
 
       <div className={cn("flex", isMobile ? "flex-col" : "flex-row")}>
         {!isMobile && (

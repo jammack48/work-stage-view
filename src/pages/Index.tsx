@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
@@ -25,14 +25,10 @@ const Index = () => {
   const navigate = useNavigate();
   const [expandedStage, setExpandedStage] = useState<Stage | null>(null);
   const [layout, setLayout] = useState<Layout>("horizontal");
-  const [isDark, setIsDark] = useState(true);
   const isMobile = useIsMobile();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "center" });
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("light", !isDark);
-  }, [isDark]);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -56,7 +52,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Bar */}
-      <AppHeader title="Toolbelt" isDark={isDark} onToggleDark={() => setIsDark((d) => !d)} />
+      <AppHeader title="Toolbelt" />
 
       <main className="p-3 sm:p-4 lg:p-6 space-y-4">
         {/* Pipeline heading with flow arrows + layout toggle */}

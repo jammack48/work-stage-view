@@ -25,7 +25,6 @@ export default function CustomerCard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<CustTab>("overview");
-  const [isDark, setIsDark] = useState(true);
   const isMobile = useIsMobile();
 
   const customer = getCustomer(Number(id));
@@ -238,8 +237,6 @@ export default function CustomerCard() {
         title={customer.name}
         showBack
         backTo="/customers"
-        isDark={isDark}
-        onToggleDark={() => setIsDark((d) => !d)}
       />
 
       <div className={cn("flex", isMobile ? "flex-col" : "flex-row")}>
