@@ -1,4 +1,4 @@
-import { ArrowLeft, Phone, MessageSquare, Navigation, ChevronDown, Sun, Moon } from "lucide-react";
+import { ArrowLeft, Sun, Moon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -59,24 +59,11 @@ export function JobTopStrip({ job }: JobTopStripProps) {
           </button>
         </div>
 
-        {/* Right: Value + Actions */}
+        {/* Right: Value + Theme + Dark mode */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <span className="text-sm font-bold text-card-foreground hidden sm:inline">
             ${job.value.toLocaleString()}
           </span>
-          <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-            <Phone className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-            <MessageSquare className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hidden sm:flex">
-            <Navigation className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm" className="h-8 px-2 gap-1 text-xs">
-            <span className={cn("w-2 h-2 rounded-full", statusColor(job.stage))} />
-            <ChevronDown className="w-3 h-3" />
-          </Button>
           <ThemePicker />
           <Button variant="ghost" size="sm" onClick={() => setIsDark(!isDark)} className="h-8 w-8 p-0">
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
