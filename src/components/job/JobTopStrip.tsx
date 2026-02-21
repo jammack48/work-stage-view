@@ -45,9 +45,9 @@ export function JobTopStrip({ job }: JobTopStripProps) {
             {job.jobName}
           </h1>
 
-          {/* Job-specific actions */}
-          <div className="flex items-center gap-0.5 ml-1">
-            <span className="text-sm font-bold text-card-foreground hidden sm:inline px-1">
+          {/* Job-specific actions — hidden on mobile to reduce clutter */}
+          <div className="hidden sm:flex items-center gap-0.5 ml-1">
+            <span className="text-sm font-bold text-card-foreground px-1">
               ${job.value.toLocaleString()}
             </span>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -56,7 +56,7 @@ export function JobTopStrip({ job }: JobTopStripProps) {
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
               <MessageSquare className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hidden sm:flex">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
               <Navigation className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="sm" className="h-8 px-1.5 gap-1 text-xs">
