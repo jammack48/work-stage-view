@@ -19,7 +19,7 @@ export default function JobCard() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<JobTab>("overview");
-  const [mobileLayout, setMobileLayout] = useState<"bottom" | "side">("bottom");
+  const [mobileLayout, setMobileLayout] = useState<"bottom" | "side">("side");
   const isMobile = useIsMobile();
 
   const job = id === "new"
