@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Zap, Users, Settings as SettingsIcon, Sun, Moon, ArrowLeft } from "lucide-react";
+import { Home, Users, Settings as SettingsIcon, Sun, Moon, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,7 @@ export function AppHeader({ title = "Toolbelt", showBack, backTo = "/", children
             <ArrowLeft className="w-4 h-4" />
           </Button>
         )}
-        <Zap className="w-5 h-5 text-primary shrink-0" />
+        <Home className="w-5 h-5 text-primary shrink-0" />
         <h1 className="text-xl font-bold tracking-tight text-card-foreground truncate">{title}</h1>
         {children}
       </div>
@@ -40,7 +40,7 @@ export function AppHeader({ title = "Toolbelt", showBack, backTo = "/", children
           onClick={() => navigate("/")}
           className={cn("h-8 px-2 gap-1.5 text-xs", isActive("/") && location.pathname === "/" && "bg-accent")}
         >
-          <Zap className="w-4 h-4" />
+          <Home className="w-4 h-4" />
           {!isMobile && "Pipeline"}
         </Button>
         <Button

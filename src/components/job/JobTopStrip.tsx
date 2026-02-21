@@ -1,4 +1,4 @@
-import { ArrowLeft, Phone, MessageSquare, Navigation, ChevronDown, Zap, Users, Settings as SettingsIcon, Sun, Moon } from "lucide-react";
+import { ArrowLeft, Phone, MessageSquare, Navigation, ChevronDown, Home, Users, Settings as SettingsIcon, Sun, Moon } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -74,7 +74,7 @@ export function JobTopStrip({ job }: JobTopStripProps) {
             onClick={() => navigate("/")}
             className={cn("h-8 px-2 gap-1.5 text-xs", location.pathname === "/" && "bg-accent")}
           >
-            <Zap className="w-4 h-4" />
+            <Home className="w-4 h-4" />
             {!isMobile && "Pipeline"}
           </Button>
           <Button
