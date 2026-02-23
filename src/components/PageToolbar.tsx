@@ -117,15 +117,12 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
 
   // ── Mobile ──
 
-  // Mobile vertical (left / right)
+  // Mobile vertical (left / right) — use sticky so it flows below header
   if (isVertical) {
     return (
-      <div className="flex flex-col">
-        <nav
-          className={cn(
-            "fixed top-[6.5rem] sm:top-14 bottom-0 z-40 w-14 bg-card border-border flex flex-col items-center gap-1 py-2 overflow-y-auto",
-            position === "left" ? "left-0 border-r" : "right-0 border-l"
-          )}
+      <div className="flex flex-row min-h-0" style={position === "right" ? { flexDirection: "row-reverse" } : undefined}>
+        <nav className="sticky top-0 w-14 shrink-0 flex flex-col items-center gap-1 py-2 bg-card border-border overflow-y-auto self-start h-[calc(100vh-8rem)]"
+          style={position === "left" ? { borderRight: "1px solid hsl(var(--border))" } : { borderLeft: "1px solid hsl(var(--border))" }}
         >
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
@@ -144,25 +141,19 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
           ))}
           <div className="mt-auto">{toggleBtn}</div>
         </nav>
-        <main
-          className={cn(
-            "flex-1 min-w-0 p-4",
-            position === "left" && "ml-14",
-            position === "right" && "mr-14"
-          )}
-        >
+        <main className="flex-1 min-w-0 p-4">
           {children}
         </main>
       </div>
     );
   }
 
-  // Mobile horizontal (top / bottom)
+  // Mobile horizontal (top / bottom) — top is normal flow, bottom is fixed
   const bar = (
     <nav
       className={cn(
-        "fixed left-0 right-0 z-40 bg-card flex items-center px-1 py-1 overflow-x-auto gap-0.5",
-        position === "bottom" ? "bottom-0 border-t border-border safe-area-pb" : "top-[6.5rem] sm:top-14 border-b border-border"
+        "bg-card flex items-center px-1 py-1 overflow-x-auto gap-0.5",
+        position === "bottom" ? "fixed left-0 right-0 bottom-0 z-40 border-t border-border safe-area-pb" : "sticky top-0 z-40 border-b border-border"
       )}
     >
       {tabs.map(({ id, label, icon: Icon }) => (
@@ -186,16 +177,16 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
 
   return (
     <div className="flex flex-col">
-      {bar}
+      {position === "top" && bar}
       <main
         className={cn(
           "flex-1 min-w-0 p-4",
-          position === "bottom" && "pb-24",
-          position === "top" && "mt-[6.5rem]"
+          position === "bottom" && "pb-24"
         )}
       >
         {children}
       </main>
+      {position === "bottom" && bar}
     </div>
   );
 }
