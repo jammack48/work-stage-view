@@ -1,45 +1,54 @@
 
 
-## Round the Toolbar and Move Position Toggle to Header
+## Visual Polish: Column Contrast, Card Depth, Header Hierarchy, and Sidebar Icons
 
-### Changes
+Four targeted improvements based on the UX review, skipping the attention strip.
 
-**1. Round the vertical toolbar edges** (`src/components/PageToolbar.tsx`)
-- On mobile vertical (left/right), add rounded corners to the toolbar: `rounded-r-xl` for left position, `rounded-l-xl` for right position
-- Remove the hard border-right/border-left line and replace with a subtle shadow or keep a softer border with the rounded corners
-- Ensure the toolbar stretches full height (`min-h-[calc(100vh-6rem)]`) so no square cut-off at bottom
+### 1. Column Contrast -- Subtle tint wash on pipeline columns
 
-**2. Move the position-cycle toggle (LayoutGrid icon) from the toolbar to the AppHeader** (`src/components/AppHeader.tsx` and `src/components/PageToolbar.tsx`)
-- Remove the `toggleBtn` from inside PageToolbar's nav bars (all 4 layout variants)
-- Instead, expose the cycle function via a shared mechanism -- simplest approach: move the position state and cycle logic into a small context or keep it in PageToolbar but pass the toggle button up via a render prop / move the LayoutGrid icon into AppHeader
-- Cleanest approach: lift position state to a small context (`ToolbarPositionContext`) so AppHeader can render the toggle button and PageToolbar reads the position
-- Add the LayoutGrid toggle button to AppHeader's right-side icons, alongside Customers, Settings, Theme, Dark/Light
+Currently columns use `hsl(210 40% 50% / 0.25)` which works but blends into the background on some themes. Increase the opacity slightly and make it theme-aware so each theme's columns feel distinct.
 
-**3. Desktop vertical toolbar** -- also round the edges for consistency
+- **File:** `src/components/StageColumn.tsx`
+- Change the inline `backgroundColor` from `hsl(210 40% 50% / 0.25)` to use a new CSS variable `--column-bg`
+- **File:** `src/index.css`
+- Add `--column-bg` to each theme with a subtle 8-12% tint that complements the theme (earthy warm wash for Earthy, cool blue for Ocean, etc.)
 
-### Technical Details
+### 2. Card Depth -- Shadow, border, and elevation on status cards
 
-**New file: `src/contexts/ToolbarPositionContext.tsx`**
-- Stores toolbar position in state + localStorage
-- Provides `position`, `cyclePosition` to consumers
-- Wraps the app in `App.tsx`
+The green/orange/red status cards inside each column feel flat. Add soft shadow and a subtle border to improve "clickable affordance."
 
-**Modified: `src/components/AppHeader.tsx`**
-- Import `useToolbarPosition` context
-- Add LayoutGrid button to right-side icons
+- **File:** `src/components/StageColumn.tsx`
+- Add `shadow-sm border border-white/10` to each status card div
+- Add `hover:shadow-md transition-shadow` for interactive feel
+- The column container itself also gets a subtle `shadow-sm`
 
-**Modified: `src/components/PageToolbar.tsx`**
-- Remove internal position state -- use context instead
-- Remove `toggleBtn` from all nav layouts
-- Add rounded corners: mobile left gets `rounded-r-xl`, right gets `rounded-l-xl`
-- Desktop vertical similarly rounded
+### 3. Header Hierarchy -- Lighten header, strengthen cards
 
-**Modified: `src/App.tsx`**
-- Wrap with `ToolbarPositionProvider`
+The AppHeader currently uses `bg-card` which competes visually with the job cards. Make the header recede so the eye goes to jobs first.
 
-### Files to modify
-- New: `src/contexts/ToolbarPositionContext.tsx`
-- `src/App.tsx` -- wrap with provider
-- `src/components/PageToolbar.tsx` -- use context, remove toggle, add rounded corners
-- `src/components/AppHeader.tsx` -- add LayoutGrid toggle button
+- **File:** `src/components/AppHeader.tsx`
+- Change header from `bg-card` to `bg-background` (or a new subtle variable) so it's lighter/less prominent
+- Reduce text weight: title from `font-bold` to `font-semibold`, reduce size slightly
+- **File:** `src/components/PageToolbar.tsx`
+- Similarly, the page heading bar uses `bg-card` -- change to `bg-background` to match the lighter header
+
+### 4. Sidebar Icons -- Bigger, bolder, more contrast
+
+The movable toolbar icons (especially on mobile vertical sidebar) are too small and low contrast for trades use.
+
+- **File:** `src/components/PageToolbar.tsx`
+- Mobile vertical: increase icon button size from `w-11 h-11` to `w-12 h-12`, icon from `w-5 h-5` to `w-6 h-6`
+- Increase sidebar width from `w-14` to `w-16` to accommodate
+- Active tab: already uses `bg-primary` which is good -- ensure inactive icons use `text-foreground/70` instead of `text-muted-foreground` for better contrast
+- Desktop vertical: similar sizing bump for icons
+
+### Technical details
+
+**Files to modify:**
+- `src/index.css` -- add `--column-bg` variable to all themes (root, light, ocean, ember, rose, slate)
+- `src/components/StageColumn.tsx` -- use `--column-bg` variable, add shadow/border to status cards
+- `src/components/AppHeader.tsx` -- lighten header background
+- `src/components/PageToolbar.tsx` -- lighten heading bar, increase sidebar icon sizes
+
+**No new dependencies needed. No structural changes -- purely visual refinements.**
 
