@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { LayoutGrid, Home } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -31,7 +30,6 @@ interface PageToolbarProps {
 
 export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageToolbarProps) {
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
   const [position, setPosition] = useState<ToolbarPosition>(getStoredPosition);
 
   useEffect(() => {
@@ -45,17 +43,6 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
 
   const isVertical = position === "left" || position === "right";
   const isHorizontal = position === "top" || position === "bottom";
-
-  // Home button
-  const homeBtn = (
-    <button
-      onClick={() => navigate("/")}
-      className="p-2 rounded-lg text-muted-foreground hover:bg-accent shrink-0"
-      title="Home"
-    >
-      <Home className="w-4 h-4" />
-    </button>
-  );
 
   // Toggle button
   const toggleBtn = (
@@ -73,7 +60,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
     return (
       <div className={cn("flex flex-row", position === "right" && "flex-row-reverse")}>
         <nav className="w-[200px] shrink-0 flex flex-col gap-1 py-2">
-          <div className="px-2 mb-1">{homeBtn}</div>
+          
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -100,7 +87,6 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
   if (!isMobile && isHorizontal) {
     const bar = (
       <nav className="flex items-center gap-1 px-2 py-1.5 border-b border-border overflow-x-auto">
-        {homeBtn}
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -141,7 +127,6 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
             position === "left" ? "left-0 border-r" : "right-0 border-l"
           )}
         >
-          {homeBtn}
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -177,10 +162,9 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
     <nav
       className={cn(
         "fixed left-0 right-0 z-40 bg-card flex items-center px-1 py-1 overflow-x-auto gap-0.5",
-        position === "bottom" ? "bottom-0 border-t border-border safe-area-pb" : "top-[3.5rem] border-b border-border"
+        position === "bottom" ? "bottom-0 border-t border-border safe-area-pb" : "top-14 border-b border-border"
       )}
     >
-      {homeBtn}
       {tabs.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
@@ -207,7 +191,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
         className={cn(
           "flex-1 min-w-0 p-4",
           position === "bottom" && "pb-24",
-          position === "top" && "mt-14"
+          position === "top" && "mt-[6.5rem]"
         )}
       >
         {children}
