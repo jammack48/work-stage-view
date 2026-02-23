@@ -257,20 +257,7 @@ export function QuoteTab({ job }: QuoteTabProps) {
     : catalogueItems;
 
   return (
-    <div className="space-y-4 max-w-2xl">
-      {/* Header + status */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <DollarSign className="w-5 h-5" /> Quote
-        </h3>
-        <button
-          onClick={cycleStatus}
-          className={`text-xs font-semibold px-3 py-1 rounded-full transition-colors cursor-pointer ${statusColor[status]}`}
-        >
-          {status}
-        </button>
-      </div>
-
+    <div className="space-y-4">
       {/* ── Bundles bar ──────────────────────────────────── */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
         {bundleTemplates.map((b) => (

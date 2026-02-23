@@ -12,6 +12,7 @@ import Customers from "./pages/Customers";
 import CustomerCard from "./pages/CustomerCard";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
+import QuotePage from "./pages/QuotePage";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/job/:id" element={<JobCard />} />
+              <Route path="/quote/:id" element={<QuotePage />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/customer/:id" element={<CustomerCard />} />
               <Route path="/settings" element={<SettingsPage />} />
