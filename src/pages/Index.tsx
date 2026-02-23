@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AppHeader } from "@/components/AppHeader";
+import { HomeSidebar, type HomeView } from "@/components/HomeSidebar";
 import useEmblaCarousel from "embla-carousel-react";
 
 
@@ -28,6 +29,8 @@ const Index = () => {
   const isMobile = useIsMobile();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "center" });
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeView, setActiveView] = useState<HomeView>("pipeline");
+  const [mobileLayout, setMobileLayout] = useState<"bottom" | "side">("side");
 
 
   const onSelect = useCallback(() => {
@@ -54,7 +57,22 @@ const Index = () => {
       {/* Top Bar */}
       <AppHeader title="Toolbelt" />
 
-      <main className="p-3 sm:p-4 lg:p-6 space-y-4">
+      <div className={cn("flex", isMobile ? "flex-col" : "flex-row")}>
+        {/* Spacer for fixed mobile sidebar */}
+        {isMobile && mobileLayout === "side" && <div className="pl-14" />}
+
+        <HomeSidebar
+          activeView={activeView}
+          onViewChange={setActiveView}
+          mobileLayout={mobileLayout}
+          onMobileLayoutChange={setMobileLayout}
+        />
+
+      <main className={cn(
+          "flex-1 min-w-0 p-3 sm:p-4 lg:p-6 space-y-4",
+          isMobile && mobileLayout === "bottom" && "pb-24",
+          isMobile && mobileLayout === "side" && "ml-14"
+        )}>
         {/* Pipeline heading with flow arrows + layout toggle */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium flex-wrap">
@@ -225,6 +243,7 @@ const Index = () => {
           </div>
         )}
       </main>
+      </div>
     </div>
   );
 };
