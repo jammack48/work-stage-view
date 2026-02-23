@@ -123,7 +123,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
       <div className="flex flex-col">
         <nav
           className={cn(
-            "fixed top-[3.5rem] bottom-0 z-40 w-14 bg-card border-border flex flex-col items-center gap-1 py-2 overflow-y-auto",
+            "fixed top-[6.5rem] sm:top-14 bottom-0 z-40 w-14 bg-card border-border flex flex-col items-center gap-1 py-2 overflow-y-auto",
             position === "left" ? "left-0 border-r" : "right-0 border-l"
           )}
         >
@@ -162,7 +162,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
     <nav
       className={cn(
         "fixed left-0 right-0 z-40 bg-card flex items-center px-1 py-1 overflow-x-auto gap-0.5",
-        position === "bottom" ? "bottom-0 border-t border-border safe-area-pb" : "top-14 border-b border-border"
+        position === "bottom" ? "bottom-0 border-t border-border safe-area-pb" : "top-[6.5rem] sm:top-14 border-b border-border"
       )}
     >
       {tabs.map(({ id, label, icon: Icon }) => (
