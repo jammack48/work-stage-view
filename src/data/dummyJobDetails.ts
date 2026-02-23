@@ -71,7 +71,7 @@ const staffPool: StaffMember[] = [
   { name: "Sam Te Reo", role: "Electrician", avatar: "ST" },
 ];
 
-const materialsPool: MaterialItem[] = [
+export const materialsPool: MaterialItem[] = [
   { id: "m1", name: "Copper Pipe 15mm (3m)", quantity: 4, unit: "length", unitPrice: 32, supplier: "PlumbWorld" },
   { id: "m2", name: "PVC Elbow 90° 50mm", quantity: 12, unit: "pcs", unitPrice: 4.5, supplier: "PlumbWorld" },
   { id: "m3", name: "Twin & Earth 2.5mm²", quantity: 3, unit: "roll", unitPrice: 89, supplier: "Sparky Supplies" },
