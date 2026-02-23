@@ -28,12 +28,13 @@ export default function Customers() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader title="Customers" />
+      <AppHeader />
 
       <PageToolbar
         tabs={CUST_TABS}
         activeTab={activeTab}
         onTabChange={(id) => setActiveTab(id as CustomerTab)}
+        pageHeading={<h2 className="text-base font-bold text-card-foreground">Customer Directory</h2>}
       >
         <div className="flex items-center justify-between mb-4">
           <span className="text-sm text-muted-foreground">{filtered.length} customers</span>

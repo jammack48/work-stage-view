@@ -101,11 +101,12 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader title="Settings" />
+      <AppHeader />
       <PageToolbar
         tabs={SETTINGS_TABS}
         activeTab={activeTab}
         onTabChange={(id) => setActiveTab(id as SettingsTab)}
+        pageHeading={<h2 className="text-base font-bold text-card-foreground">Settings</h2>}
       >
         <SettingsContent tab={activeTab} />
       </PageToolbar>

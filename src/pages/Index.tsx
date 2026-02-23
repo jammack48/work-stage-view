@@ -66,55 +66,55 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader title="Toolbelt" />
+      <AppHeader />
 
       <PageToolbar
         tabs={HOME_TABS}
         activeTab={activeView}
         onTabChange={handleTabChange}
-      >
-        {/* Pipeline heading with flow arrows + layout toggle */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium flex-wrap">
-            <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
-            <div className="flex items-center gap-0.5 opacity-50">
-              <span className="text-xs">Lead</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-              <ChevronRight className="w-3.5 h-3.5 -ml-2" />
-              <ChevronRight className="w-3.5 h-3.5 -ml-2" />
-              <span className="text-xs">Paid</span>
+        pageHeading={
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium flex-wrap">
+              <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
+              <div className="flex items-center gap-0.5 opacity-50">
+                <span className="text-xs">Lead</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-3.5 h-3.5 -ml-2" />
+                <ChevronRight className="w-3.5 h-3.5 -ml-2" />
+                <span className="text-xs">Paid</span>
+              </div>
             </div>
+            {!isMobile && (
+              <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLayout("horizontal")}
+                  className={cn(
+                    "h-7 px-2.5 gap-1.5 text-xs",
+                    layout === "horizontal" && "bg-primary text-primary-foreground hover:bg-primary/90"
+                  )}
+                >
+                  <Columns className="w-3.5 h-3.5" />
+                  Top
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLayout("vertical")}
+                  className={cn(
+                    "h-7 px-2.5 gap-1.5 text-xs",
+                    layout === "vertical" && "bg-primary text-primary-foreground hover:bg-primary/90"
+                  )}
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  Left
+                </Button>
+              </div>
+            )}
           </div>
-
-          {!isMobile && (
-            <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setLayout("horizontal")}
-                className={cn(
-                  "h-7 px-2.5 gap-1.5 text-xs",
-                  layout === "horizontal" && "bg-primary text-primary-foreground hover:bg-primary/90"
-                )}
-              >
-                <Columns className="w-3.5 h-3.5" />
-                Top
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setLayout("vertical")}
-                className={cn(
-                  "h-7 px-2.5 gap-1.5 text-xs",
-                  layout === "vertical" && "bg-primary text-primary-foreground hover:bg-primary/90"
-                )}
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                Left
-              </Button>
-            </div>
-          )}
-        </div>
+        }
+      >
 
         {/* Mobile: swipeable single-bucket carousel */}
         {isMobile ? (
