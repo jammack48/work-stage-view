@@ -149,9 +149,13 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   if (isVertical) {
     return (
       <div className="flex flex-row min-h-0" style={position === "right" ? { flexDirection: "row-reverse" } : undefined}>
-      <nav className="sticky top-0 w-14 shrink-0 flex flex-col items-center gap-1 py-2 bg-card border-border overflow-y-auto self-stretch min-h-[calc(100vh-8rem)]"
-          style={position === "left" ? { borderRight: "1px solid hsl(var(--border))" } : { borderLeft: "1px solid hsl(var(--border))" }}
+      <nav className="w-14 shrink-0 flex flex-col items-center gap-1 py-2 bg-card border-border overflow-y-auto"
+          style={{
+            minHeight: "calc(100vh - 6rem)",
+            ...(position === "left" ? { borderRight: "1px solid hsl(var(--border))" } : { borderLeft: "1px solid hsl(var(--border))" })
+          }}
         >
+          {homeBtn(true)}
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -167,10 +171,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               <Icon className="w-5 h-5" />
             </button>
           ))}
-          <div className="mt-auto flex flex-col items-center gap-1">
-            {homeBtn(true)}
-            {toggleBtn}
-          </div>
+          <div className="mt-auto">{toggleBtn}</div>
         </nav>
         <main className="flex-1 min-w-0">
           {headingBar}
