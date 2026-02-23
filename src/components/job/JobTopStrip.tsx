@@ -101,27 +101,6 @@ export function JobTopStrip({ job }: JobTopStripProps) {
           </Button>
         </div>
       </div>
-
-      {/* Mobile: second row with status + client + value */}
-      <div className="flex sm:hidden items-center gap-2 pb-2 -mt-1">
-        <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap", statusColor(job.stage))}>
-          {job.stage}
-        </span>
-        <button
-          className="text-xs text-muted-foreground truncate"
-          onClick={() => setShowAddress((s) => !s)}
-        >
-          {job.client || "No client"}
-        </button>
-        <span className="text-xs font-bold text-card-foreground ml-auto">
-          ${job.value.toLocaleString()}
-        </span>
-        {showAddress && job.address && (
-          <span className="absolute top-14 left-0 mt-1 bg-popover text-popover-foreground border border-border rounded-lg px-3 py-2 text-xs whitespace-nowrap shadow-lg z-50">
-            {job.address}
-          </span>
-        )}
-      </div>
     </header>
   );
 }
