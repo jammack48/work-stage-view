@@ -43,7 +43,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
         isExpanded && "ring-2 ring-primary/50 shadow-[0_0_20px_hsl(var(--glow-primary)/0.15)]",
         isVertical ? "min-w-[220px] w-full" : "flex-1 min-w-0"
       )}
-      style={{ backgroundColor: "hsl(210 40% 50% / 0.25)" }}
+      style={{ backgroundColor: "hsl(var(--column-bg))" }}
       onClick={onToggle}
     >
       {/* Header — arrow-shaped pointing right */}
@@ -92,7 +92,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
       {/* Color cards with count + first job details */}
       <div className="p-2 flex flex-col gap-1.5">
         {/* Green */}
-        <div className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 h-[72px]">
+        <div className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/90">{getLabel(stage, "green")}</span>
             <span className="text-sm font-bold text-white">{counts.green}</span>
@@ -107,7 +107,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
           ) : null}
         </div>
         {/* Orange */}
-        <div className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 h-[72px]">
+        <div className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/90">{getLabel(stage, "orange")}</span>
             <span className="text-sm font-bold text-white">{counts.orange}</span>
@@ -122,7 +122,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
           ) : null}
         </div>
         {/* Red */}
-        <div className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 h-[72px]">
+        <div className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/90">{getLabel(stage, "red")}</span>
             <span className="text-sm font-bold text-white">{counts.red}</span>

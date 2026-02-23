@@ -24,7 +24,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   const { position } = useToolbarPosition();
 
   const headingBar = pageHeading ? (
-    <div className="px-4 sm:px-6 py-2 border-b border-border bg-card">
+    <div className="px-4 sm:px-6 py-2 border-b border-border bg-background">
       {pageHeading}
     </div>
   ) : null;
@@ -60,12 +60,12 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               onClick={() => onTabChange(id)}
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left min-h-[48px]",
-                activeTab === id
+              activeTab === id
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  : "text-foreground/70 hover:bg-accent hover:text-accent-foreground"
               )}
             >
-              <Icon className="w-5 h-5 shrink-0" />
+              <Icon className="w-6 h-6 shrink-0" />
               {label}
             </button>
           ))}
@@ -119,7 +119,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
       <div className="flex flex-row min-h-0" style={position === "right" ? { flexDirection: "row-reverse" } : undefined}>
         <nav
           className={cn(
-            "w-14 shrink-0 flex flex-col items-center gap-1 py-2 bg-card overflow-y-auto",
+            "w-16 shrink-0 flex flex-col items-center gap-1 py-2 bg-card overflow-y-auto",
             position === "left" ? "rounded-r-xl border-r border-border" : "rounded-l-xl border-l border-border"
           )}
           style={{ minHeight: "calc(100vh - 6rem)" }}
@@ -130,14 +130,14 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               key={id}
               onClick={() => onTabChange(id)}
               className={cn(
-                "flex flex-col items-center justify-center w-11 h-11 rounded-lg transition-colors shrink-0",
+                "flex flex-col items-center justify-center w-12 h-12 rounded-lg transition-colors shrink-0",
                 activeTab === id
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent"
+                  : "text-foreground/70 hover:bg-accent"
               )}
               title={label}
             >
-              <Icon className="w-5 h-5" />
+              <Icon className="w-6 h-6" />
             </button>
           ))}
         </nav>
