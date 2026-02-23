@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { ArrowLeftRight } from "lucide-react";
+import { LayoutGrid, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -30,6 +31,7 @@ interface PageToolbarProps {
 
 export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageToolbarProps) {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [position, setPosition] = useState<ToolbarPosition>(getStoredPosition);
 
   useEffect(() => {
@@ -44,6 +46,17 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
   const isVertical = position === "left" || position === "right";
   const isHorizontal = position === "top" || position === "bottom";
 
+  // Home button
+  const homeBtn = (
+    <button
+      onClick={() => navigate("/")}
+      className="p-2 rounded-lg text-muted-foreground hover:bg-accent shrink-0"
+      title="Home"
+    >
+      <Home className="w-4 h-4" />
+    </button>
+  );
+
   // Toggle button
   const toggleBtn = (
     <button
@@ -51,7 +64,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
       className="p-2 rounded-lg text-muted-foreground hover:bg-accent shrink-0"
       title={`Toolbar: ${position}`}
     >
-      <ArrowLeftRight className="w-4 h-4" />
+      <LayoutGrid className="w-4 h-4" />
     </button>
   );
 
@@ -60,7 +73,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
     return (
       <div className={cn("flex flex-row", position === "right" && "flex-row-reverse")}>
         <nav className="w-[200px] shrink-0 flex flex-col gap-1 py-2">
-          <div className="px-2 mb-1">{toggleBtn}</div>
+          <div className="px-2 mb-1">{homeBtn}</div>
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -76,6 +89,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
               {label}
             </button>
           ))}
+          <div className="mt-auto px-2 pt-2">{toggleBtn}</div>
         </nav>
         <main className="flex-1 min-w-0 p-4 sm:p-6">{children}</main>
       </div>
@@ -86,7 +100,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
   if (!isMobile && isHorizontal) {
     const bar = (
       <nav className="flex items-center gap-1 px-2 py-1.5 border-b border-border overflow-x-auto">
-        {toggleBtn}
+        {homeBtn}
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -102,6 +116,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
             {label}
           </button>
         ))}
+        <div className="ml-auto shrink-0">{toggleBtn}</div>
       </nav>
     );
 
@@ -126,7 +141,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
             position === "left" ? "left-0 border-r" : "right-0 border-l"
           )}
         >
-          {toggleBtn}
+          {homeBtn}
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -142,6 +157,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
               <Icon className="w-5 h-5" />
             </button>
           ))}
+          <div className="mt-auto">{toggleBtn}</div>
         </nav>
         <main
           className={cn(
@@ -164,7 +180,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
         position === "bottom" ? "bottom-0 border-t border-border safe-area-pb" : "top-[3.5rem] border-b border-border"
       )}
     >
-      {toggleBtn}
+      {homeBtn}
       {tabs.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
@@ -180,6 +196,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
           <span className="text-[9px] font-medium leading-none">{label}</span>
         </button>
       ))}
+      <div className="ml-auto shrink-0">{toggleBtn}</div>
     </nav>
   );
 
