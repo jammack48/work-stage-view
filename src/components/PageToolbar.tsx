@@ -103,8 +103,8 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
 
     return (
       <div className="flex flex-col">
-        {headingBar}
         {position === "top" && bar}
+        {headingBar}
         <main className="flex-1 min-w-0 p-4 sm:p-6">{children}</main>
         {position === "bottom" && bar}
       </div>
@@ -178,8 +178,8 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
 
   return (
     <div className="flex flex-col">
-      {headingBar}
       {position === "top" && bar}
+      {headingBar}
       <main
         className={cn(
           "flex-1 min-w-0 p-4",
