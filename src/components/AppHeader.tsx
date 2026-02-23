@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Wrench, Users, Settings as SettingsIcon, Sun, Moon, ArrowLeft } from "lucide-react";
+import { Wrench, Users, Settings as SettingsIcon, Sun, Moon, ArrowLeft, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -24,9 +24,13 @@ export function AppHeader({ title = "Toolbelt", showBack, backTo = "/", children
   return (
     <header className="px-4 sm:px-6 py-3 border-b border-border bg-card flex items-center justify-between">
       <div className="flex items-center gap-2 min-w-0">
-        {showBack && (
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0" onClick={() => navigate(backTo)}>
-            <ArrowLeft className="w-4 h-4" />
+        {showBack ? (
+          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 shrink-0 rounded-lg" onClick={() => navigate(backTo)}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        ) : (
+          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 shrink-0 rounded-lg text-muted-foreground hover:bg-accent" onClick={() => navigate("/")}>
+            <Home className="w-5 h-5" />
           </Button>
         )}
         <Wrench className="w-5 h-5 text-primary shrink-0" />
@@ -38,23 +42,23 @@ export function AppHeader({ title = "Toolbelt", showBack, backTo = "/", children
           variant="ghost"
           size="sm"
           onClick={() => navigate("/customers")}
-          className={cn("h-8 px-2 gap-1.5 text-xs", isActive("/customer") && "bg-accent")}
+          className={cn("h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent", isActive("/customer") && "bg-accent")}
+          title="Customers"
         >
-          <Users className="w-4 h-4" />
-          {!isMobile && "Customers"}
+          <Users className="w-5 h-5" />
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate("/settings")}
-          className={cn("h-8 px-2 gap-1.5 text-xs", isActive("/settings") && "bg-accent")}
+          className={cn("h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent", isActive("/settings") && "bg-accent")}
+          title="Settings"
         >
-          <SettingsIcon className="w-4 h-4" />
-          {!isMobile && "Settings"}
+          <SettingsIcon className="w-5 h-5" />
         </Button>
         <ThemePicker />
-        <Button variant="ghost" size="sm" onClick={() => setIsDark(!isDark)} className="h-8 w-8 p-0">
-          {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        <Button variant="ghost" size="sm" onClick={() => setIsDark(!isDark)} className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent">
+          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </Button>
       </div>
     </header>
