@@ -208,11 +208,12 @@ export default function CustomerCard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader title={customer.name} showBack backTo="/customers" />
+      <AppHeader />
       <PageToolbar
         tabs={CUST_TABS}
         activeTab={activeTab}
         onTabChange={(id) => setActiveTab(id as CustTab)}
+        pageHeading={<h2 className="text-base font-bold text-card-foreground">{customer.name}</h2>}
       >
         {tabContent[activeTab]}
       </PageToolbar>

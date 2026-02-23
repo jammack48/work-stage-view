@@ -27,9 +27,10 @@ interface PageToolbarProps {
   activeTab: string;
   onTabChange: (id: string) => void;
   children: React.ReactNode;
+  pageHeading?: React.ReactNode;
 }
 
-export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageToolbarProps) {
+export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading }: PageToolbarProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [position, setPosition] = useState<ToolbarPosition>(getStoredPosition);
@@ -42,6 +43,12 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
     const idx = POSITION_CYCLE.indexOf(position);
     setPosition(POSITION_CYCLE[(idx + 1) % POSITION_CYCLE.length]);
   };
+
+  const headingBar = pageHeading ? (
+    <div className="px-4 sm:px-6 py-2 border-b border-border bg-card">
+      {pageHeading}
+    </div>
+  ) : null;
 
   const isVertical = position === "left" || position === "right";
   const isHorizontal = position === "top" || position === "bottom";
@@ -94,7 +101,10 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
           ))}
           <div className="mt-auto px-2 pt-2">{toggleBtn}</div>
         </nav>
-        <main className="flex-1 min-w-0 p-4 sm:p-6">{children}</main>
+        <main className="flex-1 min-w-0">
+          {headingBar}
+          <div className="p-4 sm:p-6">{children}</div>
+        </main>
       </div>
     );
   }
@@ -125,6 +135,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
 
     return (
       <div className="flex flex-col">
+        {headingBar}
         {position === "top" && bar}
         <main className="flex-1 min-w-0 p-4 sm:p-6">{children}</main>
         {position === "bottom" && bar}
@@ -159,8 +170,9 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
           ))}
           <div className="mt-auto">{toggleBtn}</div>
         </nav>
-        <main className="flex-1 min-w-0 p-4">
-          {children}
+        <main className="flex-1 min-w-0">
+          {headingBar}
+          <div className="p-4">{children}</div>
         </main>
       </div>
     );
@@ -196,6 +208,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
 
   return (
     <div className="flex flex-col">
+      {headingBar}
       {position === "top" && bar}
       <main
         className={cn(

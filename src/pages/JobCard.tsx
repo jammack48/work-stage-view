@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
-import { JobTopStrip } from "@/components/job/JobTopStrip";
+import { AppHeader } from "@/components/AppHeader";
 import { PageToolbar } from "@/components/PageToolbar";
 import { OverviewTab } from "@/components/job/OverviewTab";
 import { MaterialsTab } from "@/components/job/MaterialsTab";
@@ -12,6 +12,7 @@ import { InvoiceTab } from "@/components/job/InvoiceTab";
 import { QuoteTab } from "@/components/job/QuoteTab";
 import { FormsTab } from "@/components/job/FormsTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
+import { cn } from "@/lib/utils";
 import {
   ClipboardList, Package, StickyNote, Camera, Clock, FileText, DollarSign, ClipboardCheck, History,
 } from "lucide-react";
@@ -29,6 +30,13 @@ const JOB_TABS = [
   { id: "forms", label: "Forms", icon: ClipboardCheck },
   { id: "invoice", label: "Invoice", icon: FileText },
 ];
+
+function statusColor(stage: string) {
+  if (stage.includes("Paid")) return "bg-[hsl(var(--status-green))] text-white";
+  if (stage.includes("Invoice") || stage.includes("Progress")) return "bg-[hsl(var(--status-orange))] text-white";
+  if (stage.includes("Lead")) return "bg-[hsl(var(--status-red))] text-white";
+  return "bg-muted text-muted-foreground";
+}
 
 export default function JobCard() {
   const { id } = useParams<{ id: string }>();
@@ -59,18 +67,27 @@ export default function JobCard() {
     invoice: <InvoiceTab job={job} />,
   };
 
+  const jobHeading = (
+    <div className="flex items-center gap-2 flex-wrap">
+      <h2 className="text-base font-bold text-card-foreground">{job.jobName}</h2>
+      <span className="text-sm font-bold text-card-foreground">${job.value.toLocaleString()}</span>
+      <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", statusColor(job.stage))}>
+        {job.stage}
+      </span>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
-      <JobTopStrip job={job} />
-      <div className="pt-14">
-        <PageToolbar
-          tabs={JOB_TABS}
-          activeTab={activeTab}
-          onTabChange={(id) => setActiveTab(id as JobTab)}
-        >
-          {tabContent[activeTab]}
-        </PageToolbar>
-      </div>
+      <AppHeader />
+      <PageToolbar
+        tabs={JOB_TABS}
+        activeTab={activeTab}
+        onTabChange={(id) => setActiveTab(id as JobTab)}
+        pageHeading={jobHeading}
+      >
+        {tabContent[activeTab]}
+      </PageToolbar>
     </div>
   );
 }
