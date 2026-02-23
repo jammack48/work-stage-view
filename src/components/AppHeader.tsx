@@ -15,10 +15,10 @@ export function AppHeader() {
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   return (
-    <header className="px-4 sm:px-6 py-3 border-b border-border bg-card flex items-center justify-between">
+    <header className="px-4 sm:px-6 py-3 border-b border-border bg-background flex items-center justify-between">
       <div className="flex items-center gap-2 min-w-0">
         <Wrench className="w-5 h-5 text-primary shrink-0" />
-        <h1 className="text-xl font-bold tracking-tight text-card-foreground truncate">Toolbelt</h1>
+        <h1 className="text-lg font-semibold tracking-tight text-foreground/80 truncate">Toolbelt</h1>
       </div>
       <div className="flex items-center gap-1 shrink-0">
         <Button

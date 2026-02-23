@@ -45,6 +45,7 @@
     /* Glow / accent effects */
     --glow-primary: 145 30% 45%;
     --glow-warm: 25 60% 50%;
+    --column-bg: 30 15% 18%;
 
     --sidebar-background: 30 12% 14%;
     --sidebar-foreground: 35 15% 80%;
@@ -93,6 +94,7 @@
 
     --glow-primary: 145 20% 40%;
     --glow-warm: 30 40% 50%;
+    --column-bg: 35 18% 88%;
 
     --sidebar-background: 35 18% 94%;
     --sidebar-foreground: 30 12% 30%;
@@ -130,6 +132,7 @@
   --status-green: 155 40% 38%;
   --status-orange: 35 55% 48%;
   --status-red: 8 40% 45%;
+  --column-bg: 215 28% 17%;
   --sidebar-background: 222 24% 13%;
   --sidebar-foreground: 215 18% 80%;
   --sidebar-primary: 215 80% 55%;
@@ -159,6 +162,7 @@
   --input: 215 14% 82%;
   --ring: 215 70% 48%;
   --stage-header: 215 40% 44%;
+  --column-bg: 215 25% 89%;
   --sidebar-background: 215 28% 95%;
   --sidebar-foreground: 222 20% 30%;
   --sidebar-primary: 215 70% 48%;
@@ -194,6 +198,7 @@
   --status-green: 145 25% 38%;
   --status-orange: 35 70% 48%;
   --status-red: 8 50% 45%;
+  --column-bg: 25 18% 16%;
   --sidebar-background: 25 16% 12%;
   --sidebar-foreground: 35 18% 80%;
   --sidebar-primary: 35 90% 52%;
@@ -223,6 +228,7 @@
   --input: 35 14% 82%;
   --ring: 35 85% 48%;
   --stage-header: 30 35% 42%;
+  --column-bg: 35 22% 89%;
   --sidebar-background: 35 24% 95%;
   --sidebar-foreground: 25 14% 30%;
   --sidebar-primary: 35 85% 48%;
@@ -258,6 +264,7 @@
   --status-green: 145 22% 38%;
   --status-orange: 30 40% 45%;
   --status-red: 350 40% 42%;
+  --column-bg: 350 14% 17%;
   --sidebar-background: 350 14% 13%;
   --sidebar-foreground: 350 12% 80%;
   --sidebar-primary: 350 55% 58%;
@@ -287,6 +294,7 @@
   --input: 350 10% 82%;
   --ring: 350 50% 52%;
   --stage-header: 350 20% 40%;
+  --column-bg: 350 18% 89%;
   --sidebar-background: 350 20% 95%;
   --sidebar-foreground: 350 12% 30%;
   --sidebar-primary: 350 50% 52%;
@@ -322,6 +330,7 @@
   --status-green: 145 22% 38%;
   --status-orange: 30 38% 45%;
   --status-red: 8 35% 42%;
+  --column-bg: 240 12% 17%;
   --sidebar-background: 240 12% 13%;
   --sidebar-foreground: 240 8% 80%;
   --sidebar-primary: 240 40% 62%;
@@ -351,6 +360,7 @@
   --input: 240 8% 82%;
   --ring: 240 38% 52%;
   --stage-header: 240 18% 42%;
+  --column-bg: 240 12% 89%;
   --sidebar-background: 240 14% 95%;
   --sidebar-foreground: 240 10% 30%;
   --sidebar-primary: 240 38% 52%;
