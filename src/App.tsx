@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThresholdProvider } from "@/contexts/ThresholdContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
 import Index from "./pages/Index";
 import JobCard from "./pages/JobCard";
 import Customers from "./pages/Customers";
@@ -17,6 +18,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      <ToolbarPositionProvider>
       <ThresholdProvider>
         <TooltipProvider>
           <Toaster />
@@ -34,6 +36,7 @@ const App = () => (
           </BrowserRouter>
         </TooltipProvider>
       </ThresholdProvider>
+      </ToolbarPositionProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

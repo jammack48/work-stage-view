@@ -1,14 +1,16 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Wrench, Users, Settings as SettingsIcon, Sun, Moon } from "lucide-react";
+import { Wrench, Users, Settings as SettingsIcon, Sun, Moon, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemePicker } from "@/components/ThemePicker";
+import { useToolbarPosition } from "@/contexts/ToolbarPositionContext";
 
 export function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDark, setIsDark } = useTheme();
+  const { cyclePosition, position } = useToolbarPosition();
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -36,6 +38,15 @@ export function AppHeader() {
           title="Settings"
         >
           <SettingsIcon className="w-5 h-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={cyclePosition}
+          className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent"
+          title={`Toolbar: ${position}`}
+        >
+          <LayoutGrid className="w-5 h-5" />
         </Button>
         <ThemePicker />
         <Button variant="ghost" size="sm" onClick={() => setIsDark(!isDark)} className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent">
