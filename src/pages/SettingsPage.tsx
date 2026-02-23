@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { PageToolbar } from "@/components/PageToolbar";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Building2, Bell, Palette, Shield, CreditCard, Wrench } from "lucide-react";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations";
 
-const TABS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
-  { id: "business", label: "Business Profile", icon: Building2 },
+const SETTINGS_TABS = [
+  { id: "business", label: "Business", icon: Building2 },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "appearance", label: "Appearance", icon: Palette },
   { id: "billing", label: "Billing", icon: CreditCard },
@@ -99,57 +98,17 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("business");
-  const isMobile = useIsMobile();
 
   return (
     <div className="min-h-screen bg-background">
       <AppHeader title="Settings" />
-
-      <div className={cn("flex", isMobile ? "flex-col" : "flex-row")}>
-        {!isMobile && (
-          <nav className="w-[200px] shrink-0 flex flex-col gap-1 py-2 border-r border-border">
-            {TABS.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left min-h-[48px]",
-                  activeTab === id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                )}
-              >
-                <Icon className="w-5 h-5 shrink-0" />
-                {label}
-              </button>
-            ))}
-          </nav>
-        )}
-
-        {isMobile && (
-          <div className="flex gap-1 p-2 overflow-x-auto border-b border-border">
-            {TABS.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0",
-                  activeTab === id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent"
-                )}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        <main className="flex-1 min-w-0 p-4 sm:p-6">
-          <SettingsContent tab={activeTab} />
-        </main>
-      </div>
+      <PageToolbar
+        tabs={SETTINGS_TABS}
+        activeTab={activeTab}
+        onTabChange={(id) => setActiveTab(id as SettingsTab)}
+      >
+        <SettingsContent tab={activeTab} />
+      </PageToolbar>
     </div>
   );
 }

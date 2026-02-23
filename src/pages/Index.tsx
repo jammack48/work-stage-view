@@ -4,16 +4,24 @@ import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
-import { ChevronRight, LayoutGrid, Columns, ChevronLeft, Plus } from "lucide-react";
+import { ChevronRight, LayoutGrid, Columns, ChevronLeft, Plus, Home, Users, DollarSign, FileText, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AppHeader } from "@/components/AppHeader";
-import { HomeSidebar, type HomeView } from "@/components/HomeSidebar";
+import { PageToolbar } from "@/components/PageToolbar";
 import useEmblaCarousel from "embla-carousel-react";
 
-
 type Layout = "horizontal" | "vertical";
+type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings";
+
+const HOME_TABS = [
+  { id: "pipeline", label: "Pipeline", icon: Home },
+  { id: "customers", label: "Customers", icon: Users },
+  { id: "quotes", label: "Quotes", icon: DollarSign },
+  { id: "invoices", label: "Invoices", icon: FileText },
+  { id: "settings", label: "Settings", icon: Settings },
+];
 
 const ACTION_BOXES: Record<string, string> = {
   "Lead": "Add Customer",
@@ -30,8 +38,6 @@ const Index = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "center" });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeView, setActiveView] = useState<HomeView>("pipeline");
-  const [mobileLayout, setMobileLayout] = useState<"bottom" | "side">("side");
-
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -45,6 +51,12 @@ const Index = () => {
     return () => { emblaApi.off("select", onSelect); };
   }, [emblaApi, onSelect]);
 
+  const handleTabChange = (id: string) => {
+    if (id === "customers") { navigate("/customers"); return; }
+    if (id === "settings") { navigate("/settings"); return; }
+    setActiveView(id as HomeView);
+  };
+
   const handleToggle = (stage: Stage) => {
     setExpandedStage((prev) => (prev === stage ? null : stage));
   };
@@ -54,25 +66,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top Bar */}
       <AppHeader title="Toolbelt" />
 
-      <div className={cn("flex", isMobile ? "flex-col" : "flex-row")}>
-        {/* Spacer for fixed mobile sidebar */}
-        {isMobile && mobileLayout === "side" && <div className="pl-14" />}
-
-        <HomeSidebar
-          activeView={activeView}
-          onViewChange={setActiveView}
-          mobileLayout={mobileLayout}
-          onMobileLayoutChange={setMobileLayout}
-        />
-
-      <main className={cn(
-          "flex-1 min-w-0 p-3 sm:p-4 lg:p-6 space-y-4",
-          isMobile && mobileLayout === "bottom" && "pb-24",
-          isMobile && mobileLayout === "side" && "ml-14"
-        )}>
+      <PageToolbar
+        tabs={HOME_TABS}
+        activeTab={activeView}
+        onTabChange={handleTabChange}
+      >
         {/* Pipeline heading with flow arrows + layout toggle */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium flex-wrap">
@@ -86,7 +86,6 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Layout toggle — hide on mobile */}
           {!isMobile && (
             <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5">
               <Button
@@ -120,45 +119,26 @@ const Index = () => {
         {/* Mobile: swipeable single-bucket carousel */}
         {isMobile ? (
           <div className="space-y-3">
-            {/* Slide indicator + nav */}
             <div className="flex items-center justify-between px-1">
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={scrollPrev} disabled={currentSlide === 0}>
                 <ChevronLeft className="w-5 h-5" />
               </Button>
               <div className="flex gap-1.5">
                 {STAGES.map((_, i) => (
-                  <span
-                    key={i}
-                    className={cn(
-                      "w-2 h-2 rounded-full transition-all",
-                      i === currentSlide ? "bg-primary scale-125" : "bg-muted-foreground/30"
-                    )}
-                  />
+                  <span key={i} className={cn("w-2 h-2 rounded-full transition-all", i === currentSlide ? "bg-primary scale-125" : "bg-muted-foreground/30")} />
                 ))}
               </div>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={scrollNext} disabled={currentSlide === STAGES.length - 1}>
                 <ChevronRight className="w-5 h-5" />
               </Button>
             </div>
-
-            {/* Embla carousel */}
             <div ref={emblaRef} className="overflow-hidden">
               <div className="flex">
                 {STAGES.map((stage) => (
                   <div key={stage} className="flex-[0_0_85%] max-w-[320px] min-w-0 px-2 flex flex-col gap-2">
-                    <StageColumn
-                      stage={stage}
-                      jobs={jobsByStage(stage)}
-                      isExpanded={expandedStage === stage}
-                      onToggle={() => handleToggle(stage)}
-                      onNext={scrollNext}
-                      layout="horizontal"
-                    />
+                    <StageColumn stage={stage} jobs={jobsByStage(stage)} isExpanded={expandedStage === stage} onToggle={() => handleToggle(stage)} onNext={scrollNext} layout="horizontal" />
                     {ACTION_BOXES[stage] && (
-                      <button
-                        className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer"
-                        onClick={() => navigate(`/job/new?stage=${encodeURIComponent(stage)}`)}
-                      >
+                      <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(`/job/new?stage=${encodeURIComponent(stage)}`)}>
                         <Plus className="w-5 h-5" />
                         <span className="text-xs font-medium">{ACTION_BOXES[stage]}</span>
                       </button>
@@ -167,15 +147,8 @@ const Index = () => {
                 ))}
               </div>
             </div>
-
-            {/* Expanded panel below */}
             {expandedStage && (
-              <ExpandedStagePanel
-                key={expandedStage}
-                stage={expandedStage}
-                jobs={jobsByStage(expandedStage)}
-                onClose={() => setExpandedStage(null)}
-              />
+              <ExpandedStagePanel key={expandedStage} stage={expandedStage} jobs={jobsByStage(expandedStage)} onClose={() => setExpandedStage(null)} />
             )}
           </div>
         ) : layout === "horizontal" ? (
@@ -184,18 +157,9 @@ const Index = () => {
             <div className="flex gap-2 overflow-x-auto pb-2 pt-2">
               {STAGES.map((stage) => (
                 <div key={stage} className="min-w-[200px] w-[200px] flex-shrink-0 flex flex-col gap-2">
-                  <StageColumn
-                    stage={stage}
-                    jobs={jobsByStage(stage)}
-                    isExpanded={expandedStage === stage}
-                    onToggle={() => handleToggle(stage)}
-                    layout="horizontal"
-                  />
+                  <StageColumn stage={stage} jobs={jobsByStage(stage)} isExpanded={expandedStage === stage} onToggle={() => handleToggle(stage)} layout="horizontal" />
                   {ACTION_BOXES[stage] && (
-                    <button
-                      className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer"
-                      onClick={() => navigate(`/job/new?stage=${encodeURIComponent(stage)}`)}
-                    >
+                    <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(`/job/new?stage=${encodeURIComponent(stage)}`)}>
                       <Plus className="w-5 h-5" />
                       <span className="text-xs font-medium">{ACTION_BOXES[stage]}</span>
                     </button>
@@ -204,46 +168,26 @@ const Index = () => {
               ))}
             </div>
             {expandedStage && (
-              <ExpandedStagePanel
-                key={expandedStage}
-                stage={expandedStage}
-                jobs={jobsByStage(expandedStage)}
-                onClose={() => setExpandedStage(null)}
-              />
+              <ExpandedStagePanel key={expandedStage} stage={expandedStage} jobs={jobsByStage(expandedStage)} onClose={() => setExpandedStage(null)} />
             )}
           </div>
         ) : (
           <div className="flex gap-4">
             <div className="flex flex-col gap-2 w-[240px] shrink-0 overflow-y-auto max-h-[calc(100vh-140px)]">
               {STAGES.map((stage) => (
-                <StageColumn
-                  key={stage}
-                  stage={stage}
-                  jobs={jobsByStage(stage)}
-                  isExpanded={expandedStage === stage}
-                  onToggle={() => handleToggle(stage)}
-                  layout="vertical"
-                />
+                <StageColumn key={stage} stage={stage} jobs={jobsByStage(stage)} isExpanded={expandedStage === stage} onToggle={() => handleToggle(stage)} layout="vertical" />
               ))}
             </div>
             <div className="flex-1 min-w-0">
               {expandedStage ? (
-                <ExpandedStagePanel
-                  key={expandedStage}
-                  stage={expandedStage}
-                  jobs={jobsByStage(expandedStage)}
-                  onClose={() => setExpandedStage(null)}
-                />
+                <ExpandedStagePanel key={expandedStage} stage={expandedStage} jobs={jobsByStage(expandedStage)} onClose={() => setExpandedStage(null)} />
               ) : (
-                <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
-                  Click a stage to view jobs
-                </div>
+                <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">Click a stage to view jobs</div>
               )}
             </div>
           </div>
         )}
-      </main>
-      </div>
+      </PageToolbar>
     </div>
   );
 };

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
 import { JobTopStrip } from "@/components/job/JobTopStrip";
-import { JobSidebar, type JobTab } from "@/components/job/JobSidebar";
+import { PageToolbar } from "@/components/PageToolbar";
 import { OverviewTab } from "@/components/job/OverviewTab";
 import { MaterialsTab } from "@/components/job/MaterialsTab";
 import { NotesTab } from "@/components/job/NotesTab";
@@ -12,15 +12,28 @@ import { InvoiceTab } from "@/components/job/InvoiceTab";
 import { QuoteTab } from "@/components/job/QuoteTab";
 import { FormsTab } from "@/components/job/FormsTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
+import {
+  ClipboardList, Package, StickyNote, Camera, Clock, FileText, DollarSign, ClipboardCheck, History,
+} from "lucide-react";
+
+type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history";
+
+const JOB_TABS = [
+  { id: "overview", label: "Overview", icon: ClipboardList },
+  { id: "history", label: "History", icon: History },
+  { id: "quote", label: "Quote", icon: DollarSign },
+  { id: "materials", label: "Materials", icon: Package },
+  { id: "notes", label: "Notes", icon: StickyNote },
+  { id: "photos", label: "Photos", icon: Camera },
+  { id: "time", label: "Time", icon: Clock },
+  { id: "forms", label: "Forms", icon: ClipboardCheck },
+  { id: "invoice", label: "Invoice", icon: FileText },
+];
 
 export default function JobCard() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<JobTab>("overview");
-  const [mobileLayout, setMobileLayout] = useState<"bottom" | "side">("side");
-  const isMobile = useIsMobile();
 
   const job = id === "new"
     ? getNewJobDetail(searchParams.get("stage") || "Lead")
@@ -49,34 +62,14 @@ export default function JobCard() {
   return (
     <div className="min-h-screen bg-background">
       <JobTopStrip job={job} />
-
-      <div
-        className={cn(
-          "flex",
-          isMobile ? "flex-col" : "flex-row",
-          isMobile ? "pt-[5.5rem]" : "pt-14"
-        )}
-      >
-        {(!isMobile || mobileLayout === "side") && (
-          <div className={cn(isMobile && "pl-14")} />
-        )}
-
-        <JobSidebar
+      <div className="pt-14 sm:pt-14">
+        <PageToolbar
+          tabs={JOB_TABS}
           activeTab={activeTab}
-          onTabChange={setActiveTab}
-          mobileLayout={mobileLayout}
-          onMobileLayoutChange={setMobileLayout}
-        />
-
-        <main
-          className={cn(
-            "flex-1 min-w-0 p-4 sm:p-6",
-            isMobile && mobileLayout === "bottom" && "pb-24",
-            isMobile && mobileLayout === "side" && "ml-14"
-          )}
+          onTabChange={(id) => setActiveTab(id as JobTab)}
         >
           {tabContent[activeTab]}
-        </main>
+        </PageToolbar>
       </div>
     </div>
   );
