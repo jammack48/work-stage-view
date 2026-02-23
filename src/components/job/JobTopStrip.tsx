@@ -66,38 +66,37 @@ export function JobTopStrip({ job }: JobTopStripProps) {
           </div>
         </div>
 
-        {/* Right: Standard global nav (same as AppHeader) */}
         <div className="flex items-center gap-1 shrink-0">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
-            className={cn("h-8 px-2 gap-1.5 text-xs", location.pathname === "/" && "bg-accent")}
+            className={cn("h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent", location.pathname === "/" && "bg-accent")}
+            title="Home"
           >
-            <Home className="w-4 h-4" />
-            {!isMobile && "Pipeline"}
+            <Home className="w-5 h-5" />
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/customers")}
-            className={cn("h-8 px-2 gap-1.5 text-xs", isActive("/customer") && "bg-accent")}
+            className={cn("h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent", isActive("/customer") && "bg-accent")}
+            title="Customers"
           >
-            <Users className="w-4 h-4" />
-            {!isMobile && "Customers"}
+            <Users className="w-5 h-5" />
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/settings")}
-            className={cn("h-8 px-2 gap-1.5 text-xs", isActive("/settings") && "bg-accent")}
+            className={cn("h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent", isActive("/settings") && "bg-accent")}
+            title="Settings"
           >
-            <SettingsIcon className="w-4 h-4" />
-            {!isMobile && "Settings"}
+            <SettingsIcon className="w-5 h-5" />
           </Button>
           <ThemePicker />
-          <Button variant="ghost" size="sm" onClick={() => setIsDark(!isDark)} className="h-8 w-8 p-0">
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          <Button variant="ghost" size="sm" onClick={() => setIsDark(!isDark)} className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent">
+            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </Button>
         </div>
       </div>

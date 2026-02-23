@@ -4,7 +4,7 @@ import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
-import { ChevronRight, LayoutGrid, Columns, ChevronLeft, Plus, Home, Users, DollarSign, FileText, Settings } from "lucide-react";
+import { ChevronRight, LayoutGrid, Columns, ChevronLeft, Plus, Users, DollarSign, FileText, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -16,7 +16,7 @@ type Layout = "horizontal" | "vertical";
 type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings";
 
 const HOME_TABS = [
-  { id: "pipeline", label: "Pipeline", icon: Home },
+  { id: "pipeline", label: "Pipeline", icon: Columns },
   { id: "customers", label: "Customers", icon: Users },
   { id: "quotes", label: "Quotes", icon: DollarSign },
   { id: "invoices", label: "Invoices", icon: FileText },
