@@ -1,4 +1,4 @@
-import { ArrowLeft, Phone, MessageSquare, Navigation, ChevronDown, Home, Users, Settings as SettingsIcon, Sun, Moon } from "lucide-react";
+import { ArrowLeft, Phone, MessageSquare, Navigation, ChevronDown, Wrench, Home, Users, Settings as SettingsIcon, Sun, Moon } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

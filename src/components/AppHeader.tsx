@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Users, Settings as SettingsIcon, Sun, Moon, ArrowLeft } from "lucide-react";
+import { Wrench, Home, Users, Settings as SettingsIcon, Sun, Moon, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,7 @@ export function AppHeader({ title = "Toolbelt", showBack, backTo = "/", children
             <ArrowLeft className="w-4 h-4" />
           </Button>
         )}
-        <Home className="w-5 h-5 text-primary shrink-0" />
+        <Wrench className="w-5 h-5 text-primary shrink-0" />
         <h1 className="text-xl font-bold tracking-tight text-card-foreground truncate">{title}</h1>
         {children}
       </div>
