@@ -47,13 +47,16 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
   const isHorizontal = position === "top" || position === "bottom";
 
   // Home button
-  const homeBtn = (
+  const homeBtn = (isLarge?: boolean) => (
     <button
       onClick={() => navigate("/")}
-      className="p-2 rounded-lg text-muted-foreground hover:bg-accent shrink-0"
+      className={cn(
+        "flex items-center justify-center rounded-lg text-muted-foreground hover:bg-accent shrink-0",
+        isLarge ? "w-11 h-11" : "p-2"
+      )}
       title="Home"
     >
-      <Home className="w-4 h-4" />
+      <Home className={cn(isLarge ? "w-5 h-5" : "w-4 h-4")} />
     </button>
   );
 
@@ -73,7 +76,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
     return (
       <div className={cn("flex flex-row", position === "right" && "flex-row-reverse")}>
         <nav className="w-[200px] shrink-0 flex flex-col gap-1 py-2">
-          <div className="px-2 mb-1">{homeBtn}</div>
+          <div className="px-2 mb-1">{homeBtn()}</div>
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -100,7 +103,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
   if (!isMobile && isHorizontal) {
     const bar = (
       <nav className="flex items-center gap-1 px-2 py-1.5 border-b border-border overflow-x-auto">
-        {homeBtn}
+        {homeBtn()}
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -138,7 +141,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
         <nav className="sticky top-0 w-14 shrink-0 flex flex-col items-center gap-1 py-2 bg-card border-border overflow-y-auto self-start h-[calc(100vh-8rem)]"
           style={position === "left" ? { borderRight: "1px solid hsl(var(--border))" } : { borderLeft: "1px solid hsl(var(--border))" }}
         >
-          {homeBtn}
+          {homeBtn(true)}
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -171,7 +174,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children }: PageTool
         position === "bottom" ? "fixed left-0 right-0 bottom-0 z-40 border-t border-border safe-area-pb" : "sticky top-0 z-40 border-b border-border"
       )}
     >
-      {homeBtn}
+      {homeBtn(true)}
       {tabs.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
