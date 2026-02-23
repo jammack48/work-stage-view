@@ -62,7 +62,7 @@ export default function JobCard() {
   return (
     <div className="min-h-screen bg-background">
       <JobTopStrip job={job} />
-      <div className="pt-14 sm:pt-14">
+      <div className="pt-14">
         <PageToolbar
           tabs={JOB_TABS}
           activeTab={activeTab}
