@@ -5,6 +5,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { PageToolbar } from "@/components/PageToolbar";
 import { QuoteOverviewTab } from "@/components/quote/QuoteOverviewTab";
 import { QuoteTab } from "@/components/job/QuoteTab";
+import { Textarea } from "@/components/ui/textarea";
 import { NotesTab } from "@/components/job/NotesTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { cn } from "@/lib/utils";
@@ -34,7 +35,7 @@ export default function QuotePage() {
   const [status, setStatus] = useState<QuoteStatus>("Draft");
 
   const job = id === "new"
-    ? getNewJobDetail("To Quote")
+    ? { ...getNewJobDetail("To Quote"), jobName: "" }
     : getJobDetail(id || "");
 
   if (!job) {
@@ -57,14 +58,26 @@ export default function QuotePage() {
 
   const tabContent: Record<QuotePageTab, React.ReactNode> = {
     overview: <QuoteOverviewTab job={job} scope={scope} onScopeChange={setScope} />,
-    "line-items": <QuoteTab job={job} />,
+    "line-items": (
+      <div className="space-y-4">
+        <div className="rounded-lg border border-border bg-card p-3">
+          <Textarea
+            value={scope}
+            onChange={(e) => setScope(e.target.value)}
+            placeholder="Describe what this quote is for — e.g. 'Replace hot water cylinder and reroute pipework in ground floor bathroom'"
+            className="min-h-[60px] border-0 bg-transparent p-0 focus-visible:ring-0 text-sm resize-none"
+          />
+        </div>
+        <QuoteTab job={job} />
+      </div>
+    ),
     notes: <NotesTab notes={job.notes} />,
     history: <HistoryTab job={job} />,
   };
 
   const quoteHeading = (
     <div className="flex items-center gap-2 flex-wrap">
-      <h2 className="text-base font-bold text-card-foreground">{job.jobName || "New Quote"}</h2>
+      <h2 className="text-base font-bold text-card-foreground">{job.jobName ? `Quote — ${job.jobName}` : "New Quote"}</h2>
       {job.client && (
         <span className="text-sm text-muted-foreground">for {job.client}</span>
       )}
