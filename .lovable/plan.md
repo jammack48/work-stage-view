@@ -1,87 +1,98 @@
 
 
-## Quote Builder — "Write a List, Not Fill a Form"
+## Quote Builder v2: Bundles + Stacked Sections
 
-Replaces the current basic QuoteTab with an interactive, inline-editable quote builder optimized for speed on mobile.
+Evolves the current tab-based QuoteTab into a stacked, collapsible layout with one-tap bundle templates.
 
-### Layout (Mobile-First, Single Column)
+### What Changes
+
+**1. Replace section tabs with stacked collapsible sections**
+
+Currently Labour/Materials/Extras are behind tabs -- you can only see one at a time. Instead, show all three stacked vertically with collapse toggles. Collapsed sections show just the section name and subtotal. Expanded sections show inline-editable rows.
+
+```text
+LABOUR                        $382.50  [v]
+  Jake Turner - Strip out...   4.5  $85
+  Ben Kowalski - Assist...     4.5  $85
+  [+ Add Item]
+
+MATERIALS                     $182.00  [^]  <-- collapsed
+EXTRAS                          $0.00  [^]  <-- collapsed
+```
+
+This lets users see the full cost breakdown at a glance without tab-switching.
+
+**2. Add Bundles bar at top**
+
+A horizontal scrollable row of pre-set bundle chips above the sections. Tapping a bundle fills all three sections with template items.
+
+```text
+[Service Call] [Heat Pump] [Switchboard] [Maintenance] [+ Custom]
+```
+
+Bundles defined as static data for now (no persistence). Each bundle contains arrays of labour, material, and extras items with default quantities and prices.
+
+**3. Enhance command palette with section-aware items**
+
+The "Add Item" palette currently only shows materials. Expand it to show items grouped by section (Labour Tasks, Materials, Extras/Permits). When user selects an item, it auto-adds to the correct section -- no need to be "in" that section first.
+
+**4. Universal add input (quick-add bar)**
+
+A single input field at the top of the sections area: "Type to add item...". As user types, it searches across all sections in the palette. Selecting an item adds it to the correct section automatically. This is the "type 3 letters, pick, done" flow.
+
+### Layout (Mobile-First)
 
 ```text
 +----------------------------------+
-| [Labour] [Materials] [Extras]    |  <-- Section pill tabs
+| Quote           [Draft] badge    |
 +----------------------------------+
-| Item Name          Qty    $      |  <-- Inline-editable rows
-| Copper Pipe 15mm    4    $128    |
-| PVC Elbow 90        12   $54    |
-| [+ Add Item]                     |  <-- Opens command palette
+| [Service Call] [Heat Pump] [...]  |  <-- Bundle chips (scroll)
 +----------------------------------+
-| Labour       $850.00             |  <-- Sticky summary card
-| Materials    $182.00             |
-| Extras       $150.00             |
-| GST (15%)    $177.30             |
-| TOTAL        $1,359.30           |
+| [ Type to add item...        ]   |  <-- Quick-add input
 +----------------------------------+
-| [Send Quote]  [Save Draft]       |  <-- Large action buttons
+| LABOUR              $382.50  [v] |  <-- Collapsible
+|   row / row / row                |
+|   [+ Add]                        |
++----------------------------------+
+| MATERIALS           $182.00  [v] |
+|   row / row / row                |
+|   [+ Add]                        |
++----------------------------------+
+| EXTRAS                $0.00  [^] |  <-- Collapsed
++----------------------------------+
+| Notes [v]                        |
++----------------------------------+
+| Summary Card (sticky on mobile)  |
+|   Labour / Materials / Extras    |
+|   GST / TOTAL                    |
++----------------------------------+
+| [Send Quote]  [Save Draft]       |
 +----------------------------------+
 ```
-
-### Section Tabs (Labour / Materials / Extras)
-
-- Simple pill-style tabs at top of quote area (not a separate sidebar)
-- Each section shows its own line items
-- Labour: pre-populated from timeEntries (staff x hours x rate)
-- Materials: pulled from job.materials, inline editable
-- Extras: starts empty, user adds ad-hoc items
-- Notes section available as a collapsible text area below the line items
-
-### Line Item Rows -- Inline Editing
-
-- Each row shows: Item name | Qty | Unit price | Line total
-- Tap any field to edit it directly (input appears in-place)
-- Enter key on last row auto-creates a new blank row
-- Swipe or tap X to delete a row
-- All totals recalculate instantly on every change
-
-### Add Item -- Command Palette
-
-- "+" button opens a command palette (using existing cmdk component)
-- Searches against the materialsPool data for auto-suggest
-- Shows item name, unit, and last-used price
-- Selecting an item adds it as a new row with qty=1
-- Typing a custom name that doesn't match creates a blank item
-- Feels like: type 3 letters, pick, done
-
-### Summary Card -- Always Visible
-
-- Sticky at bottom on mobile, fixed panel on desktop
-- Shows: Labour total, Materials total, Extras total, GST (15%), Grand Total
-- Updates live as line items change
-- Quote status badge: Draft (neutral/muted), Sent (amber/orange), Approved (green)
-
-### Action Buttons
-
-- "Send Quote" -- primary, full-width on mobile
-- "Save Draft" -- secondary/outline
-- Both large (h-12) with high contrast, matching existing button patterns
-- For now these just show a toast (no backend yet)
-
-### State Management
-
-- All quote state managed with useState inside QuoteTab
-- Initialised from job.materials, job.labourTotal, job.extrasTotal
-- No persistence yet -- purely flow/UI demo
-- Quote status cycles: Draft -> Sent -> Approved (tap the badge to cycle for demo)
 
 ### Technical Details
 
 **Files to modify:**
-- `src/components/job/QuoteTab.tsx` -- complete rewrite with new builder UI
+- `src/components/job/QuoteTab.tsx` -- rewrite layout from tabs to stacked collapsible sections, add bundles bar and quick-add input
+- `src/data/dummyJobDetails.ts` -- add bundle templates data and section tags on materialsPool items
 
-**No new files needed.** Uses existing components:
-- `cmdk` (Command palette, already installed)
-- Card, Button, Input from shadcn/ui
-- Badge colours from existing CSS variables
+**Bundle data structure (in dummyJobDetails.ts):**
+- Each bundle has a name, icon, and arrays: `labour[]`, `materials[]`, `extras[]`
+- Items reference materialsPool entries where possible
+- 4-5 pre-set bundles: Service Call, Heat Pump Install, Switchboard Upgrade, Maintenance, Bathroom Reno
 
-**Data source:** Uses `materialsPool` from `dummyJobDetails.ts` as the auto-suggest catalogue. Labour rows generated from `job.timeEntries`. No changes to data files.
+**materialsPool enhancement:**
+- Add a `section` field to each item: `"labour" | "materials" | "extras"`
+- Add a few labour-type entries (e.g. "Standard install", "Call-out fee") and extras (e.g. "Building permit", "Inspection fee")
+- Command palette groups items by section
 
-**No new dependencies required.**
+**QuoteTab component changes:**
+- Replace `Tabs` with three `Collapsible` components stacked vertically
+- Each section independently collapsible, starts with Labour expanded, others collapsed if empty
+- Bundle chips as a horizontal scrollable flex row at top
+- Quick-add input uses `Command` inline (not in a dialog) with dropdown suggestions
+- "Add Item" button per section still opens the full palette dialog filtered to that section
+- All existing functionality preserved: inline editing, Enter-to-add-row, delete, status cycling, notes, summary card, action buttons
+
+**No new dependencies. No new files needed.**
+
