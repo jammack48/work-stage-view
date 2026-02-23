@@ -1,42 +1,67 @@
 
 
-## Fix Duplicate Home Icons and Restyle Header
+## Uniform Layout: Same Header + Page Heading on Every Screen
 
 ### Problem
-1. Two Home icons appear in the movable toolbar -- one from PageToolbar's built-in Home button, and one from the "Pipeline" tab (which uses the Home icon) on the Index page
-2. The top-right header buttons (Customers, Settings, Theme, Dark mode) look different from the movable toolbar icons
-3. No Home icon on the left side of the header
+Right now, the Pipeline page shows "Toolbelt" branding in the header, but the Job Card page shows "Hot Water Cylinder..." with a back arrow instead -- a completely different header (JobTopStrip). There is no consistent page heading line across screens. The layout feels inconsistent page-to-page.
+
+### Solution
+Every screen will follow this structure from top to bottom:
+
+```text
++--------------------------------------------------+
+| [Wrench] Toolbelt         [Customers] [Settings]  |  <-- AppHeader (identical on ALL pages)
+|                           [Theme] [Dark/Light]     |
++--------------------------------------------------+
+| Page Heading: "Pipeline Dashboard  Lead >>> Paid"  |  <-- New: Page Heading Bar
++--------------------------------------------------+
+| [Home] [Tab1] [Tab2] ...         [Position Toggle] |  <-- Movable Toolbar (if top position)
++--------------------------------------------------+
+| Content area                                       |
++--------------------------------------------------+
+```
+
+If the toolbar is at top, it sits between the page heading and the content. If the toolbar is on the side, the page heading spans the full width above the content.
 
 ### Changes
 
-**1. Remove Home button from PageToolbar** (`src/components/PageToolbar.tsx`)
-- Delete the `homeBtn` function entirely -- it's redundant since each page already defines its own tabs (and the Index page has a Pipeline/Home tab)
-- Remove all `{homeBtn()}` and `{homeBtn(true)}` calls from every layout variant
-- The movable toolbar will only show the page's defined tabs plus the position-cycle toggle
+**1. AppHeader stays the same on ALL pages** (`src/components/AppHeader.tsx`)
+- Remove the `title` prop override -- it always says "Toolbelt"
+- Remove `showBack` / `backTo` props -- no back arrow in the header (that's what the Home button in the toolbar is for)
+- Keep right-side icons: Customers, Settings, ThemePicker, Dark/Light toggle
 
-**2. Add Home icon to AppHeader left side** (`src/components/AppHeader.tsx`)
-- Add a Home icon button to the left of the Wrench/Toolbelt branding that navigates to `/`
-- Move the Wrench icon and "Toolbelt" text slightly right to give it space
+**2. Replace JobTopStrip with AppHeader** (`src/pages/JobCard.tsx`)
+- Stop using JobTopStrip entirely
+- Use AppHeader (same as every other page)
+- The job name, value, and status move into the page heading bar instead
 
-**3. Restyle top-right header icons to match toolbar** (`src/components/AppHeader.tsx`)
-- Change Customers, Settings, ThemePicker, and dark/light toggle to icon-only buttons (no text labels) with consistent sizing (`w-9 h-9` or `w-8 h-8`)
-- Match the rounded-lg, muted-foreground hover style used in the movable toolbar
-- Remove the text labels ("Customers", "Settings") so the icons are uniform
+**3. Add `pageHeading` prop to PageToolbar** (`src/components/PageToolbar.tsx`)
+- New optional prop: `pageHeading: React.ReactNode`
+- Renders a heading bar between the AppHeader and the toolbar/content
+- The heading bar always appears at the top of the PageToolbar area, regardless of toolbar position
+- If toolbar is at top, the heading bar is above the toolbar; if toolbar is on the side/bottom, it still appears at the top of the content area
 
-**4. Change Pipeline tab icon** (`src/pages/Index.tsx`)
-- Change the Pipeline tab from the `Home` icon to `Columns` (or similar) so it doesn't look like a second Home button -- since the header now has the Home navigation
+**4. Each page provides its page heading:**
+- **Index (Pipeline):** "Pipeline Dashboard" with Lead >>> Paid indicator (move existing heading into `pageHeading` prop)
+- **Customers:** "Customer Directory"
+- **CustomerCard:** Customer name (e.g., "Dave Thompson")
+- **JobCard:** Job name + value + status badge (e.g., "Hot Water Cylinder Replace -- $500 -- Lead")
+- **Settings:** "Settings"
+
+**5. Remove JobTopStrip component** (`src/components/job/JobTopStrip.tsx`)
+- No longer needed since all pages use AppHeader + page heading
+
+### Files to modify
+- `src/components/AppHeader.tsx` -- simplify: always "Toolbelt", remove back/title overrides
+- `src/components/PageToolbar.tsx` -- add `pageHeading` prop, render heading bar above toolbar/content
+- `src/pages/Index.tsx` -- pass pipeline heading as `pageHeading` prop
+- `src/pages/JobCard.tsx` -- use AppHeader, pass job info as `pageHeading`
+- `src/pages/Customers.tsx` -- pass "Customer Directory" as `pageHeading`
+- `src/pages/CustomerCard.tsx` -- pass customer name as `pageHeading`
+- `src/pages/SettingsPage.tsx` -- pass "Settings" as `pageHeading`
 
 ### Result
-- One Home icon in the top-left of the header (consistent across all pages)
-- Movable toolbar only shows page-specific tabs plus the position toggle
-- Top-right header icons match the toolbar's icon-only style
-- No duplicate Home icons anywhere
-
-### Technical Details
-
-Files to modify:
-- `src/components/PageToolbar.tsx` -- remove homeBtn and all references
-- `src/components/AppHeader.tsx` -- add Home icon left side, restyle right-side icons to icon-only
-- `src/pages/Index.tsx` -- change Pipeline tab icon from `Home` to `Columns`
-- `src/components/job/JobTopStrip.tsx` -- ensure the Job Card header also has consistent Home icon on left
-
+- Every page has the same "Toolbelt" header with identical right-side icons
+- Every page has a descriptive heading bar below the header saying what the page is about
+- The movable toolbar only contains page-specific tabs + the Home button + the position toggle
+- Completely uniform layout across all screens
