@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Wrench, Home, Users, Settings as SettingsIcon, Sun, Moon, ArrowLeft } from "lucide-react";
+import { Wrench, Users, Settings as SettingsIcon, Sun, Moon, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -34,15 +34,6 @@ export function AppHeader({ title = "Toolbelt", showBack, backTo = "/", children
         {children}
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate("/")}
-          className={cn("h-8 px-2 gap-1.5 text-xs", isActive("/") && location.pathname === "/" && "bg-accent")}
-        >
-          <Home className="w-4 h-4" />
-          {!isMobile && "Pipeline"}
-        </Button>
         <Button
           variant="ghost"
           size="sm"
