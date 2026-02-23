@@ -71,15 +71,85 @@ const staffPool: StaffMember[] = [
   { name: "Sam Te Reo", role: "Electrician", avatar: "ST" },
 ];
 
-export const materialsPool: MaterialItem[] = [
-  { id: "m1", name: "Copper Pipe 15mm (3m)", quantity: 4, unit: "length", unitPrice: 32, supplier: "PlumbWorld" },
-  { id: "m2", name: "PVC Elbow 90° 50mm", quantity: 12, unit: "pcs", unitPrice: 4.5, supplier: "PlumbWorld" },
-  { id: "m3", name: "Twin & Earth 2.5mm²", quantity: 3, unit: "roll", unitPrice: 89, supplier: "Sparky Supplies" },
-  { id: "m4", name: "LED Downlight 10W", quantity: 8, unit: "pcs", unitPrice: 24, supplier: "Sparky Supplies" },
-  { id: "m5", name: "Silicone Sealant Clear", quantity: 2, unit: "tube", unitPrice: 12, supplier: "TradeZone" },
-  { id: "m6", name: "Roof Screw 65mm Hex", quantity: 1, unit: "box", unitPrice: 48, supplier: "TradeZone" },
-  { id: "m7", name: "Flexi Hose 500mm", quantity: 2, unit: "pcs", unitPrice: 18, supplier: "PlumbWorld" },
-  { id: "m8", name: "Junction Box IP65", quantity: 4, unit: "pcs", unitPrice: 8.5, supplier: "Sparky Supplies" },
+export interface CatalogueItem {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  unitPrice: number;
+  supplier: string;
+  section: "labour" | "materials" | "extras";
+}
+
+export const catalogueItems: CatalogueItem[] = [
+  // Materials
+  { id: "m1", name: "Copper Pipe 15mm (3m)", quantity: 4, unit: "length", unitPrice: 32, supplier: "PlumbWorld", section: "materials" },
+  { id: "m2", name: "PVC Elbow 90° 50mm", quantity: 12, unit: "pcs", unitPrice: 4.5, supplier: "PlumbWorld", section: "materials" },
+  { id: "m3", name: "Twin & Earth 2.5mm²", quantity: 3, unit: "roll", unitPrice: 89, supplier: "Sparky Supplies", section: "materials" },
+  { id: "m4", name: "LED Downlight 10W", quantity: 8, unit: "pcs", unitPrice: 24, supplier: "Sparky Supplies", section: "materials" },
+  { id: "m5", name: "Silicone Sealant Clear", quantity: 2, unit: "tube", unitPrice: 12, supplier: "TradeZone", section: "materials" },
+  { id: "m6", name: "Roof Screw 65mm Hex", quantity: 1, unit: "box", unitPrice: 48, supplier: "TradeZone", section: "materials" },
+  { id: "m7", name: "Flexi Hose 500mm", quantity: 2, unit: "pcs", unitPrice: 18, supplier: "PlumbWorld", section: "materials" },
+  { id: "m8", name: "Junction Box IP65", quantity: 4, unit: "pcs", unitPrice: 8.5, supplier: "Sparky Supplies", section: "materials" },
+  // Labour
+  { id: "l1", name: "Standard Install", quantity: 1, unit: "hrs", unitPrice: 85, supplier: "", section: "labour" },
+  { id: "l2", name: "Call-out Fee", quantity: 1, unit: "ea", unitPrice: 120, supplier: "", section: "labour" },
+  { id: "l3", name: "Apprentice Rate", quantity: 1, unit: "hrs", unitPrice: 55, supplier: "", section: "labour" },
+  { id: "l4", name: "After Hours Rate", quantity: 1, unit: "hrs", unitPrice: 130, supplier: "", section: "labour" },
+  // Extras
+  { id: "e1", name: "Building Permit", quantity: 1, unit: "ea", unitPrice: 350, supplier: "", section: "extras" },
+  { id: "e2", name: "Inspection Fee", quantity: 1, unit: "ea", unitPrice: 180, supplier: "", section: "extras" },
+  { id: "e3", name: "Waste Disposal", quantity: 1, unit: "ea", unitPrice: 95, supplier: "", section: "extras" },
+  { id: "e4", name: "Travel / Mileage", quantity: 1, unit: "ea", unitPrice: 65, supplier: "", section: "extras" },
+];
+
+// Keep backward compat alias
+export const materialsPool = catalogueItems.filter(i => i.section === "materials");
+
+export interface BundleTemplate {
+  id: string;
+  name: string;
+  labour: { name: string; qty: number; unitPrice: number }[];
+  materials: { name: string; qty: number; unitPrice: number }[];
+  extras: { name: string; qty: number; unitPrice: number }[];
+}
+
+export const bundleTemplates: BundleTemplate[] = [
+  {
+    id: "b1",
+    name: "Service Call",
+    labour: [{ name: "Call-out Fee", qty: 1, unitPrice: 120 }, { name: "Standard Install", qty: 1, unitPrice: 85 }],
+    materials: [{ name: "Silicone Sealant Clear", qty: 1, unitPrice: 12 }],
+    extras: [{ name: "Travel / Mileage", qty: 1, unitPrice: 65 }],
+  },
+  {
+    id: "b2",
+    name: "Heat Pump Install",
+    labour: [{ name: "Standard Install", qty: 6, unitPrice: 85 }, { name: "Apprentice Rate", qty: 6, unitPrice: 55 }],
+    materials: [{ name: "Twin & Earth 2.5mm²", qty: 2, unitPrice: 89 }, { name: "Junction Box IP65", qty: 2, unitPrice: 8.5 }],
+    extras: [{ name: "Building Permit", qty: 1, unitPrice: 350 }],
+  },
+  {
+    id: "b3",
+    name: "Switchboard Upgrade",
+    labour: [{ name: "Standard Install", qty: 8, unitPrice: 85 }, { name: "Apprentice Rate", qty: 4, unitPrice: 55 }],
+    materials: [{ name: "Twin & Earth 2.5mm²", qty: 3, unitPrice: 89 }, { name: "Junction Box IP65", qty: 4, unitPrice: 8.5 }, { name: "LED Downlight 10W", qty: 6, unitPrice: 24 }],
+    extras: [{ name: "Inspection Fee", qty: 1, unitPrice: 180 }],
+  },
+  {
+    id: "b4",
+    name: "Maintenance",
+    labour: [{ name: "Standard Install", qty: 2, unitPrice: 85 }],
+    materials: [{ name: "Silicone Sealant Clear", qty: 1, unitPrice: 12 }],
+    extras: [{ name: "Waste Disposal", qty: 1, unitPrice: 95 }],
+  },
+  {
+    id: "b5",
+    name: "Bathroom Reno",
+    labour: [{ name: "Standard Install", qty: 16, unitPrice: 85 }, { name: "Apprentice Rate", qty: 16, unitPrice: 55 }],
+    materials: [{ name: "Copper Pipe 15mm (3m)", qty: 6, unitPrice: 32 }, { name: "PVC Elbow 90° 50mm", qty: 8, unitPrice: 4.5 }, { name: "Flexi Hose 500mm", qty: 4, unitPrice: 18 }, { name: "Silicone Sealant Clear", qty: 3, unitPrice: 12 }],
+    extras: [{ name: "Building Permit", qty: 1, unitPrice: 350 }, { name: "Waste Disposal", qty: 1, unitPrice: 95 }, { name: "Inspection Fee", qty: 1, unitPrice: 180 }],
+  },
 ];
 
 const notesPool: NoteEntry[] = [
