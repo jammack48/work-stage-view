@@ -1,20 +1,8 @@
-import { useState, useEffect } from "react";
-import { LayoutGrid, Home } from "lucide-react";
+import { Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-export type ToolbarPosition = "left" | "right" | "top" | "bottom";
-
-const POSITION_CYCLE: ToolbarPosition[] = ["left", "bottom", "right", "top"];
-
-function getStoredPosition(): ToolbarPosition {
-  try {
-    const v = localStorage.getItem("toolbar-position");
-    if (v && POSITION_CYCLE.includes(v as ToolbarPosition)) return v as ToolbarPosition;
-  } catch {}
-  return "left";
-}
+import { useToolbarPosition } from "@/contexts/ToolbarPositionContext";
 
 interface TabDef {
   id: string;
@@ -33,16 +21,7 @@ interface PageToolbarProps {
 export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading }: PageToolbarProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const [position, setPosition] = useState<ToolbarPosition>(getStoredPosition);
-
-  useEffect(() => {
-    localStorage.setItem("toolbar-position", position);
-  }, [position]);
-
-  const cyclePosition = () => {
-    const idx = POSITION_CYCLE.indexOf(position);
-    setPosition(POSITION_CYCLE[(idx + 1) % POSITION_CYCLE.length]);
-  };
+  const { position } = useToolbarPosition();
 
   const headingBar = pageHeading ? (
     <div className="px-4 sm:px-6 py-2 border-b border-border bg-card">
@@ -53,7 +32,6 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   const isVertical = position === "left" || position === "right";
   const isHorizontal = position === "top" || position === "bottom";
 
-  // Home button
   const homeBtn = (isLarge?: boolean) => (
     <button
       onClick={() => navigate("/")}
@@ -67,22 +45,14 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
     </button>
   );
 
-  // Toggle button
-  const toggleBtn = (
-    <button
-      onClick={cyclePosition}
-      className="p-2 rounded-lg text-muted-foreground hover:bg-accent shrink-0"
-      title={`Toolbar: ${position}`}
-    >
-      <LayoutGrid className="w-4 h-4" />
-    </button>
-  );
-
   // Desktop vertical sidebar
   if (!isMobile && isVertical) {
     return (
       <div className={cn("flex flex-row", position === "right" && "flex-row-reverse")}>
-        <nav className="w-[200px] shrink-0 flex flex-col gap-1 py-2">
+        <nav className={cn(
+          "w-[200px] shrink-0 flex flex-col gap-1 py-2 bg-card",
+          position === "left" ? "rounded-r-xl border-r border-border" : "rounded-l-xl border-l border-border"
+        )}>
           <div className="px-2 mb-1">{homeBtn()}</div>
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
@@ -99,7 +69,6 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               {label}
             </button>
           ))}
-          <div className="mt-auto px-2 pt-2">{toggleBtn}</div>
         </nav>
         <main className="flex-1 min-w-0">
           {headingBar}
@@ -129,7 +98,6 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
             {label}
           </button>
         ))}
-        <div className="ml-auto shrink-0">{toggleBtn}</div>
       </nav>
     );
 
@@ -145,15 +113,16 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
 
   // ── Mobile ──
 
-  // Mobile vertical (left / right) — use sticky so it flows below header
+  // Mobile vertical (left / right)
   if (isVertical) {
     return (
       <div className="flex flex-row min-h-0" style={position === "right" ? { flexDirection: "row-reverse" } : undefined}>
-      <nav className="w-14 shrink-0 flex flex-col items-center gap-1 py-2 bg-card border-border overflow-y-auto"
-          style={{
-            minHeight: "calc(100vh - 6rem)",
-            ...(position === "left" ? { borderRight: "1px solid hsl(var(--border))" } : { borderLeft: "1px solid hsl(var(--border))" })
-          }}
+        <nav
+          className={cn(
+            "w-14 shrink-0 flex flex-col items-center gap-1 py-2 bg-card overflow-y-auto",
+            position === "left" ? "rounded-r-xl border-r border-border" : "rounded-l-xl border-l border-border"
+          )}
+          style={{ minHeight: "calc(100vh - 6rem)" }}
         >
           {homeBtn(true)}
           {tabs.map(({ id, label, icon: Icon }) => (
@@ -171,7 +140,6 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               <Icon className="w-5 h-5" />
             </button>
           ))}
-          <div className="mt-auto">{toggleBtn}</div>
         </nav>
         <main className="flex-1 min-w-0">
           {headingBar}
@@ -181,7 +149,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
     );
   }
 
-  // Mobile horizontal (top / bottom) — top is normal flow, bottom is fixed
+  // Mobile horizontal (top / bottom)
   const bar = (
     <nav
       className={cn(
@@ -205,7 +173,6 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
           <span className="text-[9px] font-medium leading-none">{label}</span>
         </button>
       ))}
-      <div className="ml-auto shrink-0">{toggleBtn}</div>
     </nav>
   );
 
