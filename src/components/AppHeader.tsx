@@ -18,7 +18,7 @@ export function AppHeader() {
     <header className="px-4 sm:px-6 py-3 border-b border-border bg-background flex items-center justify-between">
       <button onClick={() => navigate("/")} className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity">
         <Wrench className="w-5 h-5 text-primary shrink-0" />
-        <h1 className="text-lg font-semibold tracking-tight text-foreground/80 truncate">Toolbelt</h1>
+        <h1 className="text-lg font-semibold tracking-tight text-foreground/80 truncate">Tradie Toolbelt</h1>
       </button>
       <div className="flex items-center gap-1 shrink-0">
         <Button

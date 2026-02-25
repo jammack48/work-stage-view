@@ -35,7 +35,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
 
   const homeBtn = (isLarge?: boolean) => (
     <button
-      onClick={() => navigate("/")}
+      onClick={() => navigate("/pipeline")}
       className={cn(
         "flex items-center justify-center rounded-lg text-muted-foreground hover:bg-accent shrink-0",
         isLarge ? "w-11 h-11" : "p-2"

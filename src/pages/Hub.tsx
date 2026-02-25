@@ -40,7 +40,7 @@ const Hub = () => {
         {/* Tagline */}
         <div className="text-center mb-10">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-            Your Control Panel
+            Your Dashboard
           </h2>
           <p className="text-muted-foreground text-sm mt-1.5">
             Run your entire trade business from one place.
