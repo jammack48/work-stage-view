@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { AppHeader } from "@/components/AppHeader";
+
 import {
   Briefcase, Users, Calendar, DollarSign, Calculator, FileText,
   Mail, MessageSquare, FolderOpen, MapPin, ShieldCheck, Star, GraduationCap,
@@ -33,8 +33,7 @@ const Hub = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
+    <>
 
       <div className="px-4 sm:px-8 py-8 max-w-6xl mx-auto">
         {/* Tagline */}
@@ -85,7 +84,7 @@ const Hub = () => {
           })}
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

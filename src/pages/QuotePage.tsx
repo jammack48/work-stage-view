@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { getJobDetail, getNewJobDetail, type BundleTemplate } from "@/data/dummyJobDetails";
-import { AppHeader } from "@/components/AppHeader";
+
 import { PageToolbar } from "@/components/PageToolbar";
 import { QuoteOverviewTab } from "@/components/quote/QuoteOverviewTab";
 import { QuoteTab } from "@/components/job/QuoteTab";
@@ -43,8 +43,7 @@ export default function QuotePage() {
   // During funnel: wrap in standard layout
   if (isNew && !funnelComplete) {
     return (
-      <div className="min-h-screen bg-background">
-        <AppHeader />
+      <>
         <PageToolbar
           tabs={QUOTE_TABS}
           activeTab="overview"
@@ -66,7 +65,7 @@ export default function QuotePage() {
             onStepChange={setFunnelStep}
           />
         </PageToolbar>
-      </div>
+      </>
     );
   }
 
@@ -144,8 +143,7 @@ export default function QuotePage() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
+    <>
       <PageToolbar
         tabs={QUOTE_TABS}
         activeTab={activeTab}
@@ -154,6 +152,6 @@ export default function QuotePage() {
       >
         {tabContent[activeTab]}
       </PageToolbar>
-    </div>
+    </>
   );
 }
