@@ -1,37 +1,51 @@
 
 
-## Fix: Quote Funnel Not Triggering from Pipeline
+## Fix: Quote Funnel Missing Standard Layout + Pipeline Action Buttons
 
-### The Problem
+### Problem 1 — Quote Funnel has no standard layout
 
-The "New Quote" action box in the pipeline navigates to `/job/new?stage=Quote Sent` — which opens the generic Job Card page with the full sidebar (Overview, Quote, Invoice, etc). It should navigate to `/quote/new` to trigger the guided quote funnel.
+The `QuoteFunnel` component renders as a bare full-screen page with no `AppHeader` or `PageToolbar`. Every other page in the app follows the 4-layer structure (AppHeader → PageToolbar → Page Heading → Content). The funnel should too.
 
-Similarly, clicking individual job cards in quote-related stages (Lead, To Quote, Quote Sent) navigates to `/job/:id` instead of `/quote/:id`.
+### Problem 2 — Pipeline toolbar lacks quick-action buttons
+
+The pipeline page heading bar should include quick-create buttons (Add Customer, Add Quote, Add Invoice) so users can start key actions from anywhere on the pipeline without scrolling to find a specific stage's dashed action box.
+
+---
 
 ### Changes
 
-**1. `src/pages/Index.tsx` — Route action boxes correctly**
+**1. `src/pages/QuotePage.tsx` — Wrap funnel in standard layout**
 
-The action boxes currently all navigate to `/job/new?stage=...`. Change the routing so quote-related actions go to `/quote/new`:
+Instead of returning the bare `<QuoteFunnel />` component when `isNew && !funnelComplete`, wrap it in the same `AppHeader` + `PageToolbar` shell used after the funnel completes. The funnel content becomes the `children` of the PageToolbar, maintaining the standard layout.
 
-- "New Quote" (Quote Sent stage) → navigate to `/quote/new`
-- "Add Customer" (Lead stage) → keep as `/job/new?stage=Lead` or route to customers
-- "New Job" (In Progress) → keep as `/job/new`
-- "New Invoice" (To Invoice) → keep as `/job/new`
+- AppHeader stays at top
+- PageToolbar renders with the same quote tabs (but the funnel content replaces tab content)
+- Page heading shows "New Quote" with the step indicator
+- The funnel steps render inside the content area, centered with `max-w-lg mx-auto`
+- Tab buttons are still visible but disabled/dimmed during funnel (user can't jump to Line Items before completing the funnel)
 
-This is a single-line change in the `onClick` handler — instead of always navigating to `/job/new?stage=...`, check if the stage is quote-related and route to `/quote/new`.
+**2. `src/components/quote/QuoteFunnel.tsx` — Remove outer layout wrapper**
 
-**2. `src/components/ExpandedStagePanel.tsx` — Route job cards by stage**
+Strip the `min-h-screen bg-background` and `max-w-lg mx-auto px-4 py-8` outer wrapper from the funnel. Move the step indicator into a heading that the parent page can use. The funnel becomes a pure content component that fits inside any container.
 
-Job cards in early pipeline stages (Lead, To Quote, Quote Sent) should navigate to `/quote/:id` instead of `/job/:id`. Later stages (In Progress, To Invoice, Paid) continue to `/job/:id`.
+- Export the `StepIndicator` so the parent can place it in the page heading bar
+- The funnel renders just the step content (customer list, address input, bundle cards) without its own page shell
+- Keep `max-w-lg mx-auto` on the inner content for centering within the content area
 
-Single change: wrap the navigate call in a condition based on the stage prop.
+**3. `src/pages/Index.tsx` — Add quick-action buttons to pipeline heading**
 
-**3. No other changes needed**
+Add three compact buttons to the pipeline page heading bar (next to the layout toggle):
+- **+ Customer** → navigates to `/customers` (or a future new-customer flow)
+- **+ Quote** → navigates to `/quote/new`
+- **+ Invoice** → navigates to `/job/new?stage=To+Invoice`
 
-The `QuoteFunnel` component and `QuotePage` already handle the funnel flow correctly when navigated to `/quote/new`. The issue is purely that the pipeline buttons point to the wrong route.
+These appear as small pill buttons with a Plus icon, grouped together. On mobile they stack or scroll horizontally.
 
-### Summary
+---
 
-Two files, two small routing fixes. The funnel itself works — it just was never being reached because the pipeline always sent users to `/job/new`.
+### Result
+
+- `/quote/new` now shows AppHeader + PageToolbar + "New Quote" heading + funnel content — same shell as every other page
+- Pipeline dashboard has quick-create actions visible in the heading bar at all times
+- Consistent user flow across all pages
 
