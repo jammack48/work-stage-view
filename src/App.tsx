@@ -6,13 +6,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThresholdProvider } from "@/contexts/ThresholdContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
+import Hub from "./pages/Hub";
 import Index from "./pages/Index";
 import JobCard from "./pages/JobCard";
 import Customers from "./pages/Customers";
 import CustomerCard from "./pages/CustomerCard";
 import SettingsPage from "./pages/SettingsPage";
-import NotFound from "./pages/NotFound";
 import QuotePage from "./pages/QuotePage";
+import ComingSoon from "./pages/ComingSoon";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -26,12 +28,14 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<Hub />} />
+              <Route path="/pipeline" element={<Index />} />
               <Route path="/job/:id" element={<JobCard />} />
               <Route path="/quote/:id" element={<QuotePage />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/customer/:id" element={<CustomerCard />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/coming-soon" element={<ComingSoon />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
