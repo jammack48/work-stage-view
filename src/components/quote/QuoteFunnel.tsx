@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Search, ArrowLeft, ArrowRight, Wrench, Zap, Settings, Hammer, Bath, Pencil, ChevronsUpDown, Package } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Search, ArrowLeft, ArrowRight, Wrench, Zap, Settings, Hammer, Bath, Pencil, ChevronsUpDown, Package, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -153,46 +153,84 @@ function StepAddress({
 
 /* ── Bundle Search Dropdown ─────────────────────────────── */
 function BundleSearchDropdown({ onSelect }: { onSelect: (b: BundleTemplate) => void }) {
-  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(false);
+  const [search, setSearch] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return bundleTemplates;
+    const q = search.toLowerCase();
+    return bundleTemplates.filter(b => b.name.toLowerCase().includes(q) || b.description.toLowerCase().includes(q));
+  }, [search]);
+
+  useEffect(() => {
+    if (active && inputRef.current) {
+      inputRef.current.focus();
+      // Scroll container into view so keyboard doesn't hide it
+      setTimeout(() => containerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
+    }
+  }, [active]);
+
+  if (!active) {
+    return (
+      <Button
+        variant="outline"
+        className="w-full h-12 justify-between text-sm font-normal"
+        onClick={() => setActive(true)}
+      >
+        <span className="flex items-center gap-2 text-muted-foreground">
+          <Package className="w-4 h-4" /> Select a bundle…
+        </span>
+        <ChevronsUpDown className="w-4 h-4 text-muted-foreground" />
+      </Button>
+    );
+  }
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="w-full h-12 justify-between text-sm font-normal">
-          <span className="flex items-center gap-2 text-muted-foreground">
-            <Package className="w-4 h-4" /> Select a bundle…
-          </span>
-          <ChevronsUpDown className="w-4 h-4 text-muted-foreground" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align="start">
-        <Command>
-          <CommandInput placeholder="Search bundles…" />
-          <CommandList>
-            <CommandEmpty>No bundles found</CommandEmpty>
-            <CommandGroup>
-              {bundleTemplates.map(b => {
-                const Icon = BUNDLE_ICONS[b.id] || Wrench;
-                const total = getBundleTotal(b);
-                return (
-                  <CommandItem key={b.id} onSelect={() => { onSelect(b); setOpen(false); }} className="py-2.5">
-                    <div className="flex items-center gap-3 w-full">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <Icon className="w-4 h-4 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm">{b.name}</div>
-                        <div className="text-xs text-muted-foreground truncate">{b.description}</div>
-                      </div>
-                      <span className="text-xs font-semibold text-primary shrink-0">~${total.toLocaleString()}</span>
-                    </div>
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <div ref={containerRef} className="rounded-lg border border-border bg-card overflow-hidden">
+      {/* Sticky search bar */}
+      <div className="flex items-center gap-2 border-b border-border px-3 py-2 sticky top-0 bg-card z-10">
+        <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+        <input
+          ref={inputRef}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search bundles…"
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+        <button onClick={() => { setActive(false); setSearch(""); }} className="text-muted-foreground hover:text-foreground cursor-pointer">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Results list */}
+      <div className="max-h-[45vh] overflow-y-auto">
+        {filtered.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-6">No bundles found</p>
+        )}
+        {filtered.map(b => {
+          const Icon = BUNDLE_ICONS[b.id] || Wrench;
+          const total = getBundleTotal(b);
+          return (
+            <button
+              key={b.id}
+              onClick={() => onSelect(b)}
+              className="w-full text-left flex items-center gap-3 px-3 py-3 hover:bg-muted/60 active:bg-muted transition-colors cursor-pointer border-b border-border last:border-b-0"
+            >
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Icon className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-sm text-card-foreground">{b.name}</div>
+                <div className="text-xs text-muted-foreground truncate">{b.description}</div>
+              </div>
+              <span className="text-xs font-semibold text-primary shrink-0">~${total.toLocaleString()}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
