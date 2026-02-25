@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
-import { Search, ArrowLeft, ArrowRight, Wrench, Zap, Settings, Hammer, Bath, Pencil } from "lucide-react";
+import { Search, ArrowLeft, ArrowRight, Wrench, Zap, Settings, Hammer, Bath, Pencil, ChevronsUpDown, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { DUMMY_CUSTOMERS, type Customer } from "@/data/dummyCustomers";
 import { bundleTemplates, type BundleTemplate } from "@/data/dummyJobDetails";
+import { Command, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup } from "@/components/ui/command";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 export interface FunnelResult {
   customer: Customer | null;
@@ -149,6 +151,51 @@ function StepAddress({
   );
 }
 
+/* ── Bundle Search Dropdown ─────────────────────────────── */
+function BundleSearchDropdown({ onSelect }: { onSelect: (b: BundleTemplate) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="w-full h-12 justify-between text-sm font-normal">
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <Package className="w-4 h-4" /> Select a bundle…
+          </span>
+          <ChevronsUpDown className="w-4 h-4 text-muted-foreground" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align="start">
+        <Command>
+          <CommandInput placeholder="Search bundles…" />
+          <CommandList>
+            <CommandEmpty>No bundles found</CommandEmpty>
+            <CommandGroup>
+              {bundleTemplates.map(b => {
+                const Icon = BUNDLE_ICONS[b.id] || Wrench;
+                const total = getBundleTotal(b);
+                return (
+                  <CommandItem key={b.id} onSelect={() => { onSelect(b); setOpen(false); }} className="py-2.5">
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <Icon className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm">{b.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">{b.description}</div>
+                      </div>
+                      <span className="text-xs font-semibold text-primary shrink-0">~${total.toLocaleString()}</span>
+                    </div>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 /* ── Step 3: Bundle or Custom ──────────────────────────── */
 function StepBundle({
   onSelectBundle,
@@ -217,29 +264,8 @@ function StepBundle({
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        {/* Bundle templates */}
-        {bundleTemplates.map((b) => {
-          const Icon = BUNDLE_ICONS[b.id] || Wrench;
-          const total = getBundleTotal(b);
-          return (
-            <button
-              key={b.id}
-              onClick={() => onSelectBundle(b)}
-              className="w-full text-left rounded-lg border border-border bg-card p-4 hover:bg-muted/60 active:bg-muted transition-colors cursor-pointer"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon className="w-4.5 h-4.5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm text-card-foreground">{b.name}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{b.description}</div>
-                  <div className="text-xs font-semibold text-primary mt-1">~${total.toLocaleString()}</div>
-                </div>
-              </div>
-            </button>
-          );
-        })}
+        {/* Searchable bundle dropdown */}
+        <BundleSearchDropdown onSelect={onSelectBundle} />
       </div>
     </div>
   );
