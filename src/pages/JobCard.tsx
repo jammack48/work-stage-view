@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
-import { AppHeader } from "@/components/AppHeader";
+
 import { PageToolbar } from "@/components/PageToolbar";
 import { OverviewTab } from "@/components/job/OverviewTab";
 import { MaterialsTab } from "@/components/job/MaterialsTab";
@@ -78,8 +78,7 @@ export default function JobCard() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
+    <>
       <PageToolbar
         tabs={JOB_TABS}
         activeTab={activeTab}
@@ -88,6 +87,6 @@ export default function JobCard() {
       >
         {tabContent[activeTab]}
       </PageToolbar>
-    </div>
+    </>
   );
 }

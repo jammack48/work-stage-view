@@ -8,7 +8,7 @@ import { ChevronRight, LayoutGrid, Columns, ChevronLeft, Plus, Users, FilePlus, 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { AppHeader } from "@/components/AppHeader";
+
 import { PageToolbar } from "@/components/PageToolbar";
 import useEmblaCarousel from "embla-carousel-react";
 
@@ -67,8 +67,7 @@ const Index = () => {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
+    <>
 
       <PageToolbar
         tabs={HOME_TABS}
@@ -201,7 +200,7 @@ const Index = () => {
           </div>
         )}
       </PageToolbar>
-    </div>
+    </>
   );
 };
 

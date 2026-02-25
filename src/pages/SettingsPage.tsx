@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AppHeader } from "@/components/AppHeader";
+
 import { PageToolbar } from "@/components/PageToolbar";
 import { Button } from "@/components/ui/button";
 import { Building2, Bell, Palette, Shield, CreditCard, Wrench } from "lucide-react";
@@ -100,8 +100,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("business");
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
+    <>
       <PageToolbar
         tabs={SETTINGS_TABS}
         activeTab={activeTab}
@@ -110,6 +109,6 @@ export default function SettingsPage() {
       >
         <SettingsContent tab={activeTab} />
       </PageToolbar>
-    </div>
+    </>
   );
 }

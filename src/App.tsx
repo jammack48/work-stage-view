@@ -7,6 +7,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { ThresholdProvider } from "@/contexts/ThresholdContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
+import { AppHeader } from "@/components/AppHeader";
 import Hub from "./pages/Hub";
 import Index from "./pages/Index";
 import JobCard from "./pages/JobCard";
@@ -19,22 +20,25 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-function KeyedRoutes() {
+function AppLayout() {
   const location = useLocation();
   return (
-    <div key={location.pathname}>
-      <Routes>
-        <Route path="/" element={<Hub />} />
-        <Route path="/pipeline" element={<Index />} />
-        <Route path="/job/:id" element={<JobCard />} />
-        <Route path="/quote/:id" element={<QuotePage />} />
-        <Route path="/customers" element={<Customers />} />
-        <Route path="/customer/:id" element={<CustomerCard />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/coming-soon" element={<ComingSoon />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+    <div className="min-h-screen bg-background">
+      <AppHeader />
+      <div key={location.pathname}>
+        <Routes>
+          <Route path="/" element={<Hub />} />
+          <Route path="/pipeline" element={<Index />} />
+          <Route path="/job/:id" element={<JobCard />} />
+          <Route path="/quote/:id" element={<QuotePage />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/customer/:id" element={<CustomerCard />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/coming-soon" element={<ComingSoon />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
     </div>
   );
 }
@@ -49,7 +53,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
-            <KeyedRoutes />
+            <AppLayout />
           </BrowserRouter>
         </TooltipProvider>
       </ThresholdProvider>

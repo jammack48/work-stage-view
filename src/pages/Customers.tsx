@@ -4,7 +4,7 @@ import { Users, UserPlus, Phone, Mail, MapPin, List, Star, Archive } from "lucid
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { AppHeader } from "@/components/AppHeader";
+
 import { PageToolbar } from "@/components/PageToolbar";
 import { DUMMY_CUSTOMERS } from "@/data/dummyCustomers";
 
@@ -27,8 +27,7 @@ export default function Customers() {
     : DUMMY_CUSTOMERS.filter((c) => c.status === activeTab);
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
+    <>
 
       <PageToolbar
         tabs={CUST_TABS}
@@ -63,6 +62,6 @@ export default function Customers() {
           ))}
         </div>
       </PageToolbar>
-    </div>
+    </>
   );
 }

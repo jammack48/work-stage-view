@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getCustomer } from "@/data/dummyCustomers";
-import { AppHeader } from "@/components/AppHeader";
+
 import { PageToolbar } from "@/components/PageToolbar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -207,8 +207,7 @@ export default function CustomerCard() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
+    <>
       <PageToolbar
         tabs={CUST_TABS}
         activeTab={activeTab}
@@ -217,6 +216,6 @@ export default function CustomerCard() {
       >
         {tabContent[activeTab]}
       </PageToolbar>
-    </div>
+    </>
   );
 }
