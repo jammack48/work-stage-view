@@ -170,7 +170,54 @@ function StepBundle({
 
       <h2 className="text-lg font-bold text-card-foreground">What's the job?</h2>
 
-      <div className="space-y-2 max-h-[45vh] overflow-y-auto">
+      <div className="space-y-3 max-h-[55vh] overflow-y-auto">
+        {/* Custom job — prominent first */}
+        <div className="rounded-xl border-2 border-primary/30 bg-card p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+              <Pencil className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-sm text-card-foreground">Custom Job</div>
+              <div className="text-xs text-muted-foreground mt-0.5">Describe the work in your own words</div>
+            </div>
+          </div>
+
+          {!showCustom ? (
+            <Button
+              className="w-full mt-3 h-12 gap-2"
+              onClick={() => setShowCustom(true)}
+            >
+              <Pencil className="w-4 h-4" /> Write a description
+            </Button>
+          ) : (
+            <div className="mt-3 space-y-3">
+              <Textarea
+                value={customDesc}
+                onChange={(e) => setCustomDesc(e.target.value)}
+                placeholder="Describe the work — e.g. 'Replace hot water cylinder and reroute pipework in ground floor bathroom'"
+                className="min-h-[80px]"
+                autoFocus
+              />
+              <Button
+                className="w-full h-12"
+                disabled={!customDesc.trim()}
+                onClick={() => onCustom(customDesc.trim())}
+              >
+                Start Quote
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 py-1">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground font-medium">or choose a bundle</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        {/* Bundle templates */}
         {bundleTemplates.map((b) => {
           const Icon = BUNDLE_ICONS[b.id] || Wrench;
           const total = getBundleTotal(b);
@@ -193,46 +240,6 @@ function StepBundle({
             </button>
           );
         })}
-
-        {/* Custom quote card */}
-        <div className="rounded-lg border border-border bg-card p-4">
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
-              <Pencil className="w-4.5 h-4.5 text-muted-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm text-card-foreground">Custom Quote</div>
-              <div className="text-xs text-muted-foreground mt-0.5">Describe the work yourself</div>
-            </div>
-          </div>
-
-          {!showCustom ? (
-            <Button
-              variant="outline"
-              className="w-full mt-3 h-10"
-              onClick={() => setShowCustom(true)}
-            >
-              Write a description
-            </Button>
-          ) : (
-            <div className="mt-3 space-y-3">
-              <Textarea
-                value={customDesc}
-                onChange={(e) => setCustomDesc(e.target.value)}
-                placeholder="Describe the work — e.g. 'Replace hot water cylinder and reroute pipework in ground floor bathroom'"
-                className="min-h-[80px]"
-                autoFocus
-              />
-              <Button
-                className="w-full h-12"
-                disabled={!customDesc.trim()}
-                onClick={() => onCustom(customDesc.trim())}
-              >
-                Start Quote
-              </Button>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
