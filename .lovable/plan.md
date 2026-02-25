@@ -1,48 +1,39 @@
 
 
-## Fix: Page Heading Flash During Navigation
+## Fix: Persistent Heading Flash on Route Change
 
 ### Problem
-
-When navigating between pages (e.g., Pipeline → Customers → back), the page heading briefly shows the previous page's text before updating to the correct one. This creates a visible "overlay" or "slide" effect lasting about a second.
+The `ScrollToTop` fix addresses scroll position but doesn't solve the core issue: React reuses DOM structure between route changes, causing the old page's heading text to briefly appear before the new page renders. The heading bar in `PageToolbar` from the outgoing page lingers for a frame or two.
 
 ### Root Cause
-
-React Router unmounts the old route component and mounts the new one, but the browser may retain the previous scroll position and rendered content momentarily. There's no mechanism to instantly reset the view state on navigation. The heading bar in `PageToolbar` renders different text per page, and the transition between route components can cause a brief visual overlap.
+Each page (Index, Customers, Settings, JobCard) renders its own `<AppHeader />` and `<PageToolbar>` with a `pageHeading` prop. When React Router swaps route components, the browser may paint the old component's DOM before the new one fully mounts, creating a ghosting effect on the heading text.
 
 ### Fix
 
-**1. Add `ScrollToTop` component — `src/components/ScrollToTop.tsx` (new file)**
+**1. Force full remount on route change — `src/App.tsx`**
 
-A small component placed inside `BrowserRouter` that resets scroll position on every navigation. This eliminates the visual glitch where the old page content briefly remains visible during route changes.
+Wrap `<Routes>` in a keyed container that uses `useLocation().pathname`. This forces React to completely discard the old page DOM and build fresh on every navigation, eliminating any overlap.
+
+Create a small wrapper component inside App:
 
 ```tsx
-import { useEffect } from "react";
-import { useLocation, useNavigationType } from "react-router-dom";
-
-export const ScrollToTop = () => {
-  const { pathname } = useLocation();
-  const navType = useNavigationType();
-
-  useEffect(() => {
-    if (navType !== "POP") {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    }
-  }, [pathname, navType]);
-
-  return null;
-};
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <div key={location.pathname}>
+      <Routes>
+        {/* all routes */}
+      </Routes>
+    </div>
+  );
+}
 ```
 
-**2. Register in `src/App.tsx`**
+This requires importing `useLocation` from react-router-dom and moving the `<Routes>` block into this new component (which must be inside `<BrowserRouter>` to access the hook).
 
-Import `ScrollToTop` and place it inside `BrowserRouter`, before `Routes`.
+**2. Files changed**
+- `src/App.tsx` — wrap Routes in a keyed div using `location.pathname` to force clean remount on every navigation
 
-**3. Ensure no CSS transition on heading bar — `src/components/PageToolbar.tsx`**
-
-Confirm the heading bar div has no `transition` classes. Currently it doesn't, so no change needed — but if the issue persists, we can add `key={pathname}` to the heading bar wrapper so React forces a clean remount on every route change rather than reusing the DOM node.
-
-### Result
-
-Page transitions will be instant with no heading text overlay or flash.
+### Trade-off
+This causes a full remount of each page on navigation (no shared state preserved between routes), which is fine since each page already manages its own state independently.
 
