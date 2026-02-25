@@ -67,7 +67,7 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
           <div
             key={job.id}
             className="grid grid-cols-[auto_1fr_80px_60px] sm:grid-cols-[auto_1fr_1fr_100px_80px_70px] gap-2 sm:gap-4 px-4 sm:px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm cursor-pointer"
-            onClick={() => navigate(`/job/${job.id}`)}
+            onClick={() => navigate(["Lead", "To Quote", "Quote Sent"].includes(stage) ? `/quote/${job.id}` : `/job/${job.id}`)}
           >
             <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job, thresholds.greenMax, thresholds.orangeMax))} />
             <div className="flex items-center gap-2 min-w-0">
