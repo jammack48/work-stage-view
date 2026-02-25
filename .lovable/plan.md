@@ -1,153 +1,37 @@
 
 
-## Quote Creation Funnel — Guided Step-by-Step Flow
+## Fix: Quote Funnel Not Triggering from Pipeline
 
-Transforms `/quote/new` from a flat page into a clean, top-down guided funnel. The user walks through focused steps before landing in the builder. Existing quote editing (`/quote/:id`) remains unchanged.
+### The Problem
 
-### The Flow
+The "New Quote" action box in the pipeline navigates to `/job/new?stage=Quote Sent` — which opens the generic Job Card page with the full sidebar (Overview, Quote, Invoice, etc). It should navigate to `/quote/new` to trigger the guided quote funnel.
 
-```text
-Step 1 ─ Select Customer
-Step 2 ─ Confirm Address
-Step 3 ─ Choose Bundle or Write Description
-         ↓
-    Quote Builder (pre-populated)
-```
+Similarly, clicking individual job cards in quote-related stages (Lead, To Quote, Quote Sent) navigates to `/job/:id` instead of `/quote/:id`.
 
-Each step is a single focused card, centered on screen, with large tap targets. Progress shown as numbered dots at the top.
+### Changes
 
-### Step 1 — Select Customer
+**1. `src/pages/Index.tsx` — Route action boxes correctly**
 
-- Searchable list of customers from `DUMMY_CUSTOMERS`
-- Each row shows: name, phone, address snippet
-- Large rows (min-h-14) for easy mobile tapping
-- "Skip — no customer yet" option at the bottom
-- Selecting a customer auto-advances to Step 2
+The action boxes currently all navigate to `/job/new?stage=...`. Change the routing so quote-related actions go to `/quote/new`:
 
-### Step 2 — Confirm Address
+- "New Quote" (Quote Sent stage) → navigate to `/quote/new`
+- "Add Customer" (Lead stage) → keep as `/job/new?stage=Lead` or route to customers
+- "New Job" (In Progress) → keep as `/job/new`
+- "New Invoice" (To Invoice) → keep as `/job/new`
 
-- Pre-fills the selected customer's address
-- Single editable input field
-- Option to type a different site address
-- Back button returns to Step 1
-- "Next" button advances to Step 3
+This is a single-line change in the `onClick` handler — instead of always navigating to `/job/new?stage=...`, check if the stage is quote-related and route to `/quote/new`.
 
-### Step 3 — Bundle or Custom Description
+**2. `src/components/ExpandedStagePanel.tsx` — Route job cards by stage**
 
-- Bundle chips displayed as cards (not just chips), each showing:
-  - Bundle name (e.g. "Heat Pump Install")
-  - Short description (e.g. "Install split-system heat pump including electrical connection and commissioning")
-  - Estimated value range
-- OR a "Custom Quote" card with a textarea for writing a scope description
-- Selecting a bundle or writing a description and clicking "Start Quote" finishes the funnel
+Job cards in early pipeline stages (Lead, To Quote, Quote Sent) should navigate to `/quote/:id` instead of `/job/:id`. Later stages (In Progress, To Invoice, Paid) continue to `/job/:id`.
 
-### After Funnel Completes
+Single change: wrap the navigate call in a condition based on the stage prop.
 
-- Switches to the existing Quote workspace (PageToolbar with Overview, Line Items, Notes, History tabs)
-- Header shows: "Quote — [Bundle Name or Custom]", customer name, Draft badge
-- Line Items tab: scope description box pre-filled, sections pre-populated from bundle (if selected)
-- If no bundle chosen, sections start empty with just the description
+**3. No other changes needed**
 
-### Technical Details
+The `QuoteFunnel` component and `QuotePage` already handle the funnel flow correctly when navigated to `/quote/new`. The issue is purely that the pipeline buttons point to the wrong route.
 
-**New file: `src/components/quote/QuoteFunnel.tsx`**
-- Multi-step component with `useState` tracking current step (1-3)
-- Collects: `customer`, `address`, `bundleId | description`
-- On completion, calls `onComplete(data)` callback
-- Progress indicator: three circles at top, filled as user progresses
-- Centered layout: `max-w-lg mx-auto` on desktop, full-width on mobile
-- Large touch-friendly buttons (`h-12`)
-- Back button on steps 2 and 3
-- Clean, minimal — no clutter
+### Summary
 
-**Modified: `src/pages/QuotePage.tsx`**
-- When `id === "new"`: render `QuoteFunnel`
-- When funnel completes: switch to workspace view with collected data passed through
-- `QuoteFunnel` result flows into: page heading (customer name, quote title), scope textarea, and bundle pre-population
-- When `id` is an existing job ID: skip funnel, go straight to workspace (existing behaviour)
-
-**Modified: `src/data/dummyJobDetails.ts`**
-- Add `description` field to `BundleTemplate` interface
-- Each bundle gets a short scope summary (e.g. "Supply and install split-system heat pump including electrical connection, commissioning, and building consent")
-
-**Modified: `src/components/job/QuoteTab.tsx`**
-- Accept optional `initialBundle` prop
-- When provided, auto-applies the bundle on mount instead of starting empty
-- Existing behaviour unchanged when no prop is passed
-
-**No new dependencies. No new routes.**
-
-### Funnel Visual Design
-
-```text
-+----------------------------------+
-|  ● ○ ○   New Quote               |
-+----------------------------------+
-|                                  |
-|   Who is this quote for?         |
-|                                  |
-|   [🔍 Search customers...]      |
-|                                  |
-|   ┌────────────────────────┐     |
-|   │ Dave Thompson           │     |
-|   │ 021 555 1234 · Auckland │     |
-|   └────────────────────────┘     |
-|   ┌────────────────────────┐     |
-|   │ Sarah Mitchell          │     |
-|   │ 027 555 5678 · Wgtn     │     |
-|   └────────────────────────┘     |
-|   ...                            |
-|                                  |
-|   [ Skip — no customer yet ]     |
-|                                  |
-+----------------------------------+
-```
-
-```text
-+----------------------------------+
-|  ● ● ○   New Quote               |
-+----------------------------------+
-|                                  |
-|   ← Back                        |
-|                                  |
-|   Site Address                   |
-|                                  |
-|   ┌────────────────────────┐     |
-|   │ 12 Queen St, Auckland  │     |
-|   └────────────────────────┘     |
-|                                  |
-|          [ Next → ]              |
-|                                  |
-+----------------------------------+
-```
-
-```text
-+----------------------------------+
-|  ● ● ●   New Quote               |
-+----------------------------------+
-|                                  |
-|   ← Back                        |
-|                                  |
-|   What's the job?                |
-|                                  |
-|   ┌────────────────────────┐     |
-|   │ 🔧 Service Call        │     |
-|   │ Diagnose + fix, travel │     |
-|   │ ~$282                  │     |
-|   └────────────────────────┘     |
-|   ┌────────────────────────┐     |
-|   │ ⚡ Heat Pump Install    │     |
-|   │ Full install + consent │     |
-|   │ ~$1,247                │     |
-|   └────────────────────────┘     |
-|   ...                            |
-|                                  |
-|   ┌────────────────────────┐     |
-|   │ ✏️ Custom Quote         │     |
-|   │ [Describe the work...] │     |
-|   │     [ Start Quote ]    │     |
-|   └────────────────────────┘     |
-|                                  |
-+----------------------------------+
-```
+Two files, two small routing fixes. The funnel itself works — it just was never being reached because the pipeline always sent users to `/job/new`.
 
