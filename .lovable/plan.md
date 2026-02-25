@@ -1,51 +1,45 @@
 
 
-## Fix: Quote Funnel Missing Standard Layout + Pipeline Action Buttons
+## Changes Required
 
-### Problem 1 — Quote Funnel has no standard layout
+### 1. Fix the Quotes tab icon and make it navigate to `/quote/new`
 
-The `QuoteFunnel` component renders as a bare full-screen page with no `AppHeader` or `PageToolbar`. Every other page in the app follows the 4-layer structure (AppHeader → PageToolbar → Page Heading → Content). The funnel should too.
+**File: `src/pages/Index.tsx`**
 
-### Problem 2 — Pipeline toolbar lacks quick-action buttons
+The `$` (DollarSign) icon in the sidebar represents "Quotes" but does nothing when clicked — `handleTabChange` only handles `customers` and `settings`, so clicking "quotes" just sets `activeView` to `"quotes"` with no visible effect.
 
-The pipeline page heading bar should include quick-create buttons (Add Customer, Add Quote, Add Invoice) so users can start key actions from anywhere on the pipeline without scrolling to find a specific stage's dashed action box.
+Changes:
+- Replace `DollarSign` icon with `FilePlus` (or `Plus` wrapped with `FileText`) to indicate "New Quote" — a plus icon makes the action clearer
+- In `handleTabChange`, add: `if (id === "quotes") { navigate("/quote/new"); return; }`
+- Similarly for invoices: `if (id === "invoices") { navigate("/job/new?stage=To+Invoice"); return; }`
 
----
+### 2. Home button should navigate to `/pipeline` (not `/`)
 
-### Changes
+**File: `src/components/PageToolbar.tsx`**
 
-**1. `src/pages/QuotePage.tsx` — Wrap funnel in standard layout**
+The Home button in the PageToolbar currently navigates to `/` (the Hub). On sub-pages like `/job/:id` or `/quote/new`, clicking Home should take users back to the pipeline dashboard at `/pipeline`, since that is the operational home for job management.
 
-Instead of returning the bare `<QuoteFunnel />` component when `isNew && !funnelComplete`, wrap it in the same `AppHeader` + `PageToolbar` shell used after the funnel completes. The funnel content becomes the `children` of the PageToolbar, maintaining the standard layout.
+Change: Update the Home button's `navigate("/")` to `navigate("/pipeline")`.
 
-- AppHeader stays at top
-- PageToolbar renders with the same quote tabs (but the funnel content replaces tab content)
-- Page heading shows "New Quote" with the step indicator
-- The funnel steps render inside the content area, centered with `max-w-lg mx-auto`
-- Tab buttons are still visible but disabled/dimmed during funnel (user can't jump to Line Items before completing the funnel)
+### 3. Rename branding on Hub page
 
-**2. `src/components/quote/QuoteFunnel.tsx` — Remove outer layout wrapper**
+**File: `src/pages/Hub.tsx`**
 
-Strip the `min-h-screen bg-background` and `max-w-lg mx-auto px-4 py-8` outer wrapper from the funnel. Move the step indicator into a heading that the parent page can use. The funnel becomes a pure content component that fits inside any container.
+- Change heading from "Your Control Panel" to "Your Dashboard"
+- Change app name reference to "Tradie Toolbelt" (the AppHeader already says "Toolbelt" — keep that consistent)
+- Update tagline to "Run your entire trade business from one place." (already correct)
 
-- Export the `StepIndicator` so the parent can place it in the page heading bar
-- The funnel renders just the step content (customer list, address input, bundle cards) without its own page shell
-- Keep `max-w-lg mx-auto` on the inner content for centering within the content area
+### 4. Rename in AppHeader
 
-**3. `src/pages/Index.tsx` — Add quick-action buttons to pipeline heading**
+**File: `src/components/AppHeader.tsx`**
 
-Add three compact buttons to the pipeline page heading bar (next to the layout toggle):
-- **+ Customer** → navigates to `/customers` (or a future new-customer flow)
-- **+ Quote** → navigates to `/quote/new`
-- **+ Invoice** → navigates to `/job/new?stage=To+Invoice`
+- Change the header text from "Toolbelt" to "Tradie Toolbelt"
 
-These appear as small pill buttons with a Plus icon, grouped together. On mobile they stack or scroll horizontally.
+### Summary
 
----
-
-### Result
-
-- `/quote/new` now shows AppHeader + PageToolbar + "New Quote" heading + funnel content — same shell as every other page
-- Pipeline dashboard has quick-create actions visible in the heading bar at all times
-- Consistent user flow across all pages
+Four small edits across four files:
+- Quotes tab navigates to `/quote/new` with a more descriptive icon
+- Invoices tab navigates to `/job/new?stage=To+Invoice`
+- Home button in PageToolbar goes to `/pipeline`
+- Hub heading changed to "Your Dashboard", app name to "Tradie Toolbelt"
 
