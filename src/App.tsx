@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { ThresholdProvider } from "@/contexts/ThresholdContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
@@ -27,6 +28,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               <Route path="/" element={<Hub />} />
               <Route path="/pipeline" element={<Index />} />
