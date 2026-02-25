@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
+import { getJobDetail, getNewJobDetail, type BundleTemplate } from "@/data/dummyJobDetails";
 import { AppHeader } from "@/components/AppHeader";
 import { PageToolbar } from "@/components/PageToolbar";
 import { QuoteOverviewTab } from "@/components/quote/QuoteOverviewTab";
 import { QuoteTab } from "@/components/job/QuoteTab";
+import { QuoteFunnel, type FunnelResult } from "@/components/quote/QuoteFunnel";
 import { Textarea } from "@/components/ui/textarea";
 import { NotesTab } from "@/components/job/NotesTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
@@ -33,9 +34,35 @@ export default function QuotePage() {
   const [activeTab, setActiveTab] = useState<QuotePageTab>("line-items");
   const [scope, setScope] = useState("");
   const [status, setStatus] = useState<QuoteStatus>("Draft");
+  const [funnelComplete, setFunnelComplete] = useState(false);
+  const [funnelData, setFunnelData] = useState<FunnelResult | null>(null);
 
-  const job = id === "new"
-    ? { ...getNewJobDetail("To Quote"), jobName: "" }
+  const isNew = id === "new";
+
+  // Show funnel for new quotes until completed
+  if (isNew && !funnelComplete) {
+    return (
+      <QuoteFunnel
+        onComplete={(data) => {
+          setFunnelData(data);
+          setScope(data.description);
+          setFunnelComplete(true);
+        }}
+      />
+    );
+  }
+
+  // Build job detail
+  const job = isNew
+    ? {
+        ...getNewJobDetail("To Quote"),
+        jobName: funnelData?.bundle?.name || "Custom Quote",
+        client: funnelData?.customer?.name || "",
+        clientPhone: funnelData?.customer?.phone || "",
+        clientEmail: funnelData?.customer?.email || "",
+        address: funnelData?.address || "",
+        description: funnelData?.description || "",
+      }
     : getJobDetail(id || "");
 
   if (!job) {
@@ -46,8 +73,8 @@ export default function QuotePage() {
     );
   }
 
-  // Initialize scope from job description
-  if (scope === "" && job.description) {
+  // Initialize scope from job description for existing quotes
+  if (scope === "" && job.description && !isNew) {
     setScope(job.description);
   }
 
@@ -68,20 +95,27 @@ export default function QuotePage() {
             className="min-h-[60px] border-0 bg-transparent p-0 focus-visible:ring-0 text-sm resize-none"
           />
         </div>
-        <QuoteTab job={job} />
+        <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} />
       </div>
     ),
     notes: <NotesTab notes={job.notes} />,
     history: <HistoryTab job={job} />,
   };
 
+  const quoteTitle = isNew
+    ? funnelData?.bundle?.name
+      ? `Quote — ${funnelData.bundle.name}`
+      : "New Quote"
+    : job.jobName
+      ? `Quote — ${job.jobName}`
+      : "Quote";
+
   const quoteHeading = (
     <div className="flex items-center gap-2 flex-wrap">
-      <h2 className="text-base font-bold text-card-foreground">{job.jobName ? `Quote — ${job.jobName}` : "New Quote"}</h2>
+      <h2 className="text-base font-bold text-card-foreground">{quoteTitle}</h2>
       {job.client && (
         <span className="text-sm text-muted-foreground">for {job.client}</span>
       )}
-      <span className="text-sm font-bold text-card-foreground">${job.value.toLocaleString()}</span>
       <button
         onClick={cycleStatus}
         className={cn("text-xs font-semibold px-2 py-0.5 rounded-full cursor-pointer transition-colors", statusColor[status])}

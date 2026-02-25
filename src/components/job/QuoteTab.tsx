@@ -30,6 +30,7 @@ interface LineItem {
 
 interface QuoteTabProps {
   job: JobDetail;
+  initialBundle?: import("@/data/dummyJobDetails").BundleTemplate;
 }
 
 type QuoteStatus = "Draft" | "Sent" | "Approved";
@@ -136,24 +137,23 @@ function ItemRow({
 }
 
 /* ── Main QuoteTab ──────────────────────────────────────── */
-export function QuoteTab({ job }: QuoteTabProps) {
-  // Initialise from job data
-  const initialLabour: LineItem[] = job.timeEntries.map((t) => ({
-    id: genId(),
-    name: `${t.staff} — ${t.description}`,
-    qty: t.hours,
-    unitPrice: HOURLY_RATE,
-  }));
-  const initialMaterials: LineItem[] = job.materials.map((m) => ({
-    id: genId(),
-    name: m.name,
-    qty: m.quantity,
-    unitPrice: m.unitPrice,
-  }));
+export function QuoteTab({ job, initialBundle }: QuoteTabProps) {
+  // If a bundle was passed from the funnel, use its items; otherwise fall back to job data
+  const initialLabour: LineItem[] = initialBundle
+    ? initialBundle.labour.map((i) => ({ id: genId(), name: i.name, qty: i.qty, unitPrice: i.unitPrice }))
+    : job.timeEntries.map((t) => ({ id: genId(), name: `${t.staff} — ${t.description}`, qty: t.hours, unitPrice: HOURLY_RATE }));
+
+  const initialMaterials: LineItem[] = initialBundle
+    ? initialBundle.materials.map((i) => ({ id: genId(), name: i.name, qty: i.qty, unitPrice: i.unitPrice }))
+    : job.materials.map((m) => ({ id: genId(), name: m.name, qty: m.quantity, unitPrice: m.unitPrice }));
+
+  const initialExtras: LineItem[] = initialBundle
+    ? initialBundle.extras.map((i) => ({ id: genId(), name: i.name, qty: i.qty, unitPrice: i.unitPrice }))
+    : [];
 
   const [labourItems, setLabourItems] = useState<LineItem[]>(initialLabour);
   const [materialItems, setMaterialItems] = useState<LineItem[]>(initialMaterials);
-  const [extrasItems, setExtrasItems] = useState<LineItem[]>([]);
+  const [extrasItems, setExtrasItems] = useState<LineItem[]>(initialExtras);
   const [status, setStatus] = useState<QuoteStatus>("Draft");
   const [notes, setNotes] = useState("");
   const [notesOpen, setNotesOpen] = useState(false);
@@ -161,7 +161,7 @@ export function QuoteTab({ job }: QuoteTabProps) {
   // Section collapse state — Labour expanded by default, others collapsed if empty
   const [labourOpen, setLabourOpen] = useState(true);
   const [materialsOpen, setMaterialsOpen] = useState(initialMaterials.length > 0);
-  const [extrasOpen, setExtrasOpen] = useState(false);
+  const [extrasOpen, setExtrasOpen] = useState(initialExtras.length > 0);
 
   // Quick-add state
   const [quickAddOpen, setQuickAddOpen] = useState(false);
