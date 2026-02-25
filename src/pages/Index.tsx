@@ -4,7 +4,7 @@ import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
-import { ChevronRight, LayoutGrid, Columns, ChevronLeft, Plus, Users, DollarSign, FileText, Settings } from "lucide-react";
+import { ChevronRight, LayoutGrid, Columns, ChevronLeft, Plus, Users, FilePlus, FileText, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -18,7 +18,7 @@ type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings";
 const HOME_TABS = [
   { id: "pipeline", label: "Pipeline", icon: Columns },
   { id: "customers", label: "Customers", icon: Users },
-  { id: "quotes", label: "Quotes", icon: DollarSign },
+  { id: "quotes", label: "New Quote", icon: FilePlus },
   { id: "invoices", label: "Invoices", icon: FileText },
   { id: "settings", label: "Settings", icon: Settings },
 ];
@@ -54,6 +54,8 @@ const Index = () => {
   const handleTabChange = (id: string) => {
     if (id === "customers") { navigate("/customers"); return; }
     if (id === "settings") { navigate("/settings"); return; }
+    if (id === "quotes") { navigate("/quote/new"); return; }
+    if (id === "invoices") { navigate("/job/new?stage=To+Invoice"); return; }
     setActiveView(id as HomeView);
   };
 
