@@ -5,7 +5,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { PageToolbar } from "@/components/PageToolbar";
 import { QuoteOverviewTab } from "@/components/quote/QuoteOverviewTab";
 import { QuoteTab } from "@/components/job/QuoteTab";
-import { QuoteFunnel, type FunnelResult } from "@/components/quote/QuoteFunnel";
+import { QuoteFunnel, StepIndicator, type FunnelResult } from "@/components/quote/QuoteFunnel";
 import { Textarea } from "@/components/ui/textarea";
 import { NotesTab } from "@/components/job/NotesTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
@@ -36,19 +36,37 @@ export default function QuotePage() {
   const [status, setStatus] = useState<QuoteStatus>("Draft");
   const [funnelComplete, setFunnelComplete] = useState(false);
   const [funnelData, setFunnelData] = useState<FunnelResult | null>(null);
+  const [funnelStep, setFunnelStep] = useState(1);
 
   const isNew = id === "new";
 
-  // Show funnel for new quotes until completed
+  // During funnel: wrap in standard layout
   if (isNew && !funnelComplete) {
     return (
-      <QuoteFunnel
-        onComplete={(data) => {
-          setFunnelData(data);
-          setScope(data.description);
-          setFunnelComplete(true);
-        }}
-      />
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <PageToolbar
+          tabs={QUOTE_TABS}
+          activeTab="overview"
+          onTabChange={() => {}} // tabs disabled during funnel
+          pageHeading={
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-base font-bold text-card-foreground">New Quote</h2>
+              <StepIndicator current={funnelStep} />
+            </div>
+          }
+          disabledTabs
+        >
+          <QuoteFunnel
+            onComplete={(data) => {
+              setFunnelData(data);
+              setScope(data.description);
+              setFunnelComplete(true);
+            }}
+            onStepChange={setFunnelStep}
+          />
+        </PageToolbar>
+      </div>
     );
   }
 

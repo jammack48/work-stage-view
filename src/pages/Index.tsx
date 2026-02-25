@@ -73,7 +73,7 @@ const Index = () => {
         activeTab={activeView}
         onTabChange={handleTabChange}
         pageHeading={
-          <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium flex-wrap">
               <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
               <div className="flex items-center gap-0.5 opacity-50">
@@ -82,6 +82,17 @@ const Index = () => {
                 <ChevronRight className="w-3.5 h-3.5 -ml-2" />
                 <ChevronRight className="w-3.5 h-3.5 -ml-2" />
                 <span className="text-xs">Paid</span>
+              </div>
+              <div className="flex items-center gap-1 ml-2">
+                <Button variant="outline" size="sm" className="h-7 px-2 gap-1 text-xs" onClick={() => navigate("/customers")}>
+                  <Plus className="w-3 h-3" /> Customer
+                </Button>
+                <Button variant="outline" size="sm" className="h-7 px-2 gap-1 text-xs" onClick={() => navigate("/quote/new")}>
+                  <Plus className="w-3 h-3" /> Quote
+                </Button>
+                <Button variant="outline" size="sm" className="h-7 px-2 gap-1 text-xs" onClick={() => navigate("/job/new?stage=To+Invoice")}>
+                  <Plus className="w-3 h-3" /> Invoice
+                </Button>
               </div>
             </div>
             {!isMobile && (
