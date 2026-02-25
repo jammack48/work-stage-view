@@ -109,6 +109,7 @@ export const materialsPool = catalogueItems.filter(i => i.section === "materials
 export interface BundleTemplate {
   id: string;
   name: string;
+  description: string;
   labour: { name: string; qty: number; unitPrice: number }[];
   materials: { name: string; qty: number; unitPrice: number }[];
   extras: { name: string; qty: number; unitPrice: number }[];
@@ -118,6 +119,7 @@ export const bundleTemplates: BundleTemplate[] = [
   {
     id: "b1",
     name: "Service Call",
+    description: "Diagnose and repair fault on-site, including travel and call-out",
     labour: [{ name: "Call-out Fee", qty: 1, unitPrice: 120 }, { name: "Standard Install", qty: 1, unitPrice: 85 }],
     materials: [{ name: "Silicone Sealant Clear", qty: 1, unitPrice: 12 }],
     extras: [{ name: "Travel / Mileage", qty: 1, unitPrice: 65 }],
@@ -125,6 +127,7 @@ export const bundleTemplates: BundleTemplate[] = [
   {
     id: "b2",
     name: "Heat Pump Install",
+    description: "Supply and install split-system heat pump including electrical connection, commissioning, and building consent",
     labour: [{ name: "Standard Install", qty: 6, unitPrice: 85 }, { name: "Apprentice Rate", qty: 6, unitPrice: 55 }],
     materials: [{ name: "Twin & Earth 2.5mm²", qty: 2, unitPrice: 89 }, { name: "Junction Box IP65", qty: 2, unitPrice: 8.5 }],
     extras: [{ name: "Building Permit", qty: 1, unitPrice: 350 }],
@@ -132,6 +135,7 @@ export const bundleTemplates: BundleTemplate[] = [
   {
     id: "b3",
     name: "Switchboard Upgrade",
+    description: "Replace existing switchboard with modern RCD-protected board, rewire circuits, and test",
     labour: [{ name: "Standard Install", qty: 8, unitPrice: 85 }, { name: "Apprentice Rate", qty: 4, unitPrice: 55 }],
     materials: [{ name: "Twin & Earth 2.5mm²", qty: 3, unitPrice: 89 }, { name: "Junction Box IP65", qty: 4, unitPrice: 8.5 }, { name: "LED Downlight 10W", qty: 6, unitPrice: 24 }],
     extras: [{ name: "Inspection Fee", qty: 1, unitPrice: 180 }],
@@ -139,6 +143,7 @@ export const bundleTemplates: BundleTemplate[] = [
   {
     id: "b4",
     name: "Maintenance",
+    description: "General maintenance visit — inspect, service, and minor repairs",
     labour: [{ name: "Standard Install", qty: 2, unitPrice: 85 }],
     materials: [{ name: "Silicone Sealant Clear", qty: 1, unitPrice: 12 }],
     extras: [{ name: "Waste Disposal", qty: 1, unitPrice: 95 }],
@@ -146,6 +151,7 @@ export const bundleTemplates: BundleTemplate[] = [
   {
     id: "b5",
     name: "Bathroom Reno",
+    description: "Full bathroom renovation including plumbing, fixtures, tiling prep, and waste disposal",
     labour: [{ name: "Standard Install", qty: 16, unitPrice: 85 }, { name: "Apprentice Rate", qty: 16, unitPrice: 55 }],
     materials: [{ name: "Copper Pipe 15mm (3m)", qty: 6, unitPrice: 32 }, { name: "PVC Elbow 90° 50mm", qty: 8, unitPrice: 4.5 }, { name: "Flexi Hose 500mm", qty: 4, unitPrice: 18 }, { name: "Silicone Sealant Clear", qty: 3, unitPrice: 12 }],
     extras: [{ name: "Building Permit", qty: 1, unitPrice: 350 }, { name: "Waste Disposal", qty: 1, unitPrice: 95 }, { name: "Inspection Fee", qty: 1, unitPrice: 180 }],
