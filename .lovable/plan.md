@@ -1,45 +1,48 @@
 
 
-## Changes Required
+## Fix: Page Heading Flash During Navigation
 
-### 1. Fix the Quotes tab icon and make it navigate to `/quote/new`
+### Problem
 
-**File: `src/pages/Index.tsx`**
+When navigating between pages (e.g., Pipeline → Customers → back), the page heading briefly shows the previous page's text before updating to the correct one. This creates a visible "overlay" or "slide" effect lasting about a second.
 
-The `$` (DollarSign) icon in the sidebar represents "Quotes" but does nothing when clicked — `handleTabChange` only handles `customers` and `settings`, so clicking "quotes" just sets `activeView` to `"quotes"` with no visible effect.
+### Root Cause
 
-Changes:
-- Replace `DollarSign` icon with `FilePlus` (or `Plus` wrapped with `FileText`) to indicate "New Quote" — a plus icon makes the action clearer
-- In `handleTabChange`, add: `if (id === "quotes") { navigate("/quote/new"); return; }`
-- Similarly for invoices: `if (id === "invoices") { navigate("/job/new?stage=To+Invoice"); return; }`
+React Router unmounts the old route component and mounts the new one, but the browser may retain the previous scroll position and rendered content momentarily. There's no mechanism to instantly reset the view state on navigation. The heading bar in `PageToolbar` renders different text per page, and the transition between route components can cause a brief visual overlap.
 
-### 2. Home button should navigate to `/pipeline` (not `/`)
+### Fix
 
-**File: `src/components/PageToolbar.tsx`**
+**1. Add `ScrollToTop` component — `src/components/ScrollToTop.tsx` (new file)**
 
-The Home button in the PageToolbar currently navigates to `/` (the Hub). On sub-pages like `/job/:id` or `/quote/new`, clicking Home should take users back to the pipeline dashboard at `/pipeline`, since that is the operational home for job management.
+A small component placed inside `BrowserRouter` that resets scroll position on every navigation. This eliminates the visual glitch where the old page content briefly remains visible during route changes.
 
-Change: Update the Home button's `navigate("/")` to `navigate("/pipeline")`.
+```tsx
+import { useEffect } from "react";
+import { useLocation, useNavigationType } from "react-router-dom";
 
-### 3. Rename branding on Hub page
+export const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  const navType = useNavigationType();
 
-**File: `src/pages/Hub.tsx`**
+  useEffect(() => {
+    if (navType !== "POP") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+  }, [pathname, navType]);
 
-- Change heading from "Your Control Panel" to "Your Dashboard"
-- Change app name reference to "Tradie Toolbelt" (the AppHeader already says "Toolbelt" — keep that consistent)
-- Update tagline to "Run your entire trade business from one place." (already correct)
+  return null;
+};
+```
 
-### 4. Rename in AppHeader
+**2. Register in `src/App.tsx`**
 
-**File: `src/components/AppHeader.tsx`**
+Import `ScrollToTop` and place it inside `BrowserRouter`, before `Routes`.
 
-- Change the header text from "Toolbelt" to "Tradie Toolbelt"
+**3. Ensure no CSS transition on heading bar — `src/components/PageToolbar.tsx`**
 
-### Summary
+Confirm the heading bar div has no `transition` classes. Currently it doesn't, so no change needed — but if the issue persists, we can add `key={pathname}` to the heading bar wrapper so React forces a clean remount on every route change rather than reusing the DOM node.
 
-Four small edits across four files:
-- Quotes tab navigates to `/quote/new` with a more descriptive icon
-- Invoices tab navigates to `/job/new?stage=To+Invoice`
-- Home button in PageToolbar goes to `/pipeline`
-- Hub heading changed to "Your Dashboard", app name to "Tradie Toolbelt"
+### Result
+
+Page transitions will be instant with no heading text overlay or flash.
 
