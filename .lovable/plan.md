@@ -1,98 +1,153 @@
 
 
-## Quote Builder v2: Bundles + Stacked Sections
+## Quote Creation Funnel — Guided Step-by-Step Flow
 
-Evolves the current tab-based QuoteTab into a stacked, collapsible layout with one-tap bundle templates.
+Transforms `/quote/new` from a flat page into a clean, top-down guided funnel. The user walks through focused steps before landing in the builder. Existing quote editing (`/quote/:id`) remains unchanged.
 
-### What Changes
-
-**1. Replace section tabs with stacked collapsible sections**
-
-Currently Labour/Materials/Extras are behind tabs -- you can only see one at a time. Instead, show all three stacked vertically with collapse toggles. Collapsed sections show just the section name and subtotal. Expanded sections show inline-editable rows.
+### The Flow
 
 ```text
-LABOUR                        $382.50  [v]
-  Jake Turner - Strip out...   4.5  $85
-  Ben Kowalski - Assist...     4.5  $85
-  [+ Add Item]
-
-MATERIALS                     $182.00  [^]  <-- collapsed
-EXTRAS                          $0.00  [^]  <-- collapsed
+Step 1 ─ Select Customer
+Step 2 ─ Confirm Address
+Step 3 ─ Choose Bundle or Write Description
+         ↓
+    Quote Builder (pre-populated)
 ```
 
-This lets users see the full cost breakdown at a glance without tab-switching.
+Each step is a single focused card, centered on screen, with large tap targets. Progress shown as numbered dots at the top.
 
-**2. Add Bundles bar at top**
+### Step 1 — Select Customer
 
-A horizontal scrollable row of pre-set bundle chips above the sections. Tapping a bundle fills all three sections with template items.
+- Searchable list of customers from `DUMMY_CUSTOMERS`
+- Each row shows: name, phone, address snippet
+- Large rows (min-h-14) for easy mobile tapping
+- "Skip — no customer yet" option at the bottom
+- Selecting a customer auto-advances to Step 2
 
-```text
-[Service Call] [Heat Pump] [Switchboard] [Maintenance] [+ Custom]
-```
+### Step 2 — Confirm Address
 
-Bundles defined as static data for now (no persistence). Each bundle contains arrays of labour, material, and extras items with default quantities and prices.
+- Pre-fills the selected customer's address
+- Single editable input field
+- Option to type a different site address
+- Back button returns to Step 1
+- "Next" button advances to Step 3
 
-**3. Enhance command palette with section-aware items**
+### Step 3 — Bundle or Custom Description
 
-The "Add Item" palette currently only shows materials. Expand it to show items grouped by section (Labour Tasks, Materials, Extras/Permits). When user selects an item, it auto-adds to the correct section -- no need to be "in" that section first.
+- Bundle chips displayed as cards (not just chips), each showing:
+  - Bundle name (e.g. "Heat Pump Install")
+  - Short description (e.g. "Install split-system heat pump including electrical connection and commissioning")
+  - Estimated value range
+- OR a "Custom Quote" card with a textarea for writing a scope description
+- Selecting a bundle or writing a description and clicking "Start Quote" finishes the funnel
 
-**4. Universal add input (quick-add bar)**
+### After Funnel Completes
 
-A single input field at the top of the sections area: "Type to add item...". As user types, it searches across all sections in the palette. Selecting an item adds it to the correct section automatically. This is the "type 3 letters, pick, done" flow.
-
-### Layout (Mobile-First)
-
-```text
-+----------------------------------+
-| Quote           [Draft] badge    |
-+----------------------------------+
-| [Service Call] [Heat Pump] [...]  |  <-- Bundle chips (scroll)
-+----------------------------------+
-| [ Type to add item...        ]   |  <-- Quick-add input
-+----------------------------------+
-| LABOUR              $382.50  [v] |  <-- Collapsible
-|   row / row / row                |
-|   [+ Add]                        |
-+----------------------------------+
-| MATERIALS           $182.00  [v] |
-|   row / row / row                |
-|   [+ Add]                        |
-+----------------------------------+
-| EXTRAS                $0.00  [^] |  <-- Collapsed
-+----------------------------------+
-| Notes [v]                        |
-+----------------------------------+
-| Summary Card (sticky on mobile)  |
-|   Labour / Materials / Extras    |
-|   GST / TOTAL                    |
-+----------------------------------+
-| [Send Quote]  [Save Draft]       |
-+----------------------------------+
-```
+- Switches to the existing Quote workspace (PageToolbar with Overview, Line Items, Notes, History tabs)
+- Header shows: "Quote — [Bundle Name or Custom]", customer name, Draft badge
+- Line Items tab: scope description box pre-filled, sections pre-populated from bundle (if selected)
+- If no bundle chosen, sections start empty with just the description
 
 ### Technical Details
 
-**Files to modify:**
-- `src/components/job/QuoteTab.tsx` -- rewrite layout from tabs to stacked collapsible sections, add bundles bar and quick-add input
-- `src/data/dummyJobDetails.ts` -- add bundle templates data and section tags on materialsPool items
+**New file: `src/components/quote/QuoteFunnel.tsx`**
+- Multi-step component with `useState` tracking current step (1-3)
+- Collects: `customer`, `address`, `bundleId | description`
+- On completion, calls `onComplete(data)` callback
+- Progress indicator: three circles at top, filled as user progresses
+- Centered layout: `max-w-lg mx-auto` on desktop, full-width on mobile
+- Large touch-friendly buttons (`h-12`)
+- Back button on steps 2 and 3
+- Clean, minimal — no clutter
 
-**Bundle data structure (in dummyJobDetails.ts):**
-- Each bundle has a name, icon, and arrays: `labour[]`, `materials[]`, `extras[]`
-- Items reference materialsPool entries where possible
-- 4-5 pre-set bundles: Service Call, Heat Pump Install, Switchboard Upgrade, Maintenance, Bathroom Reno
+**Modified: `src/pages/QuotePage.tsx`**
+- When `id === "new"`: render `QuoteFunnel`
+- When funnel completes: switch to workspace view with collected data passed through
+- `QuoteFunnel` result flows into: page heading (customer name, quote title), scope textarea, and bundle pre-population
+- When `id` is an existing job ID: skip funnel, go straight to workspace (existing behaviour)
 
-**materialsPool enhancement:**
-- Add a `section` field to each item: `"labour" | "materials" | "extras"`
-- Add a few labour-type entries (e.g. "Standard install", "Call-out fee") and extras (e.g. "Building permit", "Inspection fee")
-- Command palette groups items by section
+**Modified: `src/data/dummyJobDetails.ts`**
+- Add `description` field to `BundleTemplate` interface
+- Each bundle gets a short scope summary (e.g. "Supply and install split-system heat pump including electrical connection, commissioning, and building consent")
 
-**QuoteTab component changes:**
-- Replace `Tabs` with three `Collapsible` components stacked vertically
-- Each section independently collapsible, starts with Labour expanded, others collapsed if empty
-- Bundle chips as a horizontal scrollable flex row at top
-- Quick-add input uses `Command` inline (not in a dialog) with dropdown suggestions
-- "Add Item" button per section still opens the full palette dialog filtered to that section
-- All existing functionality preserved: inline editing, Enter-to-add-row, delete, status cycling, notes, summary card, action buttons
+**Modified: `src/components/job/QuoteTab.tsx`**
+- Accept optional `initialBundle` prop
+- When provided, auto-applies the bundle on mount instead of starting empty
+- Existing behaviour unchanged when no prop is passed
 
-**No new dependencies. No new files needed.**
+**No new dependencies. No new routes.**
+
+### Funnel Visual Design
+
+```text
++----------------------------------+
+|  ● ○ ○   New Quote               |
++----------------------------------+
+|                                  |
+|   Who is this quote for?         |
+|                                  |
+|   [🔍 Search customers...]      |
+|                                  |
+|   ┌────────────────────────┐     |
+|   │ Dave Thompson           │     |
+|   │ 021 555 1234 · Auckland │     |
+|   └────────────────────────┘     |
+|   ┌────────────────────────┐     |
+|   │ Sarah Mitchell          │     |
+|   │ 027 555 5678 · Wgtn     │     |
+|   └────────────────────────┘     |
+|   ...                            |
+|                                  |
+|   [ Skip — no customer yet ]     |
+|                                  |
++----------------------------------+
+```
+
+```text
++----------------------------------+
+|  ● ● ○   New Quote               |
++----------------------------------+
+|                                  |
+|   ← Back                        |
+|                                  |
+|   Site Address                   |
+|                                  |
+|   ┌────────────────────────┐     |
+|   │ 12 Queen St, Auckland  │     |
+|   └────────────────────────┘     |
+|                                  |
+|          [ Next → ]              |
+|                                  |
++----------------------------------+
+```
+
+```text
++----------------------------------+
+|  ● ● ●   New Quote               |
++----------------------------------+
+|                                  |
+|   ← Back                        |
+|                                  |
+|   What's the job?                |
+|                                  |
+|   ┌────────────────────────┐     |
+|   │ 🔧 Service Call        │     |
+|   │ Diagnose + fix, travel │     |
+|   │ ~$282                  │     |
+|   └────────────────────────┘     |
+|   ┌────────────────────────┐     |
+|   │ ⚡ Heat Pump Install    │     |
+|   │ Full install + consent │     |
+|   │ ~$1,247                │     |
+|   └────────────────────────┘     |
+|   ...                            |
+|                                  |
+|   ┌────────────────────────┐     |
+|   │ ✏️ Custom Quote         │     |
+|   │ [Describe the work...] │     |
+|   │     [ Start Quote ]    │     |
+|   └────────────────────────┘     |
+|                                  |
++----------------------------------+
+```
 
