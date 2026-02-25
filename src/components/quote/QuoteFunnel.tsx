@@ -15,6 +15,7 @@ export interface FunnelResult {
 
 interface QuoteFunnelProps {
   onComplete: (data: FunnelResult) => void;
+  onStepChange?: (step: number) => void;
 }
 
 const BUNDLE_ICONS: Record<string, React.ElementType> = {
@@ -32,17 +33,23 @@ function getBundleTotal(b: BundleTemplate) {
   return labour + materials + extras;
 }
 
-/* ── Progress dots ─────────────────────────────────────── */
-function StepIndicator({ current }: { current: number }) {
+/* ── Progress dots (exported for parent heading bar) ──── */
+export function StepIndicator({ current }: { current: number }) {
+  const labels = ["Customer", "Address", "Scope"];
   return (
     <div className="flex items-center gap-2">
       {[1, 2, 3].map((n) => (
-        <div
-          key={n}
-          className={`w-2.5 h-2.5 rounded-full transition-colors ${
-            n <= current ? "bg-primary" : "bg-muted"
-          }`}
-        />
+        <div key={n} className="flex items-center gap-1.5">
+          <div
+            className={`w-2.5 h-2.5 rounded-full transition-colors ${
+              n <= current ? "bg-primary" : "bg-muted"
+            }`}
+          />
+          <span className={`text-xs ${n <= current ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+            {labels[n - 1]}
+          </span>
+          {n < 3 && <span className="text-muted-foreground/40 text-xs mx-0.5">›</span>}
+        </div>
       ))}
     </div>
   );
@@ -231,9 +238,10 @@ function StepBundle({
   );
 }
 
-/* ── Main Funnel ───────────────────────────────────────── */
-export function QuoteFunnel({ onComplete }: QuoteFunnelProps) {
-  const [step, setStep] = useState(1);
+/* ── Main Funnel (pure content, no page shell) ─────────── */
+export function QuoteFunnel({ onComplete, onStepChange }: QuoteFunnelProps) {
+  const [step, _setStep] = useState(1);
+  const setStep = (s: number) => { _setStep(s); onStepChange?.(s); };
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [address, setAddress] = useState("");
 
@@ -258,34 +266,31 @@ export function QuoteFunnel({ onComplete }: QuoteFunnelProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-lg mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <StepIndicator current={step} />
-          <span className="text-sm font-semibold text-muted-foreground">New Quote</span>
-        </div>
-
-        {/* Steps */}
-        {step === 1 && (
-          <StepCustomer onSelect={handleSelectCustomer} onSkip={handleSkipCustomer} />
-        )}
-        {step === 2 && (
-          <StepAddress
-            address={address}
-            onAddressChange={setAddress}
-            onNext={() => setStep(3)}
-            onBack={() => setStep(1)}
-          />
-        )}
-        {step === 3 && (
-          <StepBundle
-            onSelectBundle={handleSelectBundle}
-            onCustom={handleCustomDescription}
-            onBack={() => setStep(2)}
-          />
-        )}
-      </div>
+    <div className="max-w-lg mx-auto">
+      {step === 1 && (
+        <StepCustomer onSelect={handleSelectCustomer} onSkip={handleSkipCustomer} />
+      )}
+      {step === 2 && (
+        <StepAddress
+          address={address}
+          onAddressChange={setAddress}
+          onNext={() => setStep(3)}
+          onBack={() => setStep(1)}
+        />
+      )}
+      {step === 3 && (
+        <StepBundle
+          onSelectBundle={handleSelectBundle}
+          onCustom={handleCustomDescription}
+          onBack={() => setStep(2)}
+        />
+      )}
     </div>
   );
+}
+
+/* Export step hook for parent to track current step */
+export function useQuoteFunnelStep() {
+  const [step, setStep] = useState(1);
+  return { step, setStep };
 }
