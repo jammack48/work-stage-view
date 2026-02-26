@@ -10,8 +10,8 @@ export const tutorialPages: Record<string, TutorialEntry> = {
     body: "This is where all your jobs live — from first enquiry to getting paid. Swipe left and right to see each stage. Tap a card to open that job.",
   },
   manager: {
-    title: "Manager Mode",
-    body: "Run your whole pipeline from one screen. See every outstanding job, overdue tasks, and what needs chasing — all in one spot. Filter by stage, check priorities, and knock things off the list without jumping between pages.",
+    title: "Manager Mode — Your Command Centre",
+    body: "This is the most powerful screen in the app. Run your entire business from right here — see every outstanding job across all stages, spot overdue tasks instantly (red = way overdue, orange = getting there), and take action without leaving the screen. Send quotes, chase customers, archive dead leads, mark jobs paid — all from one place. No more jumping between screens. This is how you stay on top of everything.",
   },
   job: {
     title: "Job Card",
