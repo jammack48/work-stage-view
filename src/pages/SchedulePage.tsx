@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { startOfWeek, addWeeks, subWeeks, format, addDays } from "date-fns";
-import { CalendarDays, Columns, Users, FilePlus, FileText, Settings, Package } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PageToolbar } from "@/components/PageToolbar";
 import { StaffFilterBar } from "@/components/schedule/StaffFilterBar";
@@ -9,16 +8,9 @@ import { DayStrip } from "@/components/schedule/DayStrip";
 import { TimeGridDesktop } from "@/components/schedule/TimeGridDesktop";
 import { TimeGridMobile } from "@/components/schedule/TimeGridMobile";
 import { DEMO_JOBS } from "@/components/schedule/scheduleData";
+import { COMMON_TABS, SCHEDULE_EXTRAS, buildTabs, handleCommonTab } from "@/config/toolbarTabs";
 
-const HOME_TABS = [
-  { id: "pipeline", label: "Pipeline", icon: Columns },
-  { id: "bundles", label: "Bundles", icon: Package },
-  { id: "schedule", label: "Schedule", icon: CalendarDays },
-  { id: "customers", label: "Customers", icon: Users },
-  { id: "quotes", label: "New Quote", icon: FilePlus },
-  { id: "invoices", label: "Invoices", icon: FileText },
-  { id: "settings", label: "Settings", icon: Settings },
-];
+const HOME_TABS = buildTabs(...SCHEDULE_EXTRAS);
 
 const SchedulePage = () => {
   const navigate = useNavigate();
@@ -35,12 +27,7 @@ const SchedulePage = () => {
   const weekEnd = addDays(weekStart, 4);
 
   const handleTabChange = (id: string) => {
-    if (id === "pipeline") { navigate("/pipeline"); return; }
-    if (id === "bundles") { navigate("/bundles"); return; }
-    if (id === "customers") { navigate("/customers"); return; }
-    if (id === "settings") { navigate("/settings"); return; }
-    if (id === "quotes") { navigate("/quote/new"); return; }
-    if (id === "invoices") { navigate("/job/new?stage=To+Invoice"); return; }
+    handleCommonTab(id, navigate);
   };
 
   return (

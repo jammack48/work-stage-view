@@ -4,26 +4,19 @@ import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
-import { ChevronRight, LayoutGrid, Columns, ChevronLeft, Plus, Users, FilePlus, FileText, Settings, Package, CalendarDays } from "lucide-react";
+import { ChevronRight, LayoutGrid, Columns, ChevronLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import useEmblaCarousel from "embla-carousel-react";
+import { COMMON_TABS, PIPELINE_EXTRAS, buildTabs, handleCommonTab } from "@/config/toolbarTabs";
 
 type Layout = "horizontal" | "vertical";
 type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings";
 
-const HOME_TABS = [
-  { id: "pipeline", label: "Pipeline", icon: Columns },
-  { id: "bundles", label: "Bundles", icon: Package },
-  { id: "schedule", label: "Schedule", icon: CalendarDays },
-  { id: "customers", label: "Customers", icon: Users },
-  { id: "quotes", label: "New Quote", icon: FilePlus },
-  { id: "invoices", label: "Invoices", icon: FileText },
-  { id: "settings", label: "Settings", icon: Settings },
-];
+const HOME_TABS = buildTabs(...PIPELINE_EXTRAS);
 
 const ACTION_BOXES: Record<string, string> = {
   "Lead": "Add Customer",
@@ -54,12 +47,7 @@ const Index = () => {
   }, [emblaApi, onSelect]);
 
   const handleTabChange = (id: string) => {
-    if (id === "bundles") { navigate("/bundles"); return; }
-    if (id === "schedule") { navigate("/schedule"); return; }
-    if (id === "customers") { navigate("/customers"); return; }
-    if (id === "settings") { navigate("/settings"); return; }
-    if (id === "quotes") { navigate("/quote/new"); return; }
-    if (id === "invoices") { navigate("/job/new?stage=To+Invoice"); return; }
+    if (handleCommonTab(id, navigate)) return;
     setActiveView(id as HomeView);
   };
 

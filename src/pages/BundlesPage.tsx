@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Package, Search, Plus, ChevronDown, ChevronRight, Wrench, Zap, Settings, Hammer, Bath, Trash2, Columns, Users, FilePlus, FileText } from "lucide-react";
+import { Package, Search, Plus, ChevronDown, ChevronRight, Wrench, Zap, Settings, Hammer, Bath, Trash2 } from "lucide-react";
 import { PageToolbar } from "@/components/PageToolbar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/component
 import { bundleTemplates as defaultBundles, catalogueItems, type BundleTemplate, type CatalogueItem } from "@/data/dummyJobDetails";
 import { Command, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup } from "@/components/ui/command";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { COMMON_TABS, BUNDLES_EXTRAS, buildTabs, handleCommonTab } from "@/config/toolbarTabs";
 
 const BUNDLE_ICONS: Record<string, React.ElementType> = {
   b1: Wrench, b2: Zap, b3: Settings, b4: Hammer, b5: Bath,
@@ -19,14 +20,7 @@ function getBundleTotal(b: BundleTemplate) {
   return [...b.labour, ...b.materials, ...b.extras].reduce((s, i) => s + i.qty * i.unitPrice, 0);
 }
 
-const PAGE_TABS = [
-  { id: "pipeline", label: "Pipeline", icon: Columns },
-  { id: "bundles", label: "Bundles", icon: Package },
-  { id: "customers", label: "Customers", icon: Users },
-  { id: "quotes", label: "New Quote", icon: FilePlus },
-  { id: "invoices", label: "Invoices", icon: FileText },
-  { id: "settings", label: "Settings", icon: Settings },
-];
+const PAGE_TABS = buildTabs(...BUNDLES_EXTRAS);
 
 type BundleTab = "browse" | "create";
 
@@ -230,11 +224,7 @@ export default function BundlesPage() {
   const allBundles = useMemo(() => [...defaultBundles, ...customBundles], [customBundles]);
 
   const handleTabChange = (id: string) => {
-    if (id === "pipeline") { navigate("/pipeline"); return; }
-    if (id === "customers") { navigate("/customers"); return; }
-    if (id === "settings") { navigate("/settings"); return; }
-    if (id === "quotes") { navigate("/quote/new"); return; }
-    if (id === "invoices") { navigate("/job/new?stage=To+Invoice"); return; }
+    handleCommonTab(id, navigate);
   };
 
   return (
