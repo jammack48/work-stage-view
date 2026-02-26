@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { buildTabs, handleCommonTab, SETTINGS_EXTRAS } from "@/config/toolbarTabs";
+import { dummyTemplates } from "@/data/dummyTemplates";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations";
 
@@ -32,7 +35,7 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
       </div>
     ),
     notifications: (
-      <div className="space-y-4">
+      <div className="space-y-5">
         <h2 className="text-lg font-semibold text-card-foreground">Notifications</h2>
         {["New lead received", "Quote accepted", "Job completed", "Invoice overdue", "Team member assigned"].map((item) => (
           <div key={item} className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
@@ -42,6 +45,70 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
             </div>
           </div>
         ))}
+
+        <h3 className="text-sm font-semibold text-card-foreground pt-2">Default Invoice Templates</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Email Template</label>
+            <Select defaultValue="e-i-1">
+              <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {dummyTemplates.filter((t) => t.channel === "email" && t.category === "invoices").map((t) => (
+                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">SMS Template</label>
+            <Select defaultValue="s-i-1">
+              <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {dummyTemplates.filter((t) => t.channel === "sms" && t.category === "invoices").map((t) => (
+                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <h3 className="text-sm font-semibold text-card-foreground pt-2">Overdue Reminder Schedule</h3>
+        {[
+          { label: "7-day reminder", id: "e-r-1" },
+          { label: "14-day reminder", id: "e-r-2" },
+          { label: "30-day reminder", id: "e-r-3" },
+        ].map((r) => {
+          const tpl = dummyTemplates.find((t) => t.id === r.id);
+          return (
+            <div key={r.id} className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
+              <div>
+                <span className="text-sm text-card-foreground">{r.label}</span>
+                {tpl && <span className="text-xs text-muted-foreground ml-2">({tpl.name})</span>}
+              </div>
+              <Switch defaultChecked={tpl?.isActive} />
+            </div>
+          );
+        })}
+
+        <h3 className="text-sm font-semibold text-card-foreground pt-2">Review Requests</h3>
+        <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
+          <div className="space-y-1">
+            <span className="text-sm text-card-foreground">Auto-send review request</span>
+            <p className="text-xs text-muted-foreground">Sends 3 days after job completion</p>
+          </div>
+          <Switch defaultChecked />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Review Email Template</label>
+          <Select defaultValue="e-rv-1">
+            <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {dummyTemplates.filter((t) => t.channel === "email" && t.category === "reviews").map((t) => (
+                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     ),
     appearance: (
