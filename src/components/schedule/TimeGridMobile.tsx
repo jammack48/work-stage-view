@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_MOBILE, formatTime } from "./scheduleData";
 import { ScheduleJobCard } from "./ScheduleJobCard";
 
 interface TimeGridMobileProps {
   jobs: ScheduleJob[];
   dayOffset: number;
+  onDayChange?: (day: number) => void;
 }
 
 function computeOverlapLayout(jobs: ScheduleJob[]) {
@@ -33,7 +34,21 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
   return layout;
 }
 
-export function TimeGridMobile({ jobs, dayOffset }: TimeGridMobileProps) {
+export function TimeGridMobile({ jobs, dayOffset, onDayChange }: TimeGridMobileProps) {
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || !onDayChange) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    touchStartX.current = null;
+    if (Math.abs(diff) < 50) return;
+    if (diff > 0 && dayOffset < 4) onDayChange(dayOffset + 1);
+    if (diff < 0 && dayOffset > 0) onDayChange(dayOffset - 1);
+  };
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
   const totalHeight = hours.length * HOUR_HEIGHT_MOBILE;
 
@@ -41,7 +56,7 @@ export function TimeGridMobile({ jobs, dayOffset }: TimeGridMobileProps) {
   const layout = useMemo(() => computeOverlapLayout(dayJobs), [dayJobs]);
 
   return (
-    <div className="grid grid-cols-[40px_1fr]" style={{ height: totalHeight }}>
+    <div className="grid grid-cols-[40px_1fr]" style={{ height: totalHeight }} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       {/* Time labels */}
       <div className="relative">
         {hours.map((h, i) => (
