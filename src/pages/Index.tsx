@@ -73,6 +73,7 @@ const Index = () => {
         tabs={HOME_TABS}
         activeTab={activeView}
         onTabChange={handleTabChange}
+        tutorialKey={activeView === "manager" ? "manager" : "pipeline"}
         pageHeading={activeView === "manager" ? (
           <span className="text-base font-bold text-card-foreground">Manager Mode</span>
         ) : (

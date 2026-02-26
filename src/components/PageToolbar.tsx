@@ -20,14 +20,16 @@ interface PageToolbarProps {
   pageHeading?: React.ReactNode;
   /** ID of the common-nav tab to highlight for the current page (e.g. "customers") */
   currentPage?: string;
+  /** Override tutorial key (e.g. "manager" when showing manager mode on pipeline route) */
+  tutorialKey?: string;
 }
 
-export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading, currentPage }: PageToolbarProps) {
+export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading, currentPage, tutorialKey }: PageToolbarProps) {
   const isMobile = useIsMobile();
   const { position } = useToolbarPosition();
   const { tutorialOn } = useTutorial();
 
-  const tutorialBanner = tutorialOn ? <TutorialBanner /> : null;
+  const tutorialBanner = tutorialOn ? <TutorialBanner overrideKey={tutorialKey} /> : null;
   const isActive = (id: string) => activeTab === id || currentPage === id;
 
   const headingBar = pageHeading ? (

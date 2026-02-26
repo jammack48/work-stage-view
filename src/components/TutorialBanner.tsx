@@ -25,15 +25,15 @@ export function TutorialBanner({ overrideKey }: { overrideKey?: string }) {
   if (dismissed.has(key)) return null;
 
   return (
-    <div className="mx-4 sm:mx-6 mt-3 mb-1 rounded-lg border border-blue-300 bg-blue-100 dark:bg-blue-900/40 dark:border-blue-400/30 px-4 py-3 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-      <GraduationCap className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+    <div className="mx-4 sm:mx-6 mt-3 mb-1 rounded-lg border border-blue-400 bg-blue-500 px-4 py-3 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+      <GraduationCap className="w-5 h-5 text-white shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground">{entry.title}</p>
-        <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">{entry.body}</p>
+        <p className="text-sm font-semibold text-white">{entry.title}</p>
+        <p className="text-sm text-white/80 mt-0.5 leading-relaxed">{entry.body}</p>
       </div>
       <button
         onClick={() => setDismissed((prev) => new Set(prev).add(key))}
-        className="shrink-0 text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-accent"
+        className="shrink-0 text-white/70 hover:text-white transition-colors p-1 rounded-md hover:bg-white/10"
         aria-label="Dismiss tutorial"
       >
         <X className="w-4 h-4" />
