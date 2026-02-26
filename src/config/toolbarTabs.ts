@@ -1,5 +1,5 @@
 import {
-  Columns, Users, CalendarDays, Package, FilePlus, FileText, Settings,
+  Home, Users, CalendarDays, Package, FilePlus, FileText, Settings,
   ClipboardList, List, StickyNote, History, DollarSign, Clock, Camera,
   ClipboardCheck, Star, Archive, Building2, Bell, Palette, CreditCard,
   Shield, Wrench, Briefcase, UserPlus, BarChart3, Plus,
@@ -13,7 +13,7 @@ export interface ToolbarTab {
 
 /** Always-visible tabs in fixed order across every page */
 export const COMMON_TABS: ToolbarTab[] = [
-  { id: "pipeline", label: "Pipeline", icon: Columns },
+  { id: "pipeline", label: "Home", icon: Home },
   { id: "customers", label: "Customers", icon: Users },
   { id: "schedule", label: "Schedule", icon: CalendarDays },
 ];

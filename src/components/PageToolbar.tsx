@@ -1,5 +1,3 @@
-import { Home } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToolbarPosition } from "@/contexts/ToolbarPositionContext";
@@ -21,7 +19,6 @@ interface PageToolbarProps {
 
 export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading, disabledTabs }: PageToolbarProps) {
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
   const { position } = useToolbarPosition();
 
   const headingBar = pageHeading ? (
@@ -33,18 +30,6 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   const isVertical = position === "left" || position === "right";
   const isHorizontal = position === "top" || position === "bottom";
 
-  const homeBtn = (isLarge?: boolean) => (
-    <button
-      onClick={() => navigate("/pipeline")}
-      className={cn(
-        "flex items-center justify-center rounded-lg text-muted-foreground hover:bg-accent shrink-0",
-        isLarge ? "w-11 h-11" : "p-2"
-      )}
-      title="Home"
-    >
-      <Home className={cn(isLarge ? "w-5 h-5" : "w-4 h-4")} />
-    </button>
-  );
 
   // Desktop vertical sidebar
   if (!isMobile && isVertical) {
@@ -54,7 +39,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
           "w-[200px] shrink-0 flex flex-col gap-1 py-2 bg-card",
           position === "left" ? "rounded-r-xl border-r border-border" : "rounded-l-xl border-l border-border"
         )}>
-          <div className="px-2 mb-1">{homeBtn()}</div>
+          
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -85,7 +70,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   if (!isMobile && isHorizontal) {
     const bar = (
       <nav className="flex items-center gap-1 px-2 py-1.5 border-b border-border overflow-x-auto">
-        {homeBtn()}
+        
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -129,7 +114,6 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
           )}
           style={{ minHeight: "calc(100vh - 6rem)" }}
         >
-          {homeBtn(true)}
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -164,7 +148,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
         position === "bottom" ? "fixed left-0 right-0 bottom-0 z-40 border-t border-border safe-area-pb" : "sticky top-0 z-40 border-b border-border"
       )}
     >
-      {homeBtn(true)}
+      
       {tabs.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
