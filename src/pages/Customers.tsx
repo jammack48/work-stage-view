@@ -26,6 +26,7 @@ export default function Customers() {
     <>
 
       <PageToolbar
+        currentPage="customers"
         tabs={CUST_TABS}
         activeTab={activeTab}
         onTabChange={(id) => {
