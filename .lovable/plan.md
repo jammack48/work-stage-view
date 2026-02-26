@@ -1,31 +1,29 @@
 
 
-## Two Issues to Fix
+## Expand Customer Card Tabs
 
-### 1. Desktop: `scale-110` causes layout jump
-The `scale-110` on the selected day button causes the entire strip to shift vertically when selection changes because it physically enlarges the element, pushing surrounding content. Fix: remove `scale-110` and use visual-only effects (shadow, ring, background) that don't affect layout flow.
+### Current State
+Customer Card has 6 tabs: Overview, Jobs, Contacts, Notes, Spend, New Job.
 
-### 2. Mobile: Swipe left/right should change day
-Currently mobile has no swipe gesture on the time grid. Add swipe detection to `TimeGridMobile` so swiping left goes to next day and swiping right goes to previous day.
+### New Tabs to Add
+
+1. **History** — Chronological timeline of all interactions: jobs created, quotes sent, invoices paid, notes added, contacts added. Generated from `jobHistory` data with dummy communication entries.
+
+2. **Photos** — Gallery of photos aggregated from all customer jobs. Dummy placeholder images with job references.
+
+3. **Documents** — List of documents (quotes, invoices, forms) saved across all jobs. Each entry shows document type, job reference, date, and status.
+
+4. **Quotes** — List of all quotes for this customer (derived from jobHistory where stage includes "Quote" or "Lead"), with a "Create New Quote" button that navigates to `/quote/new`.
+
+5. **Invoices** — List of all invoices for this customer (derived from jobHistory where stage includes "Invoice" or "Paid"), with a "Create New Invoice" button that navigates to `/invoice/new`.
 
 ### Changes
 
-**`src/components/schedule/DayStrip.tsx`** (line 32)
-- Remove `scale-110` from selected state to prevent layout jump
-- Keep all other visual indicators (bg-primary, ring, shadow, border)
-
-**`src/components/schedule/TimeGridMobile.tsx`**
-- Add touch swipe detection (onTouchStart/onTouchEnd)
-- Swipe left → next day (increment dayOffset, max 4)
-- Swipe right → prev day (decrement dayOffset, min 0)
-- Requires new `onDayChange` callback prop
-
-**`src/pages/SchedulePage.tsx`**
-- Pass `onDayChange={setSelectedDay}` to `TimeGridMobile`
-
 | File | Change |
 |------|--------|
-| `src/components/schedule/DayStrip.tsx` | Remove `scale-110` from selected styling |
-| `src/components/schedule/TimeGridMobile.tsx` | Add swipe gesture to change day |
-| `src/pages/SchedulePage.tsx` | Pass `onDayChange` to TimeGridMobile |
+| `src/config/toolbarTabs.ts` | Update `CUSTOMER_CARD_EXTRAS` to add History, Photos, Documents, Quotes, Invoices tabs (icons: History, Camera, FileText, FilePlus, Receipt) |
+| `src/pages/CustomerCard.tsx` | Add 5 new tab content sections: history timeline, photos grid, documents list, quotes list with "New Quote" button, invoices list with "New Invoice" button. Update `CustTab` type. |
+
+### Tab Order in Toolbar
+Back, Overview, Jobs, Quotes, Invoices, History, Photos, Documents, Contacts, Notes, Spend, New Job
 
