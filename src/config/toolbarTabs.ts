@@ -28,8 +28,8 @@ export const PIPELINE_EXTRAS: ToolbarTab[] = [
   { id: "bundles", label: "Bundles", icon: Package },
   { id: "quotes", label: "New Quote", icon: FilePlus },
   { id: "invoices", label: "New Invoice", icon: Receipt },
-  { id: "email", label: "Email", icon: Mail },
-  { id: "sms", label: "SMS", icon: MessageSquare },
+  { id: "email", label: "Email Tpl", icon: Mail },
+  { id: "sms", label: "SMS Tpl", icon: MessageSquare },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 

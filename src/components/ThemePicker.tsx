@@ -1,6 +1,8 @@
 import { useTheme, type Theme } from "@/contexts/ThemeContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const THEMES: { id: Theme; label: string; color: string; darkColor: string }[] = [
@@ -33,7 +35,7 @@ function RiserIcon({ className }: { className?: string }) {
 }
 
 export function ThemePicker() {
-  const { theme, setTheme, isDark } = useTheme();
+  const { theme, setTheme, isDark, setIsDark } = useTheme();
 
   return (
     <Popover>
@@ -76,6 +78,13 @@ export function ThemePicker() {
               </span>
             </button>
           ))}
+        </div>
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+            {isDark ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+            {isDark ? "Dark" : "Light"}
+          </div>
+          <Switch checked={isDark} onCheckedChange={setIsDark} />
         </div>
       </PopoverContent>
     </Popover>
