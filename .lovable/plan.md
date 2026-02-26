@@ -1,34 +1,31 @@
 
 
-## Make Day Selection Unmissable
+## Two Issues to Fix
 
-### Problem
-The selection code works (confirmed via session replay — classes toggle on click), but the `bg-primary` green on the dark theme background doesn't create enough contrast to be noticeable.
+### 1. Desktop: `scale-110` causes layout jump
+The `scale-110` on the selected day button causes the entire strip to shift vertically when selection changes because it physically enlarges the element, pushing surrounding content. Fix: remove `scale-110` and use visual-only effects (shadow, ring, background) that don't affect layout flow.
 
-### Solution
-Use a much more aggressive, impossible-to-miss highlight style with higher contrast and visual weight.
+### 2. Mobile: Swipe left/right should change day
+Currently mobile has no swipe gesture on the time grid. Add swipe detection to `TimeGridMobile` so swiping left goes to next day and swiping right goes to previous day.
 
 ### Changes
 
-**`src/components/schedule/DayStrip.tsx`**
+**`src/components/schedule/DayStrip.tsx`** (line 32)
+- Remove `scale-110` from selected state to prevent layout jump
+- Keep all other visual indicators (bg-primary, ring, shadow, border)
 
-Replace the selected state styling with:
-- Solid white/light background instead of `bg-primary` (which blends into dark theme)
-- Dark text for maximum contrast
-- Larger ring and stronger shadow
-- Keep `bg-primary` as ring/border accent color instead of fill
+**`src/components/schedule/TimeGridMobile.tsx`**
+- Add touch swipe detection (onTouchStart/onTouchEnd)
+- Swipe left → next day (increment dayOffset, max 4)
+- Swipe right → prev day (decrement dayOffset, min 0)
+- Requires new `onDayChange` callback prop
 
-```
-Selected:     bg-card text-card-foreground ring-2 ring-primary shadow-lg scale-110 font-bold border border-primary
-Not selected: default styling, hover:bg-accent/50  
-Today dot:    small primary dot (unchanged)
-```
-
-This ensures the selected day pops regardless of theme, since `bg-card` always contrasts with the surrounding background.
-
-### File
+**`src/pages/SchedulePage.tsx`**
+- Pass `onDayChange={setSelectedDay}` to `TimeGridMobile`
 
 | File | Change |
 |------|--------|
-| `src/components/schedule/DayStrip.tsx` | Line 32: change selected styling to `bg-card text-card-foreground ring-2 ring-primary shadow-lg scale-110 font-bold border border-primary` |
+| `src/components/schedule/DayStrip.tsx` | Remove `scale-110` from selected styling |
+| `src/components/schedule/TimeGridMobile.tsx` | Add swipe gesture to change day |
+| `src/pages/SchedulePage.tsx` | Pass `onDayChange` to TimeGridMobile |
 
