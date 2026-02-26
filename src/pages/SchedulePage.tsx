@@ -60,7 +60,7 @@ const SchedulePage = () => {
         {isMobile ? (
           <TimeGridMobile jobs={filteredJobs} dayOffset={selectedDay} />
         ) : (
-          <TimeGridDesktop weekStart={weekStart} jobs={filteredJobs} />
+          <TimeGridDesktop weekStart={weekStart} jobs={filteredJobs} selectedDay={selectedDay} />
         )}
       </div>
     </PageToolbar>
