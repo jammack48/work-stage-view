@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
 
 import { PageToolbar } from "@/components/PageToolbar";
@@ -29,6 +29,8 @@ export default function JobCard() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromManager = (location.state as any)?.fromManager;
   const [activeTab, setActiveTab] = useState<JobTab>("overview");
 
   const job = id === "new"
@@ -72,7 +74,7 @@ export default function JobCard() {
         tabs={JOB_EXTRAS}
         activeTab={activeTab}
         onTabChange={(id) => {
-          if (id === "back") { navigate("/"); return; }
+          if (id === "back") { fromManager ? navigate(-1) : navigate("/"); return; }
           setActiveTab(id as JobTab);
         }}
         pageHeading={jobHeading}
