@@ -30,7 +30,7 @@ export default function JobCard() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const fromManager = (location.state as any)?.fromManager;
+  const managerState = (location.state as any);
   const [activeTab, setActiveTab] = useState<JobTab>("overview");
 
   const job = id === "new"
@@ -74,7 +74,7 @@ export default function JobCard() {
         tabs={JOB_EXTRAS}
         activeTab={activeTab}
         onTabChange={(id) => {
-          if (id === "back") { fromManager ? navigate(-1) : navigate("/"); return; }
+          if (id === "back") { managerState?.fromManager ? navigate("/", { state: managerState }) : navigate("/"); return; }
           setActiveTab(id as JobTab);
         }}
         pageHeading={jobHeading}
