@@ -41,6 +41,7 @@ export const BUNDLES_EXTRAS: ToolbarTab[] = [
 export const QUOTE_EXTRAS: ToolbarTab[] = [
   { id: "overview", label: "Overview", icon: ClipboardList },
   { id: "line-items", label: "Line Items", icon: List },
+  { id: "sequences", label: "Sequences", icon: Settings },
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "history", label: "History", icon: History },
 ];
@@ -55,6 +56,7 @@ export const JOB_EXTRAS: ToolbarTab[] = [
   { id: "time", label: "Time", icon: Clock },
   { id: "forms", label: "Forms", icon: ClipboardCheck },
   { id: "invoice", label: "Invoice", icon: FileText },
+  { id: "sequences", label: "Sequences", icon: Settings },
 ];
 
 export const CUSTOMER_LIST_EXTRAS: ToolbarTab[] = [
