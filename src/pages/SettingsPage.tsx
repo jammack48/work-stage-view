@@ -1,19 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import { Button } from "@/components/ui/button";
-import { Building2, Bell, Palette, Shield, CreditCard, Wrench } from "lucide-react";
+import { buildTabs, handleCommonTab, SETTINGS_EXTRAS } from "@/config/toolbarTabs";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations";
 
-const SETTINGS_TABS = [
-  { id: "business", label: "Business", icon: Building2 },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "appearance", label: "Appearance", icon: Palette },
-  { id: "billing", label: "Billing", icon: CreditCard },
-  { id: "team", label: "Team", icon: Shield },
-  { id: "integrations", label: "Integrations", icon: Wrench },
-];
+const SETTINGS_TABS = buildTabs(...SETTINGS_EXTRAS);
 
 function SettingsContent({ tab }: { tab: SettingsTab }) {
   const sections: Record<SettingsTab, React.ReactNode> = {
@@ -97,6 +91,7 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
 }
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<SettingsTab>("business");
 
   return (
@@ -104,7 +99,10 @@ export default function SettingsPage() {
       <PageToolbar
         tabs={SETTINGS_TABS}
         activeTab={activeTab}
-        onTabChange={(id) => setActiveTab(id as SettingsTab)}
+        onTabChange={(id) => {
+          if (handleCommonTab(id, navigate)) return;
+          setActiveTab(id as SettingsTab);
+        }}
         pageHeading={<h2 className="text-base font-bold text-card-foreground">Settings</h2>}
       >
         <SettingsContent tab={activeTab} />

@@ -1,21 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, UserPlus, Phone, Mail, MapPin, List, Star, Archive } from "lucide-react";
+import { Users, UserPlus, Phone, Mail, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import { DUMMY_CUSTOMERS } from "@/data/dummyCustomers";
+import { buildTabs, handleCommonTab, CUSTOMER_LIST_EXTRAS } from "@/config/toolbarTabs";
 
 type CustomerTab = "all" | "leads" | "active" | "archived";
 
-const CUST_TABS = [
-  { id: "all", label: "All", icon: List },
-  { id: "leads", label: "Leads", icon: Star },
-  { id: "active", label: "Active", icon: Users },
-  { id: "archived", label: "Archived", icon: Archive },
-];
+const CUST_TABS = buildTabs(...CUSTOMER_LIST_EXTRAS);
 
 export default function Customers() {
   const navigate = useNavigate();
@@ -32,7 +28,10 @@ export default function Customers() {
       <PageToolbar
         tabs={CUST_TABS}
         activeTab={activeTab}
-        onTabChange={(id) => setActiveTab(id as CustomerTab)}
+        onTabChange={(id) => {
+          if (handleCommonTab(id, navigate)) return;
+          setActiveTab(id as CustomerTab);
+        }}
         pageHeading={<h2 className="text-base font-bold text-card-foreground">Customer Directory</h2>}
       >
         <div className="flex items-center justify-between mb-4">

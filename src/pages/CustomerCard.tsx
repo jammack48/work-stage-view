@@ -5,21 +5,12 @@ import { getCustomer } from "@/data/dummyCustomers";
 import { PageToolbar } from "@/components/PageToolbar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  ClipboardList, UserPlus, StickyNote, BarChart3, Briefcase,
-  Phone, Mail, MapPin, Plus, Users
-} from "lucide-react";
+import { Phone, Mail, MapPin, Plus, Users, StickyNote, UserPlus } from "lucide-react";
+import { buildTabs, handleCommonTab, CUSTOMER_CARD_EXTRAS } from "@/config/toolbarTabs";
 
 type CustTab = "overview" | "jobs" | "contacts" | "notes" | "spend" | "add-job";
 
-const CUST_TABS = [
-  { id: "overview", label: "Overview", icon: ClipboardList },
-  { id: "jobs", label: "Jobs", icon: Briefcase },
-  { id: "contacts", label: "Contacts", icon: UserPlus },
-  { id: "notes", label: "Notes", icon: StickyNote },
-  { id: "spend", label: "Spend", icon: BarChart3 },
-  { id: "add-job", label: "New Job", icon: Plus },
-];
+const CUST_TABS = buildTabs(...CUSTOMER_CARD_EXTRAS);
 
 export default function CustomerCard() {
   const { id } = useParams<{ id: string }>();
@@ -211,7 +202,10 @@ export default function CustomerCard() {
       <PageToolbar
         tabs={CUST_TABS}
         activeTab={activeTab}
-        onTabChange={(id) => setActiveTab(id as CustTab)}
+        onTabChange={(id) => {
+          if (handleCommonTab(id, navigate)) return;
+          setActiveTab(id as CustTab);
+        }}
         pageHeading={<h2 className="text-base font-bold text-card-foreground">{customer.name}</h2>}
       >
         {tabContent[activeTab]}
