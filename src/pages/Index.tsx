@@ -48,6 +48,10 @@ const Index = () => {
   }, [emblaApi, onSelect]);
 
   const handleTabChange = (id: string) => {
+    if (id === "pipeline") {
+      setActiveView("pipeline");
+      return;
+    }
     if (handleCommonTab(id, navigate)) return;
     setActiveView(id as HomeView);
   };
