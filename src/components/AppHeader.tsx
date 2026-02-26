@@ -46,7 +46,7 @@ export function AppHeader() {
           className={cn(
             "h-9 rounded-lg gap-1.5",
             tutorialOn
-              ? "bg-primary text-primary-foreground hover:bg-primary/90"
+              ? "bg-blue-500 text-white hover:bg-blue-600"
               : "text-muted-foreground hover:bg-accent"
           )}
           title="Toggle tutorial mode"

@@ -9,7 +9,7 @@ const TutorialContext = createContext<TutorialContextType>({ tutorialOn: false, 
 
 export function TutorialProvider({ children }: { children: React.ReactNode }) {
   const [tutorialOn, setTutorialOn] = useState(() => {
-    try { return localStorage.getItem("tutorialOn") === "true"; } catch { return false; }
+    try { const v = localStorage.getItem("tutorialOn"); return v === null ? true : v === "true"; } catch { return true; }
   });
 
   useEffect(() => {
