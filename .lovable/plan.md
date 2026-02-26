@@ -1,55 +1,87 @@
 
 
-## Email and SMS Template Management — Implementation Plan
+## Follow-Up Sequence Builder for Quotes and Invoices
 
-### Overview
+### What Changes
 
-Add Email and SMS icons to the Pipeline sidebar. Each opens a dedicated template management page with 5 category tabs (Quotes, Invoices, Reminders, Services, Reviews). Templates are selectable from the Quote page and Settings page.
+Replace the current simple template dropdown selectors on the Quote page with a **follow-up sequence builder**. Instead of picking one template, users build a pipeline of follow-up steps — each step picks a template and sets a delay in days. This applies to both Email and SMS sequences, and will also be added to the Invoice/Job page.
 
-### New Files
+### Location in the UI
 
-**1. `src/data/dummyTemplates.ts`**
+On the Quote page (`line-items` tab), just below the "Send Quote" button:
 
-Template data model and ~20 pre-populated templates across both channels (email/sms) and all 5 categories. Each template has: `id`, `name`, `category`, `channel`, `subject` (email only), `body` (with `{{variable}}` placeholders like `{{customer_name}}`, `{{quote_total}}`), `timing`, `isActive`.
+1. **"Enable Email Sequence"** toggle (Switch component)
+   - When enabled, shows a sequence builder:
+     - Each step shows: template selector (from email/quotes templates) + days delay input + delete button
+     - A `+` icon button at the bottom to add another step
+     - Steps are numbered (Step 1, Step 2, etc.)
+2. **"Enable SMS Sequence"** toggle (Switch component)
+   - Same structure but uses SMS/quotes templates
 
-**2. `src/pages/EmailTemplatesPage.tsx`**
+Same pattern on the Invoice page for invoice follow-ups and overdue reminders.
 
-Full page using `PageToolbar` with `currentPage="email"` and tabs for Quotes, Invoices, Reminders, Services, Reviews. Each tab filters templates by `channel === "email"` and selected category. Shows template cards with name, subject, body preview, timing badge, active toggle. Has "+ New Template" button with inline editor (name, subject, body textarea with variable hints, timing dropdown).
+### Files to Create
 
-**3. `src/pages/SmsTemplatesPage.tsx`**
+**`src/components/FollowUpSequenceBuilder.tsx`**
 
-Same structure as Email but `channel === "sms"`, no subject field, character count on body textarea. Uses `currentPage="sms"`.
+A reusable component that renders:
+- A list of sequence steps, each with:
+  - Select dropdown to pick a template (filtered by channel + category)
+  - Number input for "days after send" (0 = immediately)
+  - Delete (X) button per step
+- A `+ Add Step` button (just a Plus icon) to append a new empty step
+- Props: `channel: "email" | "sms"`, `category: string`, `steps`, `onStepsChange`
 
-### Modified Files
+### Files to Modify
 
-**4. `src/config/toolbarTabs.ts`**
+**`src/pages/QuotePage.tsx`**
 
-- Import `Mail`, `MessageSquare` from lucide-react
-- Add to `PIPELINE_EXTRAS` after Bundles: `{ id: "email", label: "Email", icon: Mail }`, `{ id: "sms", label: "SMS", icon: MessageSquare }`
-- Add `EMAIL_EXTRAS` and `SMS_EXTRAS` arrays (both with: Quotes, Invoices, Reminders, Services, Reviews tabs)
-- Add `email: "/email-templates"` and `sms: "/sms-templates"` to `handleCommonTab` routes
+- Remove the current email/SMS template Select dropdowns (lines 160-179)
+- Add state for `emailSequenceEnabled`, `smsSequenceEnabled`, and their step arrays
+- Below the "Send Quote" / "Save Draft" buttons area (rendered inside the `line-items` tab content), add:
+  - Switch + label "Enable Email Sequence" 
+  - When on: render `<FollowUpSequenceBuilder channel="email" category="quotes" />`
+  - Switch + label "Enable SMS Sequence"
+  - When on: render `<FollowUpSequenceBuilder channel="sms" category="quotes" />`
 
-**5. `src/App.tsx`**
+**`src/components/job/InvoiceTab.tsx`** (if it exists, otherwise note for future)
 
-Add routes for `/email-templates` and `/sms-templates`.
+- Same pattern: enable email/SMS sequence toggles for invoice follow-ups using category "invoices" and "reminders"
 
-**6. `src/pages/QuotePage.tsx`**
+### Data Shape
 
-Add email/SMS template selector dropdowns (using `Select` component) in the completed quote line-items view, below the scope textarea.
+```typescript
+interface SequenceStep {
+  id: string;
+  templateId: string;  // references a dummyTemplate id
+  delayDays: number;   // 0 = immediately, 3 = after 3 days, etc.
+}
+```
 
-**7. `src/pages/SettingsPage.tsx`**
+### Visual Layout
 
-Expand the notifications tab to include: Default Invoice Email Template selector, Default Invoice SMS Template selector, Overdue Reminder Schedule (7/14/30 day toggles), Review Request template selector with on/off toggle.
+```text
+┌─────────────────────────────────────────┐
+│ [Send Quote]              [Save Draft]  │
+├─────────────────────────────────────────┤
+│ ○ Enable Email Sequence                 │
+│                                         │
+│  Step 1: [Quote Ready      ▾] after [0] days
+│  Step 2: [Quote Follow-up  ▾] after [3] days
+│  [+ Add Step]                           │
+│                                         │
+│ ○ Enable SMS Sequence                   │
+│                                         │
+│  Step 1: [Quote Ready SMS  ▾] after [0] days
+│  [+ Add Step]                           │
+└─────────────────────────────────────────┘
+```
 
 ### Files Summary
 
 | File | Action |
 |------|--------|
-| `src/data/dummyTemplates.ts` | Create |
-| `src/pages/EmailTemplatesPage.tsx` | Create |
-| `src/pages/SmsTemplatesPage.tsx` | Create |
-| `src/config/toolbarTabs.ts` | Edit — add Email/SMS to pipeline extras, new tab arrays, new routes |
-| `src/App.tsx` | Edit — add 2 routes |
-| `src/pages/QuotePage.tsx` | Edit — add template selector dropdowns |
-| `src/pages/SettingsPage.tsx` | Edit — add template defaults in notifications |
+| `src/components/FollowUpSequenceBuilder.tsx` | Create — reusable sequence builder component |
+| `src/pages/QuotePage.tsx` | Edit — replace template dropdowns with sequence toggles + builder |
+| `src/components/job/InvoiceTab.tsx` | Edit — add sequence toggles for invoice follow-ups |
 
