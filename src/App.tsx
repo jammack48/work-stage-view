@@ -29,7 +29,8 @@ function AppLayout() {
       <AppHeader />
       <div>
         <Routes>
-          <Route path="/" element={<Hub />} />
+          <Route path="/" element={<Index />} />
+          <Route path="/hub" element={<Hub />} />
           <Route path="/pipeline" element={<Index />} />
           <Route path="/job/:id" element={<JobCard />} />
           <Route path="/quote/:id" element={<QuotePage />} />

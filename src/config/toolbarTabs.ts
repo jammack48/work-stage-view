@@ -56,7 +56,6 @@ export const JOB_EXTRAS: ToolbarTab[] = [
 ];
 
 export const CUSTOMER_LIST_EXTRAS: ToolbarTab[] = [
-  { id: "all", label: "All", icon: List },
   { id: "leads", label: "Leads", icon: Star },
   { id: "active", label: "Active", icon: Users },
   { id: "archived", label: "Archived", icon: Archive },
