@@ -11,6 +11,10 @@ import { NotesTab } from "@/components/job/NotesTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { cn } from "@/lib/utils";
 import { buildTabs, handleCommonTab, QUOTE_EXTRAS } from "@/config/toolbarTabs";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 type QuotePageTab = "overview" | "line-items" | "notes" | "history";
 
@@ -33,8 +37,31 @@ export default function QuotePage() {
   const [funnelComplete, setFunnelComplete] = useState(false);
   const [funnelData, setFunnelData] = useState<FunnelResult | null>(null);
   const [funnelStep, setFunnelStep] = useState(1);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [pendingNavId, setPendingNavId] = useState<string | null>(null);
 
   const isNew = id === "new";
+
+  const handleFunnelTabChange = (id: string) => {
+    setPendingNavId(id);
+    setShowLeaveDialog(true);
+  };
+
+  const handleLeaveConfirm = (saveDraft: boolean) => {
+    setShowLeaveDialog(false);
+    if (pendingNavId) {
+      if (!handleCommonTab(pendingNavId, navigate)) {
+        setFunnelComplete(true);
+        setActiveTab(pendingNavId as QuotePageTab);
+      }
+    }
+    setPendingNavId(null);
+  };
+
+  const handleLeaveCancel = () => {
+    setShowLeaveDialog(false);
+    setPendingNavId(null);
+  };
 
   // During funnel: wrap in standard layout
   if (isNew && !funnelComplete) {
@@ -43,14 +70,13 @@ export default function QuotePage() {
         <PageToolbar
           tabs={QUOTE_TABS}
           activeTab="overview"
-          onTabChange={() => {}} // tabs disabled during funnel
+          onTabChange={handleFunnelTabChange}
           pageHeading={
             <div className="flex items-center gap-3 flex-wrap">
               <h2 className="text-base font-bold text-card-foreground">New Quote</h2>
               <StepIndicator current={funnelStep} />
             </div>
           }
-          disabledTabs
         >
           <QuoteFunnel
             onComplete={(data) => {
@@ -60,6 +86,22 @@ export default function QuotePage() {
             }}
             onStepChange={setFunnelStep}
           />
+
+          <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Leave quote?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  You haven't finished creating this quote. Would you like to save it as a draft?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={handleLeaveCancel}>Cancel</AlertDialogCancel>
+                <AlertDialogAction className={cn("bg-muted text-muted-foreground hover:bg-muted/80")} onClick={() => handleLeaveConfirm(false)}>Discard</AlertDialogAction>
+                <AlertDialogAction onClick={() => handleLeaveConfirm(true)}>Save Draft</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </PageToolbar>
       </>
     );
