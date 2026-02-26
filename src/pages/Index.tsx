@@ -5,7 +5,7 @@ import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
 import { ManagerMode } from "@/components/ManagerMode";
-import { ChevronRight, LayoutGrid, Columns, ChevronLeft, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, LayoutGrid, Columns, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -73,29 +73,11 @@ const Index = () => {
         tabs={HOME_TABS}
         activeTab={activeView}
         onTabChange={handleTabChange}
-        pageHeading={activeView === "manager" ? undefined : (
-             <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium flex-wrap">
-              <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
-              <div className="flex items-center gap-0.5 opacity-50">
-                <span className="text-xs">Lead</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-                <ChevronRight className="w-3.5 h-3.5 -ml-2" />
-                <ChevronRight className="w-3.5 h-3.5 -ml-2" />
-                <span className="text-xs">Paid</span>
-              </div>
-              <div className="flex items-center gap-1 ml-2">
-                <Button variant="outline" size="sm" className="h-7 px-2 gap-1 text-xs" onClick={() => navigate("/customers")}>
-                  <Plus className="w-3 h-3" /> Customer
-                </Button>
-                <Button variant="outline" size="sm" className="h-7 px-2 gap-1 text-xs" onClick={() => navigate("/quote/new")}>
-                  <Plus className="w-3 h-3" /> Quote
-                </Button>
-                <Button variant="outline" size="sm" className="h-7 px-2 gap-1 text-xs" onClick={() => navigate("/invoice/new")}>
-                  <Plus className="w-3 h-3" /> Invoice
-                </Button>
-              </div>
-            </div>
+        pageHeading={activeView === "manager" ? (
+          <span className="text-base font-bold text-card-foreground">Manager Mode</span>
+        ) : (
+          <div className="flex items-center justify-between">
+            <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
             {!isMobile && (
               <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5">
                 <Button
@@ -124,8 +106,8 @@ const Index = () => {
                 </Button>
               </div>
             )}
-           </div>
-          )
+          </div>
+        )
         }
       >
 

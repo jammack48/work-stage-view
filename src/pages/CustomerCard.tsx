@@ -212,7 +212,7 @@ export default function CustomerCard() {
         tabs={CUSTOMER_CARD_EXTRAS}
         activeTab={activeTab}
         onTabChange={(id) => {
-          if (id === "back") { navigate("/"); return; }
+          if (id === "back") { navigate("/customers"); return; }
           setActiveTab(id as CustTab);
         }}
         pageHeading={<h2 className="text-base font-bold text-card-foreground">{customer.name}</h2>}

@@ -117,14 +117,15 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               key={id}
               onClick={() => onTabChange(id)}
               className={cn(
-                "flex flex-col items-center justify-center w-12 h-12 rounded-lg transition-colors shrink-0",
+                "flex flex-col items-center justify-center w-12 min-h-[48px] rounded-lg transition-colors shrink-0 gap-0.5 px-0.5",
                 isActive(id)
                   ? "bg-primary text-primary-foreground"
                   : "text-foreground/70 hover:bg-accent"
               )}
               title={label}
             >
-              <Icon className="w-6 h-6" />
+              <Icon className="w-5 h-5" />
+              <span className="text-[8px] font-medium leading-none truncate w-full text-center">{label}</span>
             </button>
           ))}
         </nav>
