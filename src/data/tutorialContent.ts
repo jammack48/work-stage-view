@@ -11,7 +11,7 @@ export const tutorialPages: Record<string, TutorialEntry> = {
   },
   manager: {
     title: "Manager Mode",
-    body: "Morning triage. Pick a stage up top, filter by how old jobs are (red = needs attention now). Swipe through each job and take action — send a quote, chase up, archive the dead ones.",
+    body: "Run your whole pipeline from one screen. See every outstanding job, overdue tasks, and what needs chasing — all in one spot. Filter by stage, check priorities, and knock things off the list without jumping between pages.",
   },
   job: {
     title: "Job Card",
@@ -43,11 +43,11 @@ export const tutorialPages: Record<string, TutorialEntry> = {
   },
   "email-templates": {
     title: "Email Templates",
-    body: "Build the emails that go out automatically — quote follow-ups, invoice reminders, review requests. Edit the words, set the timing.",
+    body: "Set up the email templates that get used in your quote and invoice follow-up sequences. Write the words once, then attach them to a sequence so they send automatically at the right time.",
   },
   "sms-templates": {
     title: "SMS Templates",
-    body: "Same as email but for text messages. Short, punchy messages that chase customers for you.",
+    body: "Build text message templates to use in your quote and invoice sequences. Write a short punchy message here, then plug it into a sequence so it fires off automatically when you need it to.",
   },
   settings: {
     title: "Settings",
