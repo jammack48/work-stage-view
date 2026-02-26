@@ -7,6 +7,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { ThresholdProvider } from "@/contexts/ThresholdContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
+import { TutorialProvider } from "@/contexts/TutorialContext";
 import { AppHeader } from "@/components/AppHeader";
 import Hub from "./pages/Hub";
 import Index from "./pages/Index";
@@ -57,6 +58,7 @@ function AppLayout() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      <TutorialProvider>
       <ToolbarPositionProvider>
       <ThresholdProvider>
         <TooltipProvider>
@@ -69,6 +71,7 @@ const App = () => (
         </TooltipProvider>
       </ThresholdProvider>
       </ToolbarPositionProvider>
+      </TutorialProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
