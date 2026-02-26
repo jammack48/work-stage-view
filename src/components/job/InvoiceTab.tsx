@@ -1,10 +1,7 @@
-import { useState } from "react";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { type SequenceStep } from "@/components/FollowUpSequenceBuilder";
-import { SequenceSettingsSheet } from "@/components/SequenceSettingsSheet";
 import type { JobDetail } from "@/data/dummyJobDetails";
 import { cn } from "@/lib/utils";
 
@@ -19,11 +16,6 @@ function invoiceStatusColor(status: string) {
 }
 
 export function InvoiceTab({ job }: InvoiceTabProps) {
-  const [emailSeqEnabled, setEmailSeqEnabled] = useState(false);
-  const [smsSeqEnabled, setSmsSeqEnabled] = useState(false);
-  const [emailSteps, setEmailSteps] = useState<SequenceStep[]>([]);
-  const [smsSteps, setSmsSteps] = useState<SequenceStep[]>([]);
-
   const materialsTotal = job.materials.reduce((s, m) => s + m.quantity * m.unitPrice, 0);
   const subtotal = job.labourTotal + materialsTotal + job.extrasTotal;
   const gst = subtotal * 0.15;
@@ -75,20 +67,6 @@ export function InvoiceTab({ job }: InvoiceTabProps) {
       <Button size="lg" className="w-full h-12 gap-2">
         <FileText className="w-5 h-5" /> Generate Invoice
       </Button>
-
-      <div className="flex justify-end">
-        <SequenceSettingsSheet
-          category="invoices"
-          emailEnabled={emailSeqEnabled}
-          onEmailEnabledChange={setEmailSeqEnabled}
-          emailSteps={emailSteps}
-          onEmailStepsChange={setEmailSteps}
-          smsEnabled={smsSeqEnabled}
-          onSmsEnabledChange={setSmsSeqEnabled}
-          smsSteps={smsSteps}
-          onSmsStepsChange={setSmsSteps}
-        />
-      </div>
     </div>
   );
 }

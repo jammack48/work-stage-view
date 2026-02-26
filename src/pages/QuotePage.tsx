@@ -13,13 +13,13 @@ import { cn } from "@/lib/utils";
 import { buildTabs, handleCommonTab, QUOTE_EXTRAS } from "@/config/toolbarTabs";
 import { dummyTemplates } from "@/data/dummyTemplates";
 import { type SequenceStep } from "@/components/FollowUpSequenceBuilder";
-import { SequenceSettingsSheet } from "@/components/SequenceSettingsSheet";
+import { SequencesTab } from "@/components/SequencesTab";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-type QuotePageTab = "overview" | "line-items" | "notes" | "history";
+type QuotePageTab = "overview" | "line-items" | "sequences" | "notes" | "history";
 
 const QUOTE_TABS = buildTabs(...QUOTE_EXTRAS);
 
@@ -157,21 +157,21 @@ export default function QuotePage() {
             className="min-h-[60px] border-0 bg-transparent p-0 focus-visible:ring-0 text-sm resize-none"
           />
         </div>
-        <div className="flex justify-end">
-          <SequenceSettingsSheet
-            category="quotes"
-            emailEnabled={emailSeqEnabled}
-            onEmailEnabledChange={setEmailSeqEnabled}
-            emailSteps={emailSteps}
-            onEmailStepsChange={setEmailSteps}
-            smsEnabled={smsSeqEnabled}
-            onSmsEnabledChange={setSmsSeqEnabled}
-            smsSteps={smsSteps}
-            onSmsStepsChange={setSmsSteps}
-          />
-        </div>
         <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} />
       </div>
+    ),
+    sequences: (
+      <SequencesTab
+        category="quotes"
+        emailEnabled={emailSeqEnabled}
+        onEmailEnabledChange={setEmailSeqEnabled}
+        emailSteps={emailSteps}
+        onEmailStepsChange={setEmailSteps}
+        smsEnabled={smsSeqEnabled}
+        onSmsEnabledChange={setSmsSeqEnabled}
+        smsSteps={smsSteps}
+        onSmsStepsChange={setSmsSteps}
+      />
     ),
     notes: <NotesTab notes={job.notes} />,
     history: <HistoryTab job={job} />,
