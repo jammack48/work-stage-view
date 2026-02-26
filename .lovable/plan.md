@@ -1,29 +1,73 @@
 
 
-## Expand Customer Card Tabs
+## Manager Mode — Pipeline Task Triage
 
-### Current State
-Customer Card has 6 tabs: Overview, Jobs, Contacts, Notes, Spend, New Job.
+A new "Manager" tab on the pipeline toolbar that opens a full-screen triage workspace. Designed for rapid mobile-first task management — pick a stage, pick a priority, then swipe through jobs one-by-one taking action.
 
-### New Tabs to Add
+### Flow
 
-1. **History** — Chronological timeline of all interactions: jobs created, quotes sent, invoices paid, notes added, contacts added. Generated from `jobHistory` data with dummy communication entries.
+```text
+┌─────────────────────────────┐
+│  Stage Picker (8 stage pills)│
+├─────────────────────────────┤
+│  Priority Filter: 🔴 🟠 🟢  │
+├─────────────────────────────┤
+│  ┌─────────────────────────┐│
+│  │  Job Card (swipeable)   ││
+│  │  Client · Job · Value   ││
+│  │  Age: 14 days (RED)     ││
+│  │                         ││
+│  │  History Timeline       ││
+│  │  ─ Created 14d ago      ││
+│  │  ─ Quote sent 10d ago   ││
+│  │                         ││
+│  │  Sequence Status        ││
+│  │  ─ Email #1: Opened ✓   ││
+│  │  ─ SMS #2: Not opened ✗ ││
+│  │                         ││
+│  │  ┌─────────┬──────────┐ ││
+│  │  │ Archive │ On Hold  │ ││
+│  │  ├─────────┼──────────┤ ││
+│  │  │ Add Note│ Call Back │ ││
+│  │  ├─────────┼──────────┤ ││
+│  │  │ Move Stage│ Open Job│ ││
+│  │  └─────────┴──────────┘ ││
+│  │                         ││
+│  │  [Note input + Save]    ││
+│  └─────────────────────────┘│
+│     ◀ 3/7 ▶  (swipe L/R)   │
+└─────────────────────────────┘
+```
 
-2. **Photos** — Gallery of photos aggregated from all customer jobs. Dummy placeholder images with job references.
+### Stage-Specific Quick Actions
 
-3. **Documents** — List of documents (quotes, invoices, forms) saved across all jobs. Each entry shows document type, job reference, date, and status.
-
-4. **Quotes** — List of all quotes for this customer (derived from jobHistory where stage includes "Quote" or "Lead"), with a "Create New Quote" button that navigates to `/quote/new`.
-
-5. **Invoices** — List of all invoices for this customer (derived from jobHistory where stage includes "Invoice" or "Paid"), with a "Create New Invoice" button that navigates to `/invoice/new`.
+| Stages | Unique Actions |
+|--------|---------------|
+| Lead, To Quote | Archive, Add Note, Convert to Quote, Call Back |
+| Quote Sent | Archive, Add Note, Resend Quote, Call Back, Mark Accepted |
+| Quote Accepted | Add Note, Schedule Job, Call Back |
+| In Progress | Add Note, On Hold (parts/staff), Mark Complete, Call Back |
+| To Invoice | Add Note, Create Invoice, On Hold |
+| Invoiced | Add Note, Resend Invoice, Call Back, Mark Paid |
+| Invoice Paid | Add Note, Archive, Request Review |
 
 ### Changes
 
 | File | Change |
 |------|--------|
-| `src/config/toolbarTabs.ts` | Update `CUSTOMER_CARD_EXTRAS` to add History, Photos, Documents, Quotes, Invoices tabs (icons: History, Camera, FileText, FilePlus, Receipt) |
-| `src/pages/CustomerCard.tsx` | Add 5 new tab content sections: history timeline, photos grid, documents list, quotes list with "New Quote" button, invoices list with "New Invoice" button. Update `CustTab` type. |
+| `src/config/toolbarTabs.ts` | Add "manager" tab to `PIPELINE_EXTRAS` with `Shield` icon |
+| `src/pages/Index.tsx` | Add "manager" to `HomeView` type, render `ManagerMode` when active |
+| `src/components/ManagerMode.tsx` | New component — stage picker, priority filter, swipeable job cards with history/sequence/actions |
+| `src/data/dummyJobs.ts` | Add `getJobColor` utility function (reuse threshold logic) |
 
-### Tab Order in Toolbar
-Back, Overview, Jobs, Quotes, Invoices, History, Photos, Documents, Contacts, Notes, Spend, New Job
+### Implementation Details
+
+- **Stage picker**: horizontal scrollable pills, all 8 stages, highlighted when selected
+- **Priority filter**: 3 color buttons (red/orange/green), filters jobs from selected stage using threshold context
+- **Job card carousel**: Embla carousel, one card at a time, swipe left/right between filtered jobs, counter shows position
+- **History section**: dummy timeline entries per job (created, quote sent, etc.) based on stage
+- **Sequence status**: dummy follow-up tracking (email opened/not opened, SMS delivered)
+- **Quick actions**: 6 buttons in 2x3 grid, stage-specific labels, each shows toast confirmation
+- **Note input**: textarea + save button at bottom, saves with toast
+- **Mobile-first**: full height, touch-friendly buttons (min 44px), swipe navigation
 
