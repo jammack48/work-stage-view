@@ -18,6 +18,7 @@ export interface FunnelResult {
 interface QuoteFunnelProps {
   onComplete: (data: FunnelResult) => void;
   onStepChange?: (step: number) => void;
+  label?: string;
 }
 
 const BUNDLE_ICONS: Record<string, React.ElementType> = {
@@ -58,7 +59,7 @@ export function StepIndicator({ current }: { current: number }) {
 }
 
 /* ── Step 1: Select Customer ───────────────────────────── */
-function StepCustomer({ onSelect, onSkip }: { onSelect: (c: Customer) => void; onSkip: () => void }) {
+function StepCustomer({ onSelect, onSkip, label = "quote" }: { onSelect: (c: Customer) => void; onSkip: () => void; label?: string }) {
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
@@ -74,7 +75,7 @@ function StepCustomer({ onSelect, onSkip }: { onSelect: (c: Customer) => void; o
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold text-card-foreground">Who is this quote for?</h2>
+      <h2 className="text-lg font-bold text-card-foreground">Who is this {label} for?</h2>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -310,7 +311,7 @@ function StepBundle({
 }
 
 /* ── Main Funnel (pure content, no page shell) ─────────── */
-export function QuoteFunnel({ onComplete, onStepChange }: QuoteFunnelProps) {
+export function QuoteFunnel({ onComplete, onStepChange, label = "quote" }: QuoteFunnelProps) {
   const [step, _setStep] = useState(1);
   const setStep = (s: number) => { _setStep(s); onStepChange?.(s); };
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -339,7 +340,7 @@ export function QuoteFunnel({ onComplete, onStepChange }: QuoteFunnelProps) {
   return (
     <div className="max-w-lg mx-auto">
       {step === 1 && (
-        <StepCustomer onSelect={handleSelectCustomer} onSkip={handleSkipCustomer} />
+        <StepCustomer onSelect={handleSelectCustomer} onSkip={handleSkipCustomer} label={label} />
       )}
       {step === 2 && (
         <StepAddress

@@ -28,7 +28,7 @@ export const PIPELINE_EXTRAS: ToolbarTab[] = [
   { id: "email", label: "Email", icon: Mail },
   { id: "sms", label: "SMS", icon: MessageSquare },
   { id: "quotes", label: "New Quote", icon: FilePlus },
-  { id: "invoices", label: "Invoices", icon: FileText },
+  { id: "invoices", label: "New Invoice", icon: FilePlus },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -69,7 +69,7 @@ export const JOB_EXTRAS: ToolbarTab[] = [
 
 export const INVOICE_EXTRAS: ToolbarTab[] = [
   BACK_TAB,
-  { id: "overview", label: "Overview", icon: ClipboardList },
+  { id: "overview", label: "Overview", icon: FilePlus },
   { id: "line-items", label: "Line Items", icon: List },
   { id: "sequences", label: "Sequences", icon: Settings },
   { id: "notes", label: "Notes", icon: StickyNote },
