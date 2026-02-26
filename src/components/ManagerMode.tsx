@@ -11,6 +11,7 @@ import {
   Archive, StickyNote, Phone, FileText, CheckCircle, CalendarDays,
   PauseCircle, Send, Star, ChevronLeft, ChevronRight, Mail,
   MessageSquare, Check, X, ExternalLink, Receipt, Zap,
+  LayoutList, GalleryHorizontal,
 } from "lucide-react";
 import { dummySequences } from "@/data/dummySequences";
 
@@ -26,23 +27,24 @@ interface ActionDef {
   label: string;
   icon: React.ElementType;
   action: string;
+  requiresNote?: boolean;
 }
 
 const STAGE_ACTIONS: Record<string, ActionDef[]> = {
   "Lead": [
-    { label: "Archive", icon: Archive, action: "archived" },
+    { label: "Archive", icon: Archive, action: "archived", requiresNote: true },
     { label: "Add Note", icon: StickyNote, action: "note" },
     { label: "Convert to Quote", icon: FileText, action: "converted" },
     { label: "Call Back", icon: Phone, action: "callback" },
   ],
   "To Quote": [
-    { label: "Archive", icon: Archive, action: "archived" },
+    { label: "Archive", icon: Archive, action: "archived", requiresNote: true },
     { label: "Add Note", icon: StickyNote, action: "note" },
     { label: "Convert to Quote", icon: FileText, action: "converted" },
     { label: "Call Back", icon: Phone, action: "callback" },
   ],
   "Quote Sent": [
-    { label: "Archive", icon: Archive, action: "archived" },
+    { label: "Archive", icon: Archive, action: "archived", requiresNote: true },
     { label: "Add Note", icon: StickyNote, action: "note" },
     { label: "Resend Quote", icon: Send, action: "resent" },
     { label: "Call Back", icon: Phone, action: "callback" },
@@ -77,7 +79,7 @@ const STAGE_ACTIONS: Record<string, ActionDef[]> = {
   ],
   "Invoice Paid": [
     { label: "Add Note", icon: StickyNote, action: "note" },
-    { label: "Archive", icon: Archive, action: "archived" },
+    { label: "Archive", icon: Archive, action: "archived", requiresNote: true },
     { label: "Request Review", icon: Star, action: "review-requested" },
     { label: "Open Job", icon: ExternalLink, action: "open" },
   ],
@@ -90,7 +92,6 @@ function generateHistory(job: Job, stage: string) {
     entries.push({ label: "Quote drafted", daysAgo: Math.max(1, job.ageDays - 2) });
   if (["Quote Sent","Quote Accepted","In Progress","To Invoice","Invoiced","Invoice Paid"].includes(stage)) {
     entries.push({ label: "Quote sent to client", daysAgo: Math.max(1, job.ageDays - 3) });
-    // Show sequence triggered in history
     const seq = dummySequences.find(s => s.category === "quotes");
     if (seq) {
       entries.push({ label: `Sequence "${seq.name}" triggered`, daysAgo: Math.max(1, job.ageDays - 3), icon: "sequence" });
@@ -171,12 +172,128 @@ const COLOR_CLASSES: Record<PriorityColor, string> = {
   green: "text-green-500",
 };
 
+type ViewMode = "swipe" | "list";
+
+function JobCard({ job, activeStage, activePriority, note, setNote, onAction, onSaveNote }: {
+  job: Job;
+  activeStage: Stage;
+  activePriority: PriorityColor;
+  note: string;
+  setNote: (v: string) => void;
+  onAction: (job: Job, action: string, actionDef: ActionDef) => void;
+  onSaveNote: (job: Job) => void;
+}) {
+  const history = generateHistory(job, activeStage);
+  const sequence = generateSequence(activeStage, job);
+  const actions = STAGE_ACTIONS[activeStage] || [];
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 space-y-4">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="font-semibold text-card-foreground">{job.client}</p>
+          <p className="text-sm text-muted-foreground">{job.jobName}</p>
+        </div>
+        <div className="text-right">
+          <p className="font-semibold text-card-foreground">${job.value.toLocaleString()}</p>
+          <p className={cn("text-xs font-medium", COLOR_CLASSES[activePriority])}>
+            {job.ageDays} days old
+          </p>
+        </div>
+      </div>
+
+      {/* History Timeline */}
+      <div className="space-y-1">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">History</p>
+        <div className="space-y-1 pl-3 border-l-2 border-border">
+          {history.map((h, i) => (
+            <div key={i} className="flex items-center gap-2 text-xs">
+              <span className={cn("w-1.5 h-1.5 rounded-full -ml-[calc(0.75rem+4px)]", h.icon === "sequence" ? "bg-primary" : "bg-muted-foreground/50")} />
+              <span className={cn("text-card-foreground", h.icon === "sequence" && "text-primary")}>{h.label}</span>
+              <span className="text-muted-foreground ml-auto shrink-0">{h.daysAgo}d ago</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Sequence Status */}
+      {sequence && (
+        <div className="space-y-1">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            <Zap className="w-3 h-3 inline mr-1 text-primary" />
+            {sequence.name}
+          </p>
+          <div className="space-y-1">
+            {sequence.items.map((s, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs">
+                {s.type === "email" ? (
+                  <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                ) : (
+                  <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />
+                )}
+                <span className="text-card-foreground">{s.label}</span>
+                <span className="text-muted-foreground text-[10px]">({s.delay})</span>
+                {s.opened ? (
+                  <span className="ml-auto flex items-center gap-1 text-green-500">
+                    <Check className="w-3 h-3" /> Opened
+                  </span>
+                ) : (
+                  <span className="ml-auto flex items-center gap-1 text-muted-foreground">
+                    <X className="w-3 h-3" /> Not opened
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 gap-2">
+        {actions.map((a) => (
+          <Button
+            key={a.label}
+            variant="outline"
+            size="sm"
+            className="h-11 text-xs gap-1.5 justify-start whitespace-normal text-left leading-tight"
+            onClick={() => onAction(job, a.action, a)}
+          >
+            <a.icon className="w-4 h-4 shrink-0" />
+            <span>{a.label}</span>
+          </Button>
+        ))}
+      </div>
+
+      {/* Note Input */}
+      <div className="space-y-2">
+        <Textarea
+          placeholder="Add a quick note..."
+          className="min-h-[60px] text-sm"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
+        <Button
+          size="sm"
+          className="w-full h-10"
+          onClick={() => onSaveNote(job)}
+          disabled={!note.trim()}
+        >
+          <StickyNote className="w-4 h-4 mr-1" />
+          Save Note
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function ManagerMode() {
   const navigate = useNavigate();
   const { getThresholds, getLabel } = useThresholds();
   const [activeStage, setActiveStage] = useState<Stage>("Lead");
   const [activePriority, setActivePriority] = useState<PriorityColor>("red");
   const [note, setNote] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("swipe");
 
   const thresholds = getThresholds(activeStage);
   const stageJobs = jobsByStage(activeStage);
@@ -199,13 +316,12 @@ export function ManagerMode() {
     return () => { emblaApi.off("select", onSelect); };
   }, [emblaApi, onSelect]);
 
-  // Reset carousel when filter changes
   useEffect(() => {
     emblaApi?.scrollTo(0);
     setCurrentIndex(0);
   }, [activeStage, activePriority, emblaApi]);
 
-  const handleAction = (job: Job, action: string) => {
+  const handleAction = (job: Job, action: string, actionDef: ActionDef) => {
     if (action === "open") {
       const earlyStages = ["Lead", "To Quote", "Quote Sent"];
       if (earlyStages.includes(activeStage)) navigate(`/quote/${job.id}`);
@@ -213,10 +329,19 @@ export function ManagerMode() {
       else navigate(`/job/${job.id}`);
       return;
     }
+    if (actionDef.requiresNote && !note.trim()) {
+      toast({
+        title: "Note required",
+        description: `Please add a note explaining why you're archiving ${job.client} — ${job.jobName}.`,
+        variant: "destructive",
+      });
+      return;
+    }
     toast({
       title: `${action.charAt(0).toUpperCase() + action.slice(1)}`,
-      description: `${job.client} — ${job.jobName} has been ${action}.`,
+      description: `${job.client} — ${job.jobName} has been ${action}.${actionDef.requiresNote ? ` Note: ${note}` : ""}`,
     });
+    if (actionDef.requiresNote) setNote("");
   };
 
   const handleSaveNote = (job: Job) => {
@@ -250,143 +375,100 @@ export function ManagerMode() {
         ))}
       </div>
 
-      {/* Priority Filter */}
-      <div className="flex gap-2 px-1">
+      {/* Priority Filter — stacked vertically with descriptions */}
+      <div className="flex flex-col gap-1.5 px-1">
         {priorityCounts.map((p) => (
           <button
             key={p.color}
             onClick={() => setActivePriority(p.color)}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all border w-full",
               activePriority === p.color
                 ? `${p.bg} ring-2 ${p.ring} border-transparent`
                 : "bg-secondary border-border"
             )}
           >
-            <span className={cn("w-2.5 h-2.5 rounded-full", p.dot)} />
-            <span>{p.count}</span>
-            <span className="text-muted-foreground hidden sm:inline">
+            <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", p.dot)} />
+            <span className="font-bold">{p.count}</span>
+            <span className="text-muted-foreground">
               {getLabel(activeStage, p.color)}
             </span>
           </button>
         ))}
       </div>
 
-      {/* Job Cards Carousel */}
+      {/* View Toggle */}
+      <div className="flex items-center justify-between px-1">
+        <span className="text-xs text-muted-foreground font-medium">
+          {filteredJobs.length} job{filteredJobs.length !== 1 ? "s" : ""}
+        </span>
+        <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setViewMode("swipe")}
+            className={cn(
+              "h-7 px-2 gap-1 text-xs",
+              viewMode === "swipe" && "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+          >
+            <GalleryHorizontal className="w-3.5 h-3.5" />
+            Swipe
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setViewMode("list")}
+            className={cn(
+              "h-7 px-2 gap-1 text-xs",
+              viewMode === "list" && "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+          >
+            <LayoutList className="w-3.5 h-3.5" />
+            List
+          </Button>
+        </div>
+      </div>
+
+      {/* Job Cards */}
       {filteredJobs.length === 0 ? (
         <div className="flex items-center justify-center h-40 text-muted-foreground text-sm rounded-xl border border-dashed border-border">
           No {activePriority} priority jobs in {activeStage}
         </div>
+      ) : viewMode === "list" ? (
+        /* List View — all jobs stacked vertically */
+        <div className="flex flex-col gap-3 px-1">
+          {filteredJobs.map((job) => (
+            <JobCard
+              key={job.id}
+              job={job}
+              activeStage={activeStage}
+              activePriority={activePriority}
+              note={note}
+              setNote={setNote}
+              onAction={handleAction}
+              onSaveNote={handleSaveNote}
+            />
+          ))}
+        </div>
       ) : (
+        /* Swipe View — carousel */
         <>
           <div ref={emblaRef} className="overflow-hidden">
             <div className="flex">
-              {filteredJobs.map((job) => {
-                const history = generateHistory(job, activeStage);
-                const sequence = generateSequence(activeStage, job);
-                const actions = STAGE_ACTIONS[activeStage] || [];
-
-                return (
-                  <div key={job.id} className="flex-[0_0_100%] min-w-0 px-1">
-                    <div className="rounded-xl border border-border bg-card p-4 space-y-4">
-                      {/* Header */}
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="font-semibold text-card-foreground">{job.client}</p>
-                          <p className="text-sm text-muted-foreground">{job.jobName}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-card-foreground">${job.value.toLocaleString()}</p>
-                          <p className={cn("text-xs font-medium", COLOR_CLASSES[activePriority])}>
-                            {job.ageDays} days old
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* History Timeline */}
-                      <div className="space-y-1">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">History</p>
-                        <div className="space-y-1 pl-3 border-l-2 border-border">
-                          {history.map((h, i) => (
-                            <div key={i} className="flex items-center gap-2 text-xs">
-                              <span className={cn("w-1.5 h-1.5 rounded-full -ml-[calc(0.75rem+4px)]", h.icon === "sequence" ? "bg-primary" : "bg-muted-foreground/50")} />
-                              <span className={cn("text-card-foreground", h.icon === "sequence" && "text-primary")}>{h.label}</span>
-                              <span className="text-muted-foreground ml-auto">{h.daysAgo}d ago</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Sequence Status */}
-                      {sequence && (
-                        <div className="space-y-1">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                            <Zap className="w-3 h-3 inline mr-1 text-primary" />
-                            {sequence.name}
-                          </p>
-                          <div className="space-y-1">
-                            {sequence.items.map((s, i) => (
-                              <div key={i} className="flex items-center gap-2 text-xs">
-                                {s.type === "email" ? (
-                                  <Mail className="w-3.5 h-3.5 text-muted-foreground" />
-                                ) : (
-                                  <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />
-                                )}
-                                <span className="text-card-foreground">{s.label}</span>
-                                <span className="text-muted-foreground text-[10px]">({s.delay})</span>
-                                {s.opened ? (
-                                  <span className="ml-auto flex items-center gap-1 text-green-500">
-                                    <Check className="w-3 h-3" /> Opened
-                                  </span>
-                                ) : (
-                                  <span className="ml-auto flex items-center gap-1 text-muted-foreground">
-                                    <X className="w-3 h-3" /> Not opened
-                                  </span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Quick Actions */}
-                      <div className="grid grid-cols-2 gap-2">
-                        {actions.map((a) => (
-                          <Button
-                            key={a.label}
-                            variant="outline"
-                            size="sm"
-                            className="h-11 text-xs gap-1.5 justify-start"
-                            onClick={() => handleAction(job, a.action)}
-                          >
-                            <a.icon className="w-4 h-4" />
-                            {a.label}
-                          </Button>
-                        ))}
-                      </div>
-
-                      {/* Note Input */}
-                      <div className="space-y-2">
-                        <Textarea
-                          placeholder="Add a quick note..."
-                          className="min-h-[60px] text-sm"
-                          value={note}
-                          onChange={(e) => setNote(e.target.value)}
-                        />
-                        <Button
-                          size="sm"
-                          className="w-full h-10"
-                          onClick={() => handleSaveNote(job)}
-                          disabled={!note.trim()}
-                        >
-                          <StickyNote className="w-4 h-4 mr-1" />
-                          Save Note
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {filteredJobs.map((job) => (
+                <div key={job.id} className="flex-[0_0_100%] min-w-0 px-1">
+                  <JobCard
+                    job={job}
+                    activeStage={activeStage}
+                    activePriority={activePriority}
+                    note={note}
+                    setNote={setNote}
+                    onAction={handleAction}
+                    onSaveNote={handleSaveNote}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
