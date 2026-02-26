@@ -2,7 +2,7 @@ import {
   Home, Users, CalendarDays, Package, FilePlus, FileText, Settings,
   ClipboardList, List, StickyNote, History, DollarSign, Clock, Camera,
   ClipboardCheck, Star, Archive, Building2, Bell, Palette, CreditCard,
-  Shield, Wrench, Briefcase, UserPlus, BarChart3, Plus,
+  Shield, Wrench, Briefcase, UserPlus, BarChart3, Plus, Mail, MessageSquare,
 } from "lucide-react";
 
 export interface ToolbarTab {
@@ -21,6 +21,8 @@ export const COMMON_TABS: ToolbarTab[] = [
 /** Page-specific extra tabs appended after the common ones */
 export const PIPELINE_EXTRAS: ToolbarTab[] = [
   { id: "bundles", label: "Bundles", icon: Package },
+  { id: "email", label: "Email", icon: Mail },
+  { id: "sms", label: "SMS", icon: MessageSquare },
   { id: "quotes", label: "New Quote", icon: FilePlus },
   { id: "invoices", label: "Invoices", icon: FileText },
   { id: "settings", label: "Settings", icon: Settings },
@@ -79,6 +81,22 @@ export const SETTINGS_EXTRAS: ToolbarTab[] = [
   { id: "integrations", label: "Integrations", icon: Wrench },
 ];
 
+export const EMAIL_EXTRAS: ToolbarTab[] = [
+  { id: "quotes", label: "Quotes", icon: DollarSign },
+  { id: "invoices", label: "Invoices", icon: FileText },
+  { id: "reminders", label: "Reminders", icon: Clock },
+  { id: "services", label: "Services", icon: Wrench },
+  { id: "reviews", label: "Reviews", icon: Star },
+];
+
+export const SMS_EXTRAS: ToolbarTab[] = [
+  { id: "quotes", label: "Quotes", icon: DollarSign },
+  { id: "invoices", label: "Invoices", icon: FileText },
+  { id: "reminders", label: "Reminders", icon: Clock },
+  { id: "services", label: "Services", icon: Wrench },
+  { id: "reviews", label: "Reviews", icon: Star },
+];
+
 /** Helper to build a full tab list for any page */
 export function buildTabs(...extras: ToolbarTab[]): ToolbarTab[] {
   return [...COMMON_TABS, ...extras];
@@ -94,6 +112,8 @@ export function handleCommonTab(id: string, navigate: (path: string) => void): b
     quotes: "/quote/new",
     invoices: "/job/new?stage=To+Invoice",
     bundles: "/bundles",
+    email: "/email-templates",
+    sms: "/sms-templates",
   };
   if (routes[id]) {
     navigate(routes[id]);

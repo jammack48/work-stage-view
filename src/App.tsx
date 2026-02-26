@@ -18,6 +18,8 @@ import QuotePage from "./pages/QuotePage";
 import ComingSoon from "./pages/ComingSoon";
 import BundlesPage from "./pages/BundlesPage";
 import SchedulePage from "./pages/SchedulePage";
+import EmailTemplatesPage from "./pages/EmailTemplatesPage";
+import SmsTemplatesPage from "./pages/SmsTemplatesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +41,8 @@ function AppLayout() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/bundles" element={<BundlesPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/email-templates" element={<EmailTemplatesPage />} />
+          <Route path="/sms-templates" element={<SmsTemplatesPage />} />
           <Route path="/coming-soon" element={<ComingSoon />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
