@@ -84,7 +84,7 @@ export const SETTINGS_EXTRAS: ToolbarTab[] = [
 ];
 
 export const EMAIL_EXTRAS: ToolbarTab[] = [
-  { id: "quotes", label: "Quotes", icon: DollarSign },
+  { id: "quotes", label: "Quotes", icon: Mail },
   { id: "invoices", label: "Invoices", icon: FileText },
   { id: "reminders", label: "Reminders", icon: Clock },
   { id: "services", label: "Services", icon: Wrench },
@@ -92,7 +92,7 @@ export const EMAIL_EXTRAS: ToolbarTab[] = [
 ];
 
 export const SMS_EXTRAS: ToolbarTab[] = [
-  { id: "quotes", label: "Quotes", icon: DollarSign },
+  { id: "quotes", label: "Quotes", icon: MessageSquare },
   { id: "invoices", label: "Invoices", icon: FileText },
   { id: "reminders", label: "Reminders", icon: Clock },
   { id: "services", label: "Services", icon: Wrench },
