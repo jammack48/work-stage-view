@@ -9,11 +9,10 @@ import { QuoteFunnel, StepIndicator, type FunnelResult } from "@/components/quot
 import { Textarea } from "@/components/ui/textarea";
 import { NotesTab } from "@/components/job/NotesTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
+import { SequenceSelector } from "@/components/quote/SequenceSelector";
+import { SequencesTab } from "@/components/SequencesTab";
 import { cn } from "@/lib/utils";
 import { buildTabs, handleCommonTab, QUOTE_EXTRAS } from "@/config/toolbarTabs";
-import { dummyTemplates } from "@/data/dummyTemplates";
-import { type SequenceStep } from "@/components/FollowUpSequenceBuilder";
-import { SequencesTab } from "@/components/SequencesTab";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
@@ -42,10 +41,7 @@ export default function QuotePage() {
   const [funnelStep, setFunnelStep] = useState(1);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
-  const [emailSeqEnabled, setEmailSeqEnabled] = useState(false);
-  const [smsSeqEnabled, setSmsSeqEnabled] = useState(false);
-  const [emailSteps, setEmailSteps] = useState<SequenceStep[]>([]);
-  const [smsSteps, setSmsSteps] = useState<SequenceStep[]>([]);
+  const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
 
   const isNew = id === "new";
 
@@ -70,7 +66,6 @@ export default function QuotePage() {
     setPendingNavId(null);
   };
 
-  // During funnel: wrap in standard layout
   if (isNew && !funnelComplete) {
     return (
       <>
@@ -114,7 +109,6 @@ export default function QuotePage() {
     );
   }
 
-  // Build job detail
   const job = isNew
     ? {
         ...getNewJobDetail("To Quote"),
@@ -135,7 +129,6 @@ export default function QuotePage() {
     );
   }
 
-  // Initialize scope from job description for existing quotes
   if (scope === "" && job.description && !isNew) {
     setScope(job.description);
   }
@@ -158,21 +151,10 @@ export default function QuotePage() {
           />
         </div>
         <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} />
+        <SequenceSelector category="quotes" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
       </div>
     ),
-    sequences: (
-      <SequencesTab
-        category="quotes"
-        emailEnabled={emailSeqEnabled}
-        onEmailEnabledChange={setEmailSeqEnabled}
-        emailSteps={emailSteps}
-        onEmailStepsChange={setEmailSteps}
-        smsEnabled={smsSeqEnabled}
-        onSmsEnabledChange={setSmsSeqEnabled}
-        smsSteps={smsSteps}
-        onSmsStepsChange={setSmsSteps}
-      />
-    ),
+    sequences: <SequencesTab category="quotes" />,
     notes: <NotesTab notes={job.notes} />,
     history: <HistoryTab job={job} />,
   };
