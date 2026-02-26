@@ -12,9 +12,8 @@ import { HistoryTab } from "@/components/job/HistoryTab";
 import { cn } from "@/lib/utils";
 import { buildTabs, handleCommonTab, QUOTE_EXTRAS } from "@/config/toolbarTabs";
 import { dummyTemplates } from "@/data/dummyTemplates";
-import { FollowUpSequenceBuilder, type SequenceStep } from "@/components/FollowUpSequenceBuilder";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { type SequenceStep } from "@/components/FollowUpSequenceBuilder";
+import { SequenceSettingsSheet } from "@/components/SequenceSettingsSheet";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
@@ -158,23 +157,18 @@ export default function QuotePage() {
             className="min-h-[60px] border-0 bg-transparent p-0 focus-visible:ring-0 text-sm resize-none"
           />
         </div>
-        <div className="space-y-3 rounded-lg border border-border bg-card p-3">
-          <div className="flex items-center gap-2">
-            <Switch id="email-seq" checked={emailSeqEnabled} onCheckedChange={setEmailSeqEnabled} />
-            <Label htmlFor="email-seq" className="text-sm font-medium">Enable Email Sequence</Label>
-          </div>
-          {emailSeqEnabled && (
-            <FollowUpSequenceBuilder channel="email" category="quotes" steps={emailSteps} onStepsChange={setEmailSteps} />
-          )}
-        </div>
-        <div className="space-y-3 rounded-lg border border-border bg-card p-3">
-          <div className="flex items-center gap-2">
-            <Switch id="sms-seq" checked={smsSeqEnabled} onCheckedChange={setSmsSeqEnabled} />
-            <Label htmlFor="sms-seq" className="text-sm font-medium">Enable SMS Sequence</Label>
-          </div>
-          {smsSeqEnabled && (
-            <FollowUpSequenceBuilder channel="sms" category="quotes" steps={smsSteps} onStepsChange={setSmsSteps} />
-          )}
+        <div className="flex justify-end">
+          <SequenceSettingsSheet
+            category="quotes"
+            emailEnabled={emailSeqEnabled}
+            onEmailEnabledChange={setEmailSeqEnabled}
+            emailSteps={emailSteps}
+            onEmailStepsChange={setEmailSteps}
+            smsEnabled={smsSeqEnabled}
+            onSmsEnabledChange={setSmsSeqEnabled}
+            smsSteps={smsSteps}
+            onSmsStepsChange={setSmsSteps}
+          />
         </div>
         <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} />
       </div>

@@ -3,9 +3,8 @@ import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { FollowUpSequenceBuilder, type SequenceStep } from "@/components/FollowUpSequenceBuilder";
+import { type SequenceStep } from "@/components/FollowUpSequenceBuilder";
+import { SequenceSettingsSheet } from "@/components/SequenceSettingsSheet";
 import type { JobDetail } from "@/data/dummyJobDetails";
 import { cn } from "@/lib/utils";
 
@@ -77,23 +76,18 @@ export function InvoiceTab({ job }: InvoiceTabProps) {
         <FileText className="w-5 h-5" /> Generate Invoice
       </Button>
 
-      <div className="space-y-3 rounded-lg border border-border bg-card p-3">
-        <div className="flex items-center gap-2">
-          <Switch id="inv-email-seq" checked={emailSeqEnabled} onCheckedChange={setEmailSeqEnabled} />
-          <Label htmlFor="inv-email-seq" className="text-sm font-medium">Enable Email Sequence</Label>
-        </div>
-        {emailSeqEnabled && (
-          <FollowUpSequenceBuilder channel="email" category="invoices" steps={emailSteps} onStepsChange={setEmailSteps} />
-        )}
-      </div>
-      <div className="space-y-3 rounded-lg border border-border bg-card p-3">
-        <div className="flex items-center gap-2">
-          <Switch id="inv-sms-seq" checked={smsSeqEnabled} onCheckedChange={setSmsSeqEnabled} />
-          <Label htmlFor="inv-sms-seq" className="text-sm font-medium">Enable SMS Sequence</Label>
-        </div>
-        {smsSeqEnabled && (
-          <FollowUpSequenceBuilder channel="sms" category="invoices" steps={smsSteps} onStepsChange={setSmsSteps} />
-        )}
+      <div className="flex justify-end">
+        <SequenceSettingsSheet
+          category="invoices"
+          emailEnabled={emailSeqEnabled}
+          onEmailEnabledChange={setEmailSeqEnabled}
+          emailSteps={emailSteps}
+          onEmailStepsChange={setEmailSteps}
+          smsEnabled={smsSeqEnabled}
+          onSmsEnabledChange={setSmsSeqEnabled}
+          smsSteps={smsSteps}
+          onSmsStepsChange={setSmsSteps}
+        />
       </div>
     </div>
   );
