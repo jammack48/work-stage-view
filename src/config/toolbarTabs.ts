@@ -24,6 +24,7 @@ export const COMMON_TABS: ToolbarTab[] = [
 
 /** Page-specific extras — each already includes BACK_TAB */
 export const PIPELINE_EXTRAS: ToolbarTab[] = [
+  { id: "manager", label: "Manager", icon: Shield },
   { id: "bundles", label: "Bundles", icon: Package },
   { id: "quotes", label: "New Quote", icon: FilePlus },
   { id: "invoices", label: "New Invoice", icon: Receipt },
