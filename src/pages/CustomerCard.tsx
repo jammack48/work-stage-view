@@ -7,8 +7,13 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, MapPin, Plus, Users, StickyNote, UserPlus } from "lucide-react";
 import { CUSTOMER_CARD_EXTRAS } from "@/config/toolbarTabs";
+import { HistoryTab } from "@/components/customer/HistoryTab";
+import { CustomerPhotosTab } from "@/components/customer/CustomerPhotosTab";
+import { DocumentsTab } from "@/components/customer/DocumentsTab";
+import { QuotesTab } from "@/components/customer/QuotesTab";
+import { InvoicesTab } from "@/components/customer/InvoicesTab";
 
-type CustTab = "overview" | "jobs" | "contacts" | "notes" | "spend" | "add-job";
+type CustTab = "overview" | "jobs" | "contacts" | "notes" | "spend" | "add-job" | "history" | "photos" | "documents" | "quotes" | "invoices";
 
 export default function CustomerCard() {
   const { id } = useParams<{ id: string }>();
@@ -193,6 +198,11 @@ export default function CustomerCard() {
         <Button onClick={() => navigate(`/job/new?stage=Lead`)} className="gap-1.5"><Plus className="w-4 h-4" /> Create Job</Button>
       </div>
     ),
+    history: <HistoryTab customer={customer} />,
+    photos: <CustomerPhotosTab customer={customer} />,
+    documents: <DocumentsTab customer={customer} />,
+    quotes: <QuotesTab customer={customer} />,
+    invoices: <InvoicesTab customer={customer} />,
   };
 
   return (
