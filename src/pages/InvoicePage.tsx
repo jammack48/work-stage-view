@@ -81,6 +81,7 @@ export default function InvoicePage() {
         }
       >
         <QuoteFunnel
+          label="invoice"
           onComplete={(data) => {
             setFunnelData(data);
             setScope(data.description);
