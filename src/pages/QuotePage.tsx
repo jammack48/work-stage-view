@@ -11,8 +11,10 @@ import { NotesTab } from "@/components/job/NotesTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { cn } from "@/lib/utils";
 import { buildTabs, handleCommonTab, QUOTE_EXTRAS } from "@/config/toolbarTabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { dummyTemplates } from "@/data/dummyTemplates";
+import { FollowUpSequenceBuilder, type SequenceStep } from "@/components/FollowUpSequenceBuilder";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
@@ -41,11 +43,10 @@ export default function QuotePage() {
   const [funnelStep, setFunnelStep] = useState(1);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
-  const [emailTemplate, setEmailTemplate] = useState("");
-  const [smsTemplate, setSmsTemplate] = useState("");
-
-  const emailQuoteTemplates = dummyTemplates.filter((t) => t.channel === "email" && t.category === "quotes" && t.isActive);
-  const smsQuoteTemplates = dummyTemplates.filter((t) => t.channel === "sms" && t.category === "quotes" && t.isActive);
+  const [emailSeqEnabled, setEmailSeqEnabled] = useState(false);
+  const [smsSeqEnabled, setSmsSeqEnabled] = useState(false);
+  const [emailSteps, setEmailSteps] = useState<SequenceStep[]>([]);
+  const [smsSteps, setSmsSteps] = useState<SequenceStep[]>([]);
 
   const isNew = id === "new";
 
@@ -157,25 +158,23 @@ export default function QuotePage() {
             className="min-h-[60px] border-0 bg-transparent p-0 focus-visible:ring-0 text-sm resize-none"
           />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Email Template</label>
-            <Select value={emailTemplate} onValueChange={setEmailTemplate}>
-              <SelectTrigger className="text-sm"><SelectValue placeholder="Select email template…" /></SelectTrigger>
-              <SelectContent>
-                {emailQuoteTemplates.map((t) => (<SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>))}
-              </SelectContent>
-            </Select>
+        <div className="space-y-3 rounded-lg border border-border bg-card p-3">
+          <div className="flex items-center gap-2">
+            <Switch id="email-seq" checked={emailSeqEnabled} onCheckedChange={setEmailSeqEnabled} />
+            <Label htmlFor="email-seq" className="text-sm font-medium">Enable Email Sequence</Label>
           </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">SMS Template</label>
-            <Select value={smsTemplate} onValueChange={setSmsTemplate}>
-              <SelectTrigger className="text-sm"><SelectValue placeholder="Select SMS template…" /></SelectTrigger>
-              <SelectContent>
-                {smsQuoteTemplates.map((t) => (<SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>))}
-              </SelectContent>
-            </Select>
+          {emailSeqEnabled && (
+            <FollowUpSequenceBuilder channel="email" category="quotes" steps={emailSteps} onStepsChange={setEmailSteps} />
+          )}
+        </div>
+        <div className="space-y-3 rounded-lg border border-border bg-card p-3">
+          <div className="flex items-center gap-2">
+            <Switch id="sms-seq" checked={smsSeqEnabled} onCheckedChange={setSmsSeqEnabled} />
+            <Label htmlFor="sms-seq" className="text-sm font-medium">Enable SMS Sequence</Label>
           </div>
+          {smsSeqEnabled && (
+            <FollowUpSequenceBuilder channel="sms" category="quotes" steps={smsSteps} onStepsChange={setSmsSteps} />
+          )}
         </div>
         <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} />
       </div>
