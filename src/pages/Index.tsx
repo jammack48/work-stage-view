@@ -4,6 +4,7 @@ import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
+import { ManagerMode } from "@/components/ManagerMode";
 import { ChevronRight, LayoutGrid, Columns, ChevronLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,7 +15,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { COMMON_TABS, PIPELINE_EXTRAS, buildTabs, handleCommonTab } from "@/config/toolbarTabs";
 
 type Layout = "horizontal" | "vertical";
-type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings";
+type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings" | "manager";
 
 const HOME_TABS = buildTabs(...PIPELINE_EXTRAS);
 
@@ -120,8 +121,9 @@ const Index = () => {
         }
       >
 
-        {/* Mobile: swipeable single-bucket carousel */}
-        {isMobile ? (
+        {activeView === "manager" ? (
+          <ManagerMode />
+        ) : isMobile ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between px-1">
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={scrollPrev} disabled={currentSlide === 0}>

@@ -1,0 +1,377 @@
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { STAGES, jobsByStage, type Stage, type Job } from "@/data/dummyJobs";
+import { useThresholds } from "@/contexts/ThresholdContext";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
+import useEmblaCarousel from "embla-carousel-react";
+import {
+  Archive, StickyNote, Phone, FileText, CheckCircle, CalendarDays,
+  PauseCircle, Send, Star, ChevronLeft, ChevronRight, Mail,
+  MessageSquare, Check, X, ExternalLink, Receipt,
+} from "lucide-react";
+
+type PriorityColor = "red" | "orange" | "green";
+
+function getJobColor(job: Job, greenMax: number, orangeMax: number): PriorityColor {
+  if (job.ageDays <= greenMax) return "green";
+  if (job.ageDays <= orangeMax) return "orange";
+  return "red";
+}
+
+interface ActionDef {
+  label: string;
+  icon: React.ElementType;
+  action: string;
+}
+
+const STAGE_ACTIONS: Record<string, ActionDef[]> = {
+  "Lead": [
+    { label: "Archive", icon: Archive, action: "archived" },
+    { label: "Add Note", icon: StickyNote, action: "note" },
+    { label: "Convert to Quote", icon: FileText, action: "converted" },
+    { label: "Call Back", icon: Phone, action: "callback" },
+  ],
+  "To Quote": [
+    { label: "Archive", icon: Archive, action: "archived" },
+    { label: "Add Note", icon: StickyNote, action: "note" },
+    { label: "Convert to Quote", icon: FileText, action: "converted" },
+    { label: "Call Back", icon: Phone, action: "callback" },
+  ],
+  "Quote Sent": [
+    { label: "Archive", icon: Archive, action: "archived" },
+    { label: "Add Note", icon: StickyNote, action: "note" },
+    { label: "Resend Quote", icon: Send, action: "resent" },
+    { label: "Call Back", icon: Phone, action: "callback" },
+    { label: "Mark Accepted", icon: CheckCircle, action: "accepted" },
+    { label: "Open Quote", icon: ExternalLink, action: "open" },
+  ],
+  "Quote Accepted": [
+    { label: "Add Note", icon: StickyNote, action: "note" },
+    { label: "Schedule Job", icon: CalendarDays, action: "scheduled" },
+    { label: "Call Back", icon: Phone, action: "callback" },
+    { label: "Open Job", icon: ExternalLink, action: "open" },
+  ],
+  "In Progress": [
+    { label: "Add Note", icon: StickyNote, action: "note" },
+    { label: "On Hold", icon: PauseCircle, action: "on-hold" },
+    { label: "Mark Complete", icon: CheckCircle, action: "completed" },
+    { label: "Call Back", icon: Phone, action: "callback" },
+    { label: "Open Job", icon: ExternalLink, action: "open" },
+  ],
+  "To Invoice": [
+    { label: "Add Note", icon: StickyNote, action: "note" },
+    { label: "Create Invoice", icon: Receipt, action: "invoiced" },
+    { label: "On Hold", icon: PauseCircle, action: "on-hold" },
+    { label: "Open Job", icon: ExternalLink, action: "open" },
+  ],
+  "Invoiced": [
+    { label: "Add Note", icon: StickyNote, action: "note" },
+    { label: "Resend Invoice", icon: Send, action: "resent" },
+    { label: "Call Back", icon: Phone, action: "callback" },
+    { label: "Mark Paid", icon: CheckCircle, action: "paid" },
+    { label: "Open Invoice", icon: ExternalLink, action: "open" },
+  ],
+  "Invoice Paid": [
+    { label: "Add Note", icon: StickyNote, action: "note" },
+    { label: "Archive", icon: Archive, action: "archived" },
+    { label: "Request Review", icon: Star, action: "review-requested" },
+    { label: "Open Job", icon: ExternalLink, action: "open" },
+  ],
+};
+
+function generateHistory(job: Job, stage: string) {
+  const entries: { label: string; daysAgo: number }[] = [];
+  entries.push({ label: "Lead created", daysAgo: job.ageDays });
+  if (["To Quote","Quote Sent","Quote Accepted","In Progress","To Invoice","Invoiced","Invoice Paid"].includes(stage))
+    entries.push({ label: "Quote drafted", daysAgo: Math.max(1, job.ageDays - 2) });
+  if (["Quote Sent","Quote Accepted","In Progress","To Invoice","Invoiced","Invoice Paid"].includes(stage))
+    entries.push({ label: "Quote sent to client", daysAgo: Math.max(1, job.ageDays - 3) });
+  if (["Quote Accepted","In Progress","To Invoice","Invoiced","Invoice Paid"].includes(stage))
+    entries.push({ label: "Quote accepted", daysAgo: Math.max(1, job.ageDays - 5) });
+  if (["In Progress","To Invoice","Invoiced","Invoice Paid"].includes(stage))
+    entries.push({ label: "Job scheduled", daysAgo: Math.max(1, job.ageDays - 6) });
+  if (["To Invoice","Invoiced","Invoice Paid"].includes(stage))
+    entries.push({ label: "Job completed", daysAgo: Math.max(1, job.ageDays - 8) });
+  if (["Invoiced","Invoice Paid"].includes(stage))
+    entries.push({ label: "Invoice sent", daysAgo: Math.max(1, job.ageDays - 9) });
+  if (stage === "Invoice Paid")
+    entries.push({ label: "Invoice paid", daysAgo: 1 });
+  return entries;
+}
+
+function generateSequence(stage: string) {
+  if (["Lead","To Quote"].includes(stage)) return null;
+  const items: { type: "email" | "sms"; label: string; opened: boolean }[] = [];
+  if (["Quote Sent","Quote Accepted"].includes(stage)) {
+    items.push({ type: "email", label: "Quote email", opened: stage === "Quote Accepted" });
+    items.push({ type: "sms", label: "Follow-up SMS", opened: false });
+  }
+  if (["Invoiced","Invoice Paid"].includes(stage)) {
+    items.push({ type: "email", label: "Invoice email", opened: stage === "Invoice Paid" });
+    items.push({ type: "sms", label: "Payment reminder", opened: stage === "Invoice Paid" });
+  }
+  if (["In Progress","To Invoice"].includes(stage)) {
+    items.push({ type: "email", label: "Job confirmation", opened: true });
+  }
+  return items.length ? items : null;
+}
+
+const PRIORITY_COLORS: { color: PriorityColor; bg: string; ring: string; dot: string }[] = [
+  { color: "red", bg: "bg-red-500/10", ring: "ring-red-500", dot: "bg-red-500" },
+  { color: "orange", bg: "bg-orange-500/10", ring: "ring-orange-500", dot: "bg-orange-500" },
+  { color: "green", bg: "bg-green-500/10", ring: "ring-green-500", dot: "bg-green-500" },
+];
+
+const COLOR_CLASSES: Record<PriorityColor, string> = {
+  red: "text-red-500",
+  orange: "text-orange-500",
+  green: "text-green-500",
+};
+
+export function ManagerMode() {
+  const navigate = useNavigate();
+  const { getThresholds, getLabel } = useThresholds();
+  const [activeStage, setActiveStage] = useState<Stage>("Lead");
+  const [activePriority, setActivePriority] = useState<PriorityColor>("red");
+  const [note, setNote] = useState("");
+
+  const thresholds = getThresholds(activeStage);
+  const stageJobs = jobsByStage(activeStage);
+  const filteredJobs = stageJobs.filter(
+    (j) => getJobColor(j, thresholds.greenMax, thresholds.orangeMax) === activePriority
+  );
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "start" });
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setCurrentIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on("select", onSelect);
+    onSelect();
+    return () => { emblaApi.off("select", onSelect); };
+  }, [emblaApi, onSelect]);
+
+  // Reset carousel when filter changes
+  useEffect(() => {
+    emblaApi?.scrollTo(0);
+    setCurrentIndex(0);
+  }, [activeStage, activePriority, emblaApi]);
+
+  const handleAction = (job: Job, action: string) => {
+    if (action === "open") {
+      const earlyStages = ["Lead", "To Quote", "Quote Sent"];
+      if (earlyStages.includes(activeStage)) navigate(`/quote/${job.id}`);
+      else if (["Invoiced", "Invoice Paid"].includes(activeStage)) navigate(`/invoice/${job.id}`);
+      else navigate(`/job/${job.id}`);
+      return;
+    }
+    toast({
+      title: `${action.charAt(0).toUpperCase() + action.slice(1)}`,
+      description: `${job.client} — ${job.jobName} has been ${action}.`,
+    });
+  };
+
+  const handleSaveNote = (job: Job) => {
+    if (!note.trim()) return;
+    toast({ title: "Note saved", description: `Note added to ${job.client} — ${job.jobName}` });
+    setNote("");
+  };
+
+  const priorityCounts = PRIORITY_COLORS.map((p) => ({
+    ...p,
+    count: stageJobs.filter((j) => getJobColor(j, thresholds.greenMax, thresholds.orangeMax) === p.color).length,
+  }));
+
+  return (
+    <div className="flex flex-col gap-3 pb-4">
+      {/* Stage Picker */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1 px-1 -mx-1 scrollbar-none">
+        {STAGES.map((stage) => (
+          <button
+            key={stage}
+            onClick={() => setActiveStage(stage)}
+            className={cn(
+              "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
+              activeStage === stage
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-secondary text-secondary-foreground border-border hover:bg-accent"
+            )}
+          >
+            {stage}
+          </button>
+        ))}
+      </div>
+
+      {/* Priority Filter */}
+      <div className="flex gap-2 px-1">
+        {priorityCounts.map((p) => (
+          <button
+            key={p.color}
+            onClick={() => setActivePriority(p.color)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
+              activePriority === p.color
+                ? `${p.bg} ring-2 ${p.ring} border-transparent`
+                : "bg-secondary border-border"
+            )}
+          >
+            <span className={cn("w-2.5 h-2.5 rounded-full", p.dot)} />
+            <span>{p.count}</span>
+            <span className="text-muted-foreground hidden sm:inline">
+              {getLabel(activeStage, p.color)}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Job Cards Carousel */}
+      {filteredJobs.length === 0 ? (
+        <div className="flex items-center justify-center h-40 text-muted-foreground text-sm rounded-xl border border-dashed border-border">
+          No {activePriority} priority jobs in {activeStage}
+        </div>
+      ) : (
+        <>
+          <div ref={emblaRef} className="overflow-hidden">
+            <div className="flex">
+              {filteredJobs.map((job) => {
+                const history = generateHistory(job, activeStage);
+                const sequence = generateSequence(activeStage);
+                const actions = STAGE_ACTIONS[activeStage] || [];
+
+                return (
+                  <div key={job.id} className="flex-[0_0_100%] min-w-0 px-1">
+                    <div className="rounded-xl border border-border bg-card p-4 space-y-4">
+                      {/* Header */}
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-semibold text-card-foreground">{job.client}</p>
+                          <p className="text-sm text-muted-foreground">{job.jobName}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-card-foreground">${job.value.toLocaleString()}</p>
+                          <p className={cn("text-xs font-medium", COLOR_CLASSES[activePriority])}>
+                            {job.ageDays} days old
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* History Timeline */}
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">History</p>
+                        <div className="space-y-1 pl-3 border-l-2 border-border">
+                          {history.map((h, i) => (
+                            <div key={i} className="flex items-center gap-2 text-xs">
+                              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 -ml-[calc(0.75rem+4px)]" />
+                              <span className="text-card-foreground">{h.label}</span>
+                              <span className="text-muted-foreground ml-auto">{h.daysAgo}d ago</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Sequence Status */}
+                      {sequence && (
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Follow-up Sequence</p>
+                          <div className="space-y-1">
+                            {sequence.map((s, i) => (
+                              <div key={i} className="flex items-center gap-2 text-xs">
+                                {s.type === "email" ? (
+                                  <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                                ) : (
+                                  <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />
+                                )}
+                                <span className="text-card-foreground">{s.label}</span>
+                                {s.opened ? (
+                                  <span className="ml-auto flex items-center gap-1 text-green-500">
+                                    <Check className="w-3 h-3" /> Opened
+                                  </span>
+                                ) : (
+                                  <span className="ml-auto flex items-center gap-1 text-muted-foreground">
+                                    <X className="w-3 h-3" /> Not opened
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Quick Actions */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {actions.map((a) => (
+                          <Button
+                            key={a.label}
+                            variant="outline"
+                            size="sm"
+                            className="h-11 text-xs gap-1.5 justify-start"
+                            onClick={() => handleAction(job, a.action)}
+                          >
+                            <a.icon className="w-4 h-4" />
+                            {a.label}
+                          </Button>
+                        ))}
+                      </div>
+
+                      {/* Note Input */}
+                      <div className="space-y-2">
+                        <Textarea
+                          placeholder="Add a quick note..."
+                          className="min-h-[60px] text-sm"
+                          value={note}
+                          onChange={(e) => setNote(e.target.value)}
+                        />
+                        <Button
+                          size="sm"
+                          className="w-full h-10"
+                          onClick={() => handleSaveNote(job)}
+                          disabled={!note.trim()}
+                        >
+                          <StickyNote className="w-4 h-4 mr-1" />
+                          Save Note
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center justify-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0"
+              onClick={() => emblaApi?.scrollPrev()}
+              disabled={currentIndex === 0}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <span className="text-sm font-medium text-muted-foreground">
+              {currentIndex + 1} / {filteredJobs.length}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0"
+              onClick={() => emblaApi?.scrollNext()}
+              disabled={currentIndex === filteredJobs.length - 1}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
