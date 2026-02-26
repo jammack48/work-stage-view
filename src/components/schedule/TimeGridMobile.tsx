@@ -36,16 +36,34 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
 
 export function TimeGridMobile({ jobs, dayOffset, onDayChange }: TimeGridMobileProps) {
   const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const isHorizontalSwipe = useRef(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    isHorizontalSwipe.current = false;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const dx = Math.abs(e.touches[0].clientX - touchStartX.current);
+    const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
+    if (dx > 10 && dx > dy) {
+      isHorizontalSwipe.current = true;
+      e.preventDefault();
+    }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null || !onDayChange) return;
+    if (touchStartX.current === null || !onDayChange) {
+      touchStartX.current = null;
+      return;
+    }
     const diff = touchStartX.current - e.changedTouches[0].clientX;
     touchStartX.current = null;
-    if (Math.abs(diff) < 50) return;
+    touchStartY.current = null;
+    if (!isHorizontalSwipe.current || Math.abs(diff) < 50) return;
     if (diff > 0 && dayOffset < 4) onDayChange(dayOffset + 1);
     if (diff < 0 && dayOffset > 0) onDayChange(dayOffset - 1);
   };
@@ -56,7 +74,7 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange }: TimeGridMobileP
   const layout = useMemo(() => computeOverlapLayout(dayJobs), [dayJobs]);
 
   return (
-    <div className="grid grid-cols-[40px_1fr]" style={{ height: totalHeight }} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+    <div className="grid grid-cols-[40px_1fr] touch-pan-y" style={{ height: totalHeight }} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
       {/* Time labels */}
       <div className="relative">
         {hours.map((h, i) => (
