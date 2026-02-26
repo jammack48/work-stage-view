@@ -4,7 +4,10 @@ const MOBILE_BREAKPOINT = 768;
 const LANDSCAPE_HEIGHT_BREAKPOINT = 500;
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
+  const [isMobile, setIsMobile] = React.useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth < MOBILE_BREAKPOINT || window.innerHeight < LANDSCAPE_HEIGHT_BREAKPOINT;
+  });
 
   React.useEffect(() => {
     const check = () => {
