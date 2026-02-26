@@ -14,10 +14,9 @@ interface PageToolbarProps {
   onTabChange: (id: string) => void;
   children: React.ReactNode;
   pageHeading?: React.ReactNode;
-  disabledTabs?: boolean;
 }
 
-export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading, disabledTabs }: PageToolbarProps) {
+export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading }: PageToolbarProps) {
   const isMobile = useIsMobile();
   const { position } = useToolbarPosition();
 
@@ -43,11 +42,9 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => !disabledTabs && onTabChange(id)}
-              disabled={disabledTabs}
+              onClick={() => onTabChange(id)}
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left min-h-[48px]",
-                disabledTabs && "opacity-40 cursor-not-allowed",
               activeTab === id
                   ? "bg-primary text-primary-foreground"
                   : "text-foreground/70 hover:bg-accent hover:text-accent-foreground"
@@ -74,11 +71,9 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
-            onClick={() => !disabledTabs && onTabChange(id)}
-            disabled={disabledTabs}
+            onClick={() => onTabChange(id)}
             className={cn(
               "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors shrink-0",
-              disabledTabs && "opacity-40 cursor-not-allowed",
               activeTab === id
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -117,11 +112,9 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => !disabledTabs && onTabChange(id)}
-              disabled={disabledTabs}
+              onClick={() => onTabChange(id)}
               className={cn(
                 "flex flex-col items-center justify-center w-12 h-12 rounded-lg transition-colors shrink-0",
-                disabledTabs && "opacity-40 cursor-not-allowed",
                 activeTab === id
                   ? "bg-primary text-primary-foreground"
                   : "text-foreground/70 hover:bg-accent"
@@ -152,11 +145,9 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
       {tabs.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
-          onClick={() => !disabledTabs && onTabChange(id)}
-          disabled={disabledTabs}
+          onClick={() => onTabChange(id)}
           className={cn(
             "flex flex-col items-center justify-center min-w-[44px] min-h-[44px] rounded-lg transition-colors gap-0.5 shrink-0",
-            disabledTabs && "opacity-40 cursor-not-allowed",
             activeTab === id
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:bg-accent"
