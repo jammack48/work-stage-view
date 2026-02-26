@@ -1,73 +1,91 @@
 
 
-## Feature: Schedule Tab on Pipeline Toolbar
+## Schedule Page Overhaul — Time-Based Layout with Staff Filtering
 
-### Overview
-Add a "Schedule" tab to the Pipeline toolbar that opens a new `/schedule` page. The page shows a weekly calendar view with demo jobs assigned to staff members, with two layout options the user can toggle between.
+### What's changing
 
-### 1. Pipeline Toolbar — `src/pages/Index.tsx`
-- Add `CalendarDays` icon import from lucide-react
-- Add `{ id: "schedule", label: "Schedule", icon: CalendarDays }` to `HOME_TABS` (after Bundles, before Customers)
-- Add handler: `if (id === "schedule") { navigate("/schedule"); return; }`
+The current schedule shows jobs as simple cards in a grid without any sense of time positioning. Based on the Fergus reference, the schedule needs to actually show the **working day timeline** with jobs positioned/sized by their time slots, and allow filtering to view **all staff** or **individual staff members**.
 
-### 2. Route — `src/App.tsx`
-- Import `SchedulePage` and add `<Route path="/schedule" element={<SchedulePage />} />`
+### Current problems
+- Jobs are just stacked cards — no visual representation of time blocks or duration
+- No way to filter by individual staff member
+- No "today" highlight on the day strip
+- Mobile doesn't show time context at all
 
-### 3. Schedule Page — `src/pages/SchedulePage.tsx` (new)
+---
 
-Uses `PageToolbar` with its own tab set (Pipeline, Bundles, Schedule, Customers, etc — same as Index).
+### 1. Staff filter — checkboxes/chips to toggle visibility
 
-**Demo data (inline):**
-- 4–5 staff members: e.g. "Dave", "Mike", "Tama", "Lisa", "Hemi"
-- 8–10 demo jobs spread across Mon–Fri of the current week, each assigned to a staff member with a time block, job name, and client name
-- Jobs pulled from existing `dummyJobs` data where possible, supplemented with schedule-specific fields (day, startHour, durationHours, assignedTo)
+Add a staff filter bar below the heading:
+- "All" chip (selected by default) — shows everyone
+- Individual staff chips with their colour dot — toggle on/off
+- Clicking a single staff member deselects "All" and shows only that person
+- Clicking "All" resets to everyone
+- State: `selectedStaff: string[]` (empty = all)
 
-**Page heading bar:** "Weekly Schedule" with current week range (e.g. "24 Feb – 28 Feb") and prev/next week buttons
+### 2. Day strip with "Today" highlight
 
-**Two view modes (toggle in heading bar):**
+Replace the current week nav with a horizontal day strip (like Fergus):
+- Mon–Sun row showing day name + date number
+- Today's date gets a filled circle/highlight (primary colour)
+- Tapping a day on mobile selects that day for the single-day view
+- Keep prev/next week arrows at the edges
 
-**View A — Staff Rows (default):**
+### 3. Desktop view — Time axis (vertical) with days across
+
+**Layout:**
 ```text
          Mon 24    Tue 25    Wed 26    Thu 27    Fri 28
-Dave   | [Kitchen] |         | [Deck]  |         |
-Mike   |           | [Roof]  |         | [Fence] |
-Tama   | [Bath]    | [Bath]  |         |         | [Paint]
-Lisa   |           |         | [Tiles] | [Tiles] |
+ 7am  |          |          |          |          |
+ 8am  | ████████ |          | ████████ |          |
+ 9am  | ████████ | ████████ | ████████ |          |
+10am  | ████████ | ████████ |          | ████████ |
+11am  |          | ████████ |          | ████████ |
+ ...
 ```
-- Staff names in a fixed left column
-- Days across the top as column headers
-- Job cards sit in the grid cells — showing job name, client, time range
-- On mobile: horizontally scrollable with sticky staff column
+- Time labels down the left (7am–5pm, configurable)
+- 5 day columns
+- Job cards are **absolutely positioned** within each day column based on `startHour` and sized by `durationHours`
+- Jobs from different staff in the same time slot sit side-by-side within the column
+- Each job card shows: staff colour left border, job name, client, time range
+- When filtered to one staff member, cards take full column width
 
-**View B — Day Columns:**
-```text
-  Mon 24         Tue 25         Wed 26
-┌────────────┐ ┌────────────┐ ┌────────────┐
-│ Dave        │ │ Mike        │ │ Dave        │
-│ Kitchen Reno│ │ Roof Repair │ │ Deck Build  │
-│ 8am-3pm    │ │ 9am-4pm    │ │ 7am-2pm    │
-├────────────┤ ├────────────┤ ├────────────┤
-│ Tama        │ │ Tama        │ │ Lisa        │
-│ Bathroom    │ │ Bathroom    │ │ Tiling      │
-│ 8am-5pm    │ │ 8am-5pm    │ │ 10am-4pm   │
-└────────────┘ └────────────┘ └────────────┘
-```
-- Each day is a column with stacked job cards
-- Cards show staff name, job name, client, time
-- On mobile: Embla carousel swiping one day at a time (same pattern as pipeline mobile view)
+### 4. Mobile view — Single day with time axis
 
-**Job cards:** Compact rounded cards with subtle left-border colour per staff member. Clicking a job card navigates to `/job/:id`.
+On mobile, show **one day at a time** (selected from the day strip):
+- Time axis runs vertically down the left (7am–5pm)
+- Job cards positioned by time, full width
+- Staff name shown on each card with colour indicator
+- Swipe or tap day strip to change days
+- When filtered to one person, it looks like the Fergus screenshot — their name at top, jobs stacked by time
 
-**Mobile adaptations:**
-- View A: Staff column sticky, days scroll horizontally, cards smaller
-- View B: Single-day swipeable carousel with dot indicators and prev/next arrows (reusing the existing Embla pattern from Index.tsx)
-- Toggle between View A and View B via the same button group pattern used for horizontal/vertical layout on the pipeline page
+### 5. Demo data updates
 
-### 4. Files Changed
+Add `address` field to `ScheduleJob` interface and demo data for richer cards (matching Fergus style). Add a `status` field too (e.g. "In Progress", "Scheduled", "Invoiced") shown as a small badge.
+
+---
+
+### Technical Details
+
+**File: `src/pages/SchedulePage.tsx`** — Major rewrite of views
+
+- New state: `selectedStaff: string[]`, `selectedDay: number` (for mobile)
+- New component: `StaffFilterBar` — row of toggleable chips
+- New component: `DayStrip` — horizontal Mon–Sun with today highlight
+- New component: `TimeGridDesktop` — CSS Grid with time rows and day columns, jobs absolutely positioned
+- New component: `TimeGridMobile` — single-day vertical timeline
+- Job cards: add status badge, address line, keep staff colour border
+- Time grid uses `gridTemplateRows` based on hour range (7am–5pm = 10 rows)
+- Job positioning: `top` = `(startHour - 7) * rowHeight`, `height` = `durationHours * rowHeight`
+- Overlap handling: jobs in same column & overlapping times get `width: 50%` and offset
+
+**Constants:**
+- `WORK_START = 7`, `WORK_END = 17` (7am–5pm)
+- `HOUR_HEIGHT = 60` (px per hour on desktop), `48` on mobile
+
+**Files changed:**
 
 | File | Change |
 |------|--------|
-| `src/pages/SchedulePage.tsx` | New — weekly schedule with two view modes |
-| `src/pages/Index.tsx` | Add "Schedule" tab to HOME_TABS |
-| `src/App.tsx` | Add `/schedule` route |
+| `src/pages/SchedulePage.tsx` | Major rewrite — time-based grid, staff filter, day strip, mobile single-day view |
 
