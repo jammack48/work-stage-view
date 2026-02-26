@@ -200,6 +200,7 @@ export default function CustomerCard() {
   return (
     <>
       <PageToolbar
+        currentPage="customers"
         tabs={CUST_TABS}
         activeTab={activeTab}
         onTabChange={(id) => {

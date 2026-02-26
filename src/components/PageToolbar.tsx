@@ -14,11 +14,15 @@ interface PageToolbarProps {
   onTabChange: (id: string) => void;
   children: React.ReactNode;
   pageHeading?: React.ReactNode;
+  /** ID of the common-nav tab to highlight for the current page (e.g. "customers") */
+  currentPage?: string;
 }
 
-export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading }: PageToolbarProps) {
+export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading, currentPage }: PageToolbarProps) {
   const isMobile = useIsMobile();
   const { position } = useToolbarPosition();
+
+  const isActive = (id: string) => activeTab === id || currentPage === id;
 
   const headingBar = pageHeading ? (
     <div className="px-4 sm:px-6 py-2 border-b border-border bg-background">
@@ -45,7 +49,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               onClick={() => onTabChange(id)}
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left min-h-[48px]",
-              activeTab === id
+              isActive(id)
                   ? "bg-primary text-primary-foreground"
                   : "text-foreground/70 hover:bg-accent hover:text-accent-foreground"
               )}
@@ -74,7 +78,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
             onClick={() => onTabChange(id)}
             className={cn(
               "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors shrink-0",
-              activeTab === id
+              isActive(id)
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             )}
@@ -115,7 +119,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               onClick={() => onTabChange(id)}
               className={cn(
                 "flex flex-col items-center justify-center w-12 h-12 rounded-lg transition-colors shrink-0",
-                activeTab === id
+                isActive(id)
                   ? "bg-primary text-primary-foreground"
                   : "text-foreground/70 hover:bg-accent"
               )}
@@ -148,7 +152,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
           onClick={() => onTabChange(id)}
           className={cn(
             "flex flex-col items-center justify-center min-w-[44px] min-h-[44px] rounded-lg transition-colors gap-0.5 shrink-0",
-            activeTab === id
+            isActive(id)
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:bg-accent"
           )}
