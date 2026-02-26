@@ -58,7 +58,7 @@ const SchedulePage = () => {
         <StaffFilterBar selectedStaff={selectedStaff} onSelectionChange={setSelectedStaff} />
 
         {isMobile ? (
-          <TimeGridMobile jobs={filteredJobs} dayOffset={selectedDay} />
+          <TimeGridMobile jobs={filteredJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} />
         ) : (
           <TimeGridDesktop weekStart={weekStart} jobs={filteredJobs} selectedDay={selectedDay} />
         )}
