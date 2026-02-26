@@ -70,7 +70,9 @@ const Index = () => {
         tabs={HOME_TABS}
         activeTab={activeView}
         onTabChange={handleTabChange}
-        pageHeading={
+        pageHeading={activeView === "manager" ? (
+            <span className="text-card-foreground font-bold text-base">Manager Mode</span>
+          ) : (
             <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium flex-wrap">
               <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
@@ -122,7 +124,7 @@ const Index = () => {
               </div>
             )}
           </div>
-        }
+          )}
       >
 
         {activeView === "manager" ? (
