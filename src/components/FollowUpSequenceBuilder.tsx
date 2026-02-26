@@ -41,11 +41,16 @@ export function FollowUpSequenceBuilder({ category, steps, onStepsChange }: Foll
   return (
     <div className="space-y-2">
       {steps.map((step, i) => (
-        <div key={step.id} className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-medium text-muted-foreground w-10 shrink-0">#{i + 1}</span>
+        <div key={step.id} className="rounded-md border border-border bg-muted/30 p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground">Step #{i + 1}</span>
+            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => removeStep(step.id)}>
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
 
           <Select value={step.channel} onValueChange={(v) => updateStep(step.id, "channel", v as "email" | "sms")}>
-            <SelectTrigger className="text-sm h-9 w-24 shrink-0">
+            <SelectTrigger className="text-sm h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -55,7 +60,7 @@ export function FollowUpSequenceBuilder({ category, steps, onStepsChange }: Foll
           </Select>
 
           <Select value={step.templateId} onValueChange={(v) => updateStep(step.id, "templateId", v)}>
-            <SelectTrigger className="text-sm h-9 flex-1 min-w-[140px]">
+            <SelectTrigger className="text-sm h-9">
               <SelectValue placeholder="Select template…" />
             </SelectTrigger>
             <SelectContent>
@@ -65,27 +70,25 @@ export function FollowUpSequenceBuilder({ category, steps, onStepsChange }: Foll
             </SelectContent>
           </Select>
 
-          <span className="text-xs text-muted-foreground shrink-0">after</span>
-          <Input
-            type="number"
-            min={0}
-            value={step.delayValue}
-            onChange={(e) => updateStep(step.id, "delayValue", parseInt(e.target.value) || 0)}
-            className="w-16 h-9 text-sm text-center"
-          />
-          <Select value={step.delayUnit} onValueChange={(v) => updateStep(step.id, "delayUnit", v as "hours" | "days")}>
-            <SelectTrigger className="text-sm h-9 w-20 shrink-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="hours">hours</SelectItem>
-              <SelectItem value="days">days</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => removeStep(step.id)}>
-            <X className="h-3.5 w-3.5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground shrink-0">after</span>
+            <Input
+              type="number"
+              min={0}
+              value={step.delayValue}
+              onChange={(e) => updateStep(step.id, "delayValue", parseInt(e.target.value) || 0)}
+              className="w-16 h-9 text-sm text-center"
+            />
+            <Select value={step.delayUnit} onValueChange={(v) => updateStep(step.id, "delayUnit", v as "hours" | "days")}>
+              <SelectTrigger className="text-sm h-9 w-24 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="hours">hours</SelectItem>
+                <SelectItem value="days">days</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       ))}
       <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-muted-foreground" onClick={addStep}>

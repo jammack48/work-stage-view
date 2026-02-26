@@ -150,8 +150,9 @@ export default function QuotePage() {
             className="min-h-[60px] border-0 bg-transparent p-0 focus-visible:ring-0 text-sm resize-none"
           />
         </div>
-        <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} />
-        <SequenceSelector category="quotes" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
+        <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} beforeActions={
+          <SequenceSelector category="quotes" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
+        } />
       </div>
     ),
     sequences: <SequencesTab category="quotes" />,
