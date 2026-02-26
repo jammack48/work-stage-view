@@ -70,8 +70,8 @@ const Index = () => {
         tabs={HOME_TABS}
         activeTab={activeView}
         onTabChange={handleTabChange}
-        pageHeading={
-            <div className="flex items-center justify-between">
+        pageHeading={activeView === "manager" ? undefined : (
+             <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium flex-wrap">
               <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
               <div className="flex items-center gap-0.5 opacity-50">
@@ -121,7 +121,8 @@ const Index = () => {
                 </Button>
               </div>
             )}
-          </div>
+           </div>
+          )
         }
       >
 

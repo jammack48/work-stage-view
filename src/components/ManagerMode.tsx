@@ -358,7 +358,7 @@ export function ManagerMode() {
   return (
     <div className="flex flex-col gap-3 pb-4">
       {/* Sticky toolbar */}
-      <div className="sticky top-0 z-10 bg-background pb-2 flex flex-col gap-3 pt-1">
+      <div className="flex flex-col gap-3 pt-1 pb-2">
         {/* Stage Picker */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 px-1 -mx-1 scrollbar-none">
           {STAGES.map((stage) => (
