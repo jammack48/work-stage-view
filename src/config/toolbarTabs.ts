@@ -135,7 +135,7 @@ export function buildTabs(...extras: ToolbarTab[]): ToolbarTab[] {
 /** Standard navigation handler for the Home page common tabs */
 export function handleCommonTab(id: string, navigate: (path: string) => void): boolean {
   const routes: Record<string, string> = {
-    pipeline: "/pipeline",
+    pipeline: "/",
     customers: "/customers",
     schedule: "/schedule",
     settings: "/settings",
