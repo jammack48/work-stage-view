@@ -1,38 +1,91 @@
 
 
-## Root Cause
+## Problem
 
-The `useIsMobile()` hook in `src/hooks/use-mobile.tsx` initializes state as `undefined` (line 7), then only sets the real value inside a `useEffect` (which runs **after** the first paint).
+The QuotePage has `disabledTabs` set during the funnel (line 53), which greys out and blocks all tab buttons — including the common navigation tabs (Home, Customers, Schedule). Users are trapped in the funnel with no way to navigate away. If they click a nav tab to leave, nothing happens.
 
-This means on every page navigation:
-1. New page component mounts
-2. `useIsMobile()` returns `!!undefined` = `false` (desktop mode)
-3. Page renders with **desktop layout** for one frame
-4. `useEffect` fires, detects mobile, sets `true`
-5. Page re-renders with **mobile layout**
+The user wants:
+1. All tabs should always be clickable — especially the common navigation tabs (Home, Customers, Schedule)
+2. If the user navigates away mid-funnel, show a confirmation dialog: "Save as draft?"
 
-On desktop this is invisible (both layouts look similar). On mobile, the user sees the desktop layout flash briefly underneath the mobile layout — the "overlay" effect.
+## Changes
 
-## Fix
+### 1. `src/pages/QuotePage.tsx` — Remove `disabledTabs`, add draft confirmation
 
-**File: `src/hooks/use-mobile.tsx`** — Initialize state with a synchronous check instead of `undefined`, so the very first render uses the correct layout:
+- Remove `disabledTabs` prop from the funnel's `<PageToolbar>`
+- Allow `onTabChange` to work during the funnel — but when a common tab is clicked mid-funnel, show an AlertDialog asking "Save as draft?" with options: **Save Draft**, **Discard**, **Cancel**
+- On Save Draft or Discard, navigate to the target page
+- On Cancel, stay on the funnel
+
+Replace the funnel return block (lines 40-65):
 
 ```tsx
-// Before
-const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
+const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+const [pendingNavId, setPendingNavId] = useState<string | null>(null);
 
-// After
-const [isMobile, setIsMobile] = React.useState<boolean>(() => {
-  if (typeof window === "undefined") return false;
-  return window.innerWidth < MOBILE_BREAKPOINT || window.innerHeight < LANDSCAPE_HEIGHT_BREAKPOINT;
-});
+// Handle tab clicks during funnel
+const handleFunnelTabChange = (id: string) => {
+  // User wants to navigate away — confirm first
+  setPendingNavId(id);
+  setShowLeaveDialog(true);
+};
+
+const handleLeaveConfirm = (saveDraft: boolean) => {
+  setShowLeaveDialog(false);
+  if (pendingNavId) {
+    // Navigate away (common tab or page tab)
+    if (!handleCommonTab(pendingNavId, navigate)) {
+      // It's a page-specific tab — complete funnel first or just navigate
+      setFunnelComplete(true);
+      setActiveTab(pendingNavId as QuotePageTab);
+    }
+  }
+  setPendingNavId(null);
+};
+
+const handleLeaveCancel = () => {
+  setShowLeaveDialog(false);
+  setPendingNavId(null);
+};
 ```
 
-This eliminates the one-frame desktop flash on mobile devices. The `useEffect` still handles resize/orientation changes, but the initial render is now correct.
+In the funnel return, remove `disabledTabs` and wire up `handleFunnelTabChange`:
+
+```tsx
+<PageToolbar
+  tabs={QUOTE_TABS}
+  activeTab="overview"
+  onTabChange={handleFunnelTabChange}
+  pageHeading={...}
+>
+  <QuoteFunnel ... />
+  
+  <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Leave quote?</AlertDialogTitle>
+        <AlertDialogDescription>
+          You haven't finished creating this quote. Would you like to save it as a draft?
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel onClick={handleLeaveCancel}>Cancel</AlertDialogCancel>
+        <AlertDialogAction variant="outline" onClick={() => handleLeaveConfirm(false)}>Discard</AlertDialogAction>
+        <AlertDialogAction onClick={() => handleLeaveConfirm(true)}>Save Draft</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+</PageToolbar>
+```
+
+### 2. `src/components/PageToolbar.tsx` — Remove `disabledTabs` prop entirely
+
+Since no page should ever lock out navigation, remove the `disabledTabs` prop from the interface and all references throughout the component. Tabs are always clickable.
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/hooks/use-mobile.tsx` | Initialize state with synchronous window check instead of `undefined` |
+| `src/pages/QuotePage.tsx` | Remove `disabledTabs`, add leave-confirmation AlertDialog when navigating away mid-funnel |
+| `src/components/PageToolbar.tsx` | Remove `disabledTabs` prop and all disabled logic from every tab render |
 
