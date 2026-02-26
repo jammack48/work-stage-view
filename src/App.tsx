@@ -20,6 +20,7 @@ import BundlesPage from "./pages/BundlesPage";
 import SchedulePage from "./pages/SchedulePage";
 import EmailTemplatesPage from "./pages/EmailTemplatesPage";
 import SmsTemplatesPage from "./pages/SmsTemplatesPage";
+import InvoicePage from "./pages/InvoicePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ function AppLayout() {
           <Route path="/pipeline" element={<Index />} />
           <Route path="/job/:id" element={<JobCard />} />
           <Route path="/quote/:id" element={<QuotePage />} />
+          <Route path="/invoice/:id" element={<InvoicePage />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/customer/:id" element={<CustomerCard />} />
           <Route path="/settings" element={<SettingsPage />} />

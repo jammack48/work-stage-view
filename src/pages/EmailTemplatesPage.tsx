@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { buildTabs, handleCommonTab, EMAIL_EXTRAS } from "@/config/toolbarTabs";
+import { EMAIL_EXTRAS } from "@/config/toolbarTabs";
 import { dummyTemplates, TEMPLATE_VARIABLES, type MessageTemplate } from "@/data/dummyTemplates";
 
 type Category = MessageTemplate["category"];
 
-const EMAIL_TABS = buildTabs(...EMAIL_EXTRAS);
+
 
 export default function EmailTemplatesPage() {
   const navigate = useNavigate();
@@ -63,10 +63,10 @@ export default function EmailTemplatesPage() {
 
   return (
     <PageToolbar
-      tabs={EMAIL_TABS}
+      tabs={EMAIL_EXTRAS}
       activeTab={activeTab}
       onTabChange={(id) => {
-        if (handleCommonTab(id, navigate)) return;
+        if (id === "back") { navigate("/"); return; }
         setActiveTab(id as Category);
         resetDraft();
       }}

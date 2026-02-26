@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getJobDetail, getNewJobDetail, type BundleTemplate } from "@/data/dummyJobDetails";
+import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import { QuoteOverviewTab } from "@/components/quote/QuoteOverviewTab";
@@ -12,30 +12,28 @@ import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequenceSelector } from "@/components/quote/SequenceSelector";
 import { SequencesTab } from "@/components/SequencesTab";
 import { cn } from "@/lib/utils";
-import { QUOTE_EXTRAS } from "@/config/toolbarTabs";
+import { INVOICE_EXTRAS } from "@/config/toolbarTabs";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-type QuotePageTab = "overview" | "line-items" | "sequences" | "notes" | "history";
+type InvoiceTab = "overview" | "line-items" | "sequences" | "notes" | "history";
 
+type InvoiceStatus = "Draft" | "Sent" | "Paid";
 
-
-type QuoteStatus = "Draft" | "Sent" | "Approved";
-
-const statusColor: Record<QuoteStatus, string> = {
+const statusColor: Record<InvoiceStatus, string> = {
   Draft: "bg-muted text-muted-foreground",
   Sent: "bg-[hsl(var(--status-orange))] text-white",
-  Approved: "bg-[hsl(var(--status-green))] text-white",
+  Paid: "bg-[hsl(var(--status-green))] text-white",
 };
 
-export default function QuotePage() {
+export default function InvoicePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<QuotePageTab>("line-items");
+  const [activeTab, setActiveTab] = useState<InvoiceTab>("line-items");
   const [scope, setScope] = useState("");
-  const [status, setStatus] = useState<QuoteStatus>("Draft");
+  const [status, setStatus] = useState<InvoiceStatus>("Draft");
   const [funnelComplete, setFunnelComplete] = useState(false);
   const [funnelData, setFunnelData] = useState<FunnelResult | null>(null);
   const [funnelStep, setFunnelStep] = useState(1);
@@ -52,14 +50,14 @@ export default function QuotePage() {
       setShowLeaveDialog(true);
       return;
     }
-    setActiveTab(tabId as QuotePageTab);
+    setActiveTab(tabId as InvoiceTab);
   };
 
-  const handleLeaveConfirm = (saveDraft: boolean) => {
+  const handleLeaveConfirm = () => {
     setShowLeaveDialog(false);
     if (pendingNavId) {
       setFunnelComplete(true);
-      setActiveTab(pendingNavId as QuotePageTab);
+      setActiveTab(pendingNavId as InvoiceTab);
     }
     setPendingNavId(null);
   };
@@ -71,51 +69,49 @@ export default function QuotePage() {
 
   if (isNew && !funnelComplete) {
     return (
-      <>
-        <PageToolbar
-          tabs={QUOTE_EXTRAS}
-          activeTab="overview"
-          onTabChange={handleTabChange}
-          pageHeading={
-            <div className="flex items-center gap-3 flex-wrap">
-              <h2 className="text-base font-bold text-card-foreground">New Quote</h2>
-              <StepIndicator current={funnelStep} />
-            </div>
-          }
-        >
-          <QuoteFunnel
-            onComplete={(data) => {
-              setFunnelData(data);
-              setScope(data.description);
-              setFunnelComplete(true);
-            }}
-            onStepChange={setFunnelStep}
-          />
+      <PageToolbar
+        tabs={INVOICE_EXTRAS}
+        activeTab="overview"
+        onTabChange={handleTabChange}
+        pageHeading={
+          <div className="flex items-center gap-3 flex-wrap">
+            <h2 className="text-base font-bold text-card-foreground">New Invoice</h2>
+            <StepIndicator current={funnelStep} />
+          </div>
+        }
+      >
+        <QuoteFunnel
+          onComplete={(data) => {
+            setFunnelData(data);
+            setScope(data.description);
+            setFunnelComplete(true);
+          }}
+          onStepChange={setFunnelStep}
+        />
 
-          <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Leave quote?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  You haven't finished creating this quote. Would you like to save it as a draft?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={handleLeaveCancel}>Cancel</AlertDialogCancel>
-                <AlertDialogAction className={cn("bg-muted text-muted-foreground hover:bg-muted/80")} onClick={() => handleLeaveConfirm(false)}>Discard</AlertDialogAction>
-                <AlertDialogAction onClick={() => handleLeaveConfirm(true)}>Save Draft</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </PageToolbar>
-      </>
+        <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Leave invoice?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You haven't finished creating this invoice. Would you like to save it as a draft?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={handleLeaveCancel}>Cancel</AlertDialogCancel>
+              <AlertDialogAction className={cn("bg-muted text-muted-foreground hover:bg-muted/80")} onClick={handleLeaveConfirm}>Discard</AlertDialogAction>
+              <AlertDialogAction onClick={handleLeaveConfirm}>Save Draft</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </PageToolbar>
     );
   }
 
   const job = isNew
     ? {
-        ...getNewJobDetail("To Quote"),
-        jobName: funnelData?.bundle?.name || "Custom Quote",
+        ...getNewJobDetail("To Invoice"),
+        jobName: funnelData?.bundle?.name || "Custom Invoice",
         client: funnelData?.customer?.name || "",
         clientPhone: funnelData?.customer?.phone || "",
         clientEmail: funnelData?.customer?.email || "",
@@ -127,7 +123,7 @@ export default function QuotePage() {
   if (!job) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Quote not found</p>
+        <p className="text-muted-foreground">Invoice not found</p>
       </div>
     );
   }
@@ -137,11 +133,11 @@ export default function QuotePage() {
   }
 
   const cycleStatus = () => {
-    const next: Record<QuoteStatus, QuoteStatus> = { Draft: "Sent", Sent: "Approved", Approved: "Draft" };
+    const next: Record<InvoiceStatus, InvoiceStatus> = { Draft: "Sent", Sent: "Paid", Paid: "Draft" };
     setStatus(next[status]);
   };
 
-  const tabContent: Record<QuotePageTab, React.ReactNode> = {
+  const tabContent: Record<InvoiceTab, React.ReactNode> = {
     overview: <QuoteOverviewTab job={job} scope={scope} onScopeChange={setScope} />,
     "line-items": (
       <div className="space-y-4">
@@ -149,31 +145,31 @@ export default function QuotePage() {
           <Textarea
             value={scope}
             onChange={(e) => setScope(e.target.value)}
-            placeholder="Describe what this quote is for — e.g. 'Replace hot water cylinder and reroute pipework in ground floor bathroom'"
+            placeholder="Describe what this invoice is for — e.g. 'Hot water cylinder replacement and pipework'"
             className="min-h-[60px] border-0 bg-transparent p-0 focus-visible:ring-0 text-sm resize-none"
           />
         </div>
         <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} beforeActions={
-          <SequenceSelector category="quotes" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
+          <SequenceSelector category="invoices" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
         } />
       </div>
     ),
-    sequences: <SequencesTab category="quotes" />,
+    sequences: <SequencesTab category="invoices" />,
     notes: <NotesTab notes={job.notes} />,
     history: <HistoryTab job={job} />,
   };
 
-  const quoteTitle = isNew
+  const invoiceTitle = isNew
     ? funnelData?.bundle?.name
-      ? `Quote — ${funnelData.bundle.name}`
-      : "New Quote"
+      ? `Invoice — ${funnelData.bundle.name}`
+      : "New Invoice"
     : job.jobName
-      ? `Quote — ${job.jobName}`
-      : "Quote";
+      ? `Invoice — ${job.jobName}`
+      : "Invoice";
 
-  const quoteHeading = (
+  const invoiceHeading = (
     <div className="flex items-center gap-2 flex-wrap">
-      <h2 className="text-base font-bold text-card-foreground">{quoteTitle}</h2>
+      <h2 className="text-base font-bold text-card-foreground">{invoiceTitle}</h2>
       {job.client && (
         <span className="text-sm text-muted-foreground">for {job.client}</span>
       )}
@@ -187,15 +183,13 @@ export default function QuotePage() {
   );
 
   return (
-    <>
-      <PageToolbar
-        tabs={QUOTE_EXTRAS}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        pageHeading={quoteHeading}
-      >
-        {tabContent[activeTab]}
-      </PageToolbar>
-    </>
+    <PageToolbar
+      tabs={INVOICE_EXTRAS}
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      pageHeading={invoiceHeading}
+    >
+      {tabContent[activeTab]}
+    </PageToolbar>
   );
 }

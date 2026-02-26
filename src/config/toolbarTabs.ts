@@ -3,6 +3,7 @@ import {
   ClipboardList, List, StickyNote, History, DollarSign, Clock, Camera,
   ClipboardCheck, Star, Archive, Building2, Bell, Palette, CreditCard,
   Shield, Wrench, Briefcase, UserPlus, BarChart3, Plus, Mail, MessageSquare,
+  ArrowLeft,
 } from "lucide-react";
 
 export interface ToolbarTab {
@@ -11,14 +12,17 @@ export interface ToolbarTab {
   icon: React.ElementType;
 }
 
-/** Always-visible tabs in fixed order across every page */
+/** Back tab for non-home pages */
+export const BACK_TAB: ToolbarTab = { id: "back", label: "Back", icon: ArrowLeft };
+
+/** Always-visible tabs on the Home/Pipeline page only */
 export const COMMON_TABS: ToolbarTab[] = [
   { id: "pipeline", label: "Home", icon: Home },
   { id: "customers", label: "Customers", icon: Users },
   { id: "schedule", label: "Schedule", icon: CalendarDays },
 ];
 
-/** Page-specific extra tabs appended after the common ones */
+/** Page-specific extras — each already includes BACK_TAB */
 export const PIPELINE_EXTRAS: ToolbarTab[] = [
   { id: "bundles", label: "Bundles", icon: Package },
   { id: "email", label: "Email", icon: Mail },
@@ -29,16 +33,19 @@ export const PIPELINE_EXTRAS: ToolbarTab[] = [
 ];
 
 export const SCHEDULE_EXTRAS: ToolbarTab[] = [
+  BACK_TAB,
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
 export const BUNDLES_EXTRAS: ToolbarTab[] = [
+  BACK_TAB,
   { id: "quotes", label: "New Quote", icon: FilePlus },
   { id: "invoices", label: "Invoices", icon: FileText },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
 export const QUOTE_EXTRAS: ToolbarTab[] = [
+  BACK_TAB,
   { id: "overview", label: "Overview", icon: ClipboardList },
   { id: "line-items", label: "Line Items", icon: List },
   { id: "sequences", label: "Sequences", icon: Settings },
@@ -47,6 +54,7 @@ export const QUOTE_EXTRAS: ToolbarTab[] = [
 ];
 
 export const JOB_EXTRAS: ToolbarTab[] = [
+  BACK_TAB,
   { id: "overview", label: "Overview", icon: ClipboardList },
   { id: "history", label: "History", icon: History },
   { id: "quote", label: "Quote", icon: DollarSign },
@@ -59,13 +67,24 @@ export const JOB_EXTRAS: ToolbarTab[] = [
   { id: "sequences", label: "Sequences", icon: Settings },
 ];
 
+export const INVOICE_EXTRAS: ToolbarTab[] = [
+  BACK_TAB,
+  { id: "overview", label: "Overview", icon: ClipboardList },
+  { id: "line-items", label: "Line Items", icon: List },
+  { id: "sequences", label: "Sequences", icon: Settings },
+  { id: "notes", label: "Notes", icon: StickyNote },
+  { id: "history", label: "History", icon: History },
+];
+
 export const CUSTOMER_LIST_EXTRAS: ToolbarTab[] = [
+  BACK_TAB,
   { id: "leads", label: "Leads", icon: Star },
   { id: "active", label: "Active", icon: Users },
   { id: "archived", label: "Archived", icon: Archive },
 ];
 
 export const CUSTOMER_CARD_EXTRAS: ToolbarTab[] = [
+  BACK_TAB,
   { id: "overview", label: "Overview", icon: ClipboardList },
   { id: "jobs", label: "Jobs", icon: Briefcase },
   { id: "contacts", label: "Contacts", icon: UserPlus },
@@ -75,6 +94,7 @@ export const CUSTOMER_CARD_EXTRAS: ToolbarTab[] = [
 ];
 
 export const SETTINGS_EXTRAS: ToolbarTab[] = [
+  BACK_TAB,
   { id: "business", label: "Business", icon: Building2 },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "appearance", label: "Appearance", icon: Palette },
@@ -84,6 +104,7 @@ export const SETTINGS_EXTRAS: ToolbarTab[] = [
 ];
 
 export const EMAIL_EXTRAS: ToolbarTab[] = [
+  BACK_TAB,
   { id: "quotes", label: "Quotes", icon: Mail },
   { id: "invoices", label: "Invoices", icon: FileText },
   { id: "reminders", label: "Reminders", icon: Clock },
@@ -92,6 +113,7 @@ export const EMAIL_EXTRAS: ToolbarTab[] = [
 ];
 
 export const SMS_EXTRAS: ToolbarTab[] = [
+  BACK_TAB,
   { id: "quotes", label: "Quotes", icon: MessageSquare },
   { id: "invoices", label: "Invoices", icon: FileText },
   { id: "reminders", label: "Reminders", icon: Clock },
@@ -99,12 +121,12 @@ export const SMS_EXTRAS: ToolbarTab[] = [
   { id: "reviews", label: "Reviews", icon: Star },
 ];
 
-/** Helper to build a full tab list for any page */
+/** Build tabs for the Home/Pipeline page (prepends common tabs) */
 export function buildTabs(...extras: ToolbarTab[]): ToolbarTab[] {
   return [...COMMON_TABS, ...extras];
 }
 
-/** Standard navigation handler — routes the common tab IDs */
+/** Standard navigation handler for the Home page common tabs */
 export function handleCommonTab(id: string, navigate: (path: string) => void): boolean {
   const routes: Record<string, string> = {
     pipeline: "/pipeline",
@@ -112,7 +134,7 @@ export function handleCommonTab(id: string, navigate: (path: string) => void): b
     schedule: "/schedule",
     settings: "/settings",
     quotes: "/quote/new",
-    invoices: "/job/new?stage=To+Invoice",
+    invoices: "/invoice/new",
     bundles: "/bundles",
     email: "/email-templates",
     sms: "/sms-templates",

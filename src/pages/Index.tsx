@@ -83,7 +83,7 @@ const Index = () => {
                 <Button variant="outline" size="sm" className="h-7 px-2 gap-1 text-xs" onClick={() => navigate("/quote/new")}>
                   <Plus className="w-3 h-3" /> Quote
                 </Button>
-                <Button variant="outline" size="sm" className="h-7 px-2 gap-1 text-xs" onClick={() => navigate("/job/new?stage=To+Invoice")}>
+                <Button variant="outline" size="sm" className="h-7 px-2 gap-1 text-xs" onClick={() => navigate("/invoice/new")}>
                   <Plus className="w-3 h-3" /> Invoice
                 </Button>
               </div>
@@ -142,7 +142,7 @@ const Index = () => {
                   <div key={stage} className="flex-[0_0_85%] max-w-[320px] min-w-0 px-2 flex flex-col gap-2">
                     <StageColumn stage={stage} jobs={jobsByStage(stage)} isExpanded={expandedStage === stage} onToggle={() => handleToggle(stage)} onNext={scrollNext} layout="horizontal" />
                     {ACTION_BOXES[stage] && (
-                      <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(stage === "Lead" ? "/customers" : stage === "Quote Sent" ? "/quote/new" : `/job/new?stage=${encodeURIComponent(stage)}`)}>
+                      <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(stage === "Lead" ? "/customers" : stage === "Quote Sent" ? "/quote/new" : stage === "To Invoice" ? "/invoice/new" : `/job/new?stage=${encodeURIComponent(stage)}`)}>
                         <Plus className="w-5 h-5" />
                         <span className="text-xs font-medium">{ACTION_BOXES[stage]}</span>
                       </button>
@@ -163,7 +163,7 @@ const Index = () => {
                 <div key={stage} className="min-w-[200px] w-[200px] flex-shrink-0 flex flex-col gap-2">
                   <StageColumn stage={stage} jobs={jobsByStage(stage)} isExpanded={expandedStage === stage} onToggle={() => handleToggle(stage)} layout="horizontal" />
                   {ACTION_BOXES[stage] && (
-                    <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(stage === "Lead" ? "/customers" : stage === "Quote Sent" ? "/quote/new" : `/job/new?stage=${encodeURIComponent(stage)}`)}>
+                    <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(stage === "Lead" ? "/customers" : stage === "Quote Sent" ? "/quote/new" : stage === "To Invoice" ? "/invoice/new" : `/job/new?stage=${encodeURIComponent(stage)}`)}>
                       <Plus className="w-5 h-5" />
                       <span className="text-xs font-medium">{ACTION_BOXES[stage]}</span>
                     </button>
