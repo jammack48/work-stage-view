@@ -10,8 +10,9 @@ import useEmblaCarousel from "embla-carousel-react";
 import {
   Archive, StickyNote, Phone, FileText, CheckCircle, CalendarDays,
   PauseCircle, Send, Star, ChevronLeft, ChevronRight, Mail,
-  MessageSquare, Check, X, ExternalLink, Receipt,
+  MessageSquare, Check, X, ExternalLink, Receipt, Zap,
 } from "lucide-react";
+import { dummySequences } from "@/data/dummySequences";
 
 type PriorityColor = "red" | "orange" | "green";
 
@@ -83,40 +84,79 @@ const STAGE_ACTIONS: Record<string, ActionDef[]> = {
 };
 
 function generateHistory(job: Job, stage: string) {
-  const entries: { label: string; daysAgo: number }[] = [];
+  const entries: { label: string; daysAgo: number; icon?: "sequence" }[] = [];
   entries.push({ label: "Lead created", daysAgo: job.ageDays });
   if (["To Quote","Quote Sent","Quote Accepted","In Progress","To Invoice","Invoiced","Invoice Paid"].includes(stage))
     entries.push({ label: "Quote drafted", daysAgo: Math.max(1, job.ageDays - 2) });
-  if (["Quote Sent","Quote Accepted","In Progress","To Invoice","Invoiced","Invoice Paid"].includes(stage))
+  if (["Quote Sent","Quote Accepted","In Progress","To Invoice","Invoiced","Invoice Paid"].includes(stage)) {
     entries.push({ label: "Quote sent to client", daysAgo: Math.max(1, job.ageDays - 3) });
+    // Show sequence triggered in history
+    const seq = dummySequences.find(s => s.category === "quotes");
+    if (seq) {
+      entries.push({ label: `Sequence "${seq.name}" triggered`, daysAgo: Math.max(1, job.ageDays - 3), icon: "sequence" });
+      seq.steps.forEach((step, i) => {
+        const stepDaysAfter = step.delayUnit === "hours" ? 0 : step.delayValue;
+        const daysAgo = Math.max(1, job.ageDays - 3 - stepDaysAfter);
+        const channelLabel = step.channel === "email" ? "Email" : "SMS";
+        entries.push({ label: `↳ Step ${i + 1}: ${channelLabel} sent`, daysAgo, icon: "sequence" });
+      });
+    }
+  }
   if (["Quote Accepted","In Progress","To Invoice","Invoiced","Invoice Paid"].includes(stage))
     entries.push({ label: "Quote accepted", daysAgo: Math.max(1, job.ageDays - 5) });
   if (["In Progress","To Invoice","Invoiced","Invoice Paid"].includes(stage))
     entries.push({ label: "Job scheduled", daysAgo: Math.max(1, job.ageDays - 6) });
   if (["To Invoice","Invoiced","Invoice Paid"].includes(stage))
     entries.push({ label: "Job completed", daysAgo: Math.max(1, job.ageDays - 8) });
-  if (["Invoiced","Invoice Paid"].includes(stage))
+  if (["Invoiced","Invoice Paid"].includes(stage)) {
     entries.push({ label: "Invoice sent", daysAgo: Math.max(1, job.ageDays - 9) });
+    const seq = dummySequences.find(s => s.category === "invoices");
+    if (seq) {
+      entries.push({ label: `Sequence "${seq.name}" triggered`, daysAgo: Math.max(1, job.ageDays - 9), icon: "sequence" });
+      seq.steps.forEach((step, i) => {
+        const stepDaysAfter = step.delayUnit === "hours" ? 0 : step.delayValue;
+        const daysAgo = Math.max(1, job.ageDays - 9 - stepDaysAfter);
+        const channelLabel = step.channel === "email" ? "Email" : "SMS";
+        entries.push({ label: `↳ Step ${i + 1}: ${channelLabel} sent`, daysAgo, icon: "sequence" });
+      });
+    }
+  }
   if (stage === "Invoice Paid")
     entries.push({ label: "Invoice paid", daysAgo: 1 });
   return entries;
 }
 
-function generateSequence(stage: string) {
+function generateSequence(stage: string, job: Job) {
   if (["Lead","To Quote"].includes(stage)) return null;
-  const items: { type: "email" | "sms"; label: string; opened: boolean }[] = [];
-  if (["Quote Sent","Quote Accepted"].includes(stage)) {
-    items.push({ type: "email", label: "Quote email", opened: stage === "Quote Accepted" });
-    items.push({ type: "sms", label: "Follow-up SMS", opened: false });
+  
+  const category = ["Quote Sent","Quote Accepted"].includes(stage) ? "quotes" 
+    : ["Invoiced","Invoice Paid"].includes(stage) ? "invoices" : null;
+  
+  if (!category && !["In Progress","To Invoice"].includes(stage)) return null;
+  
+  const seq = category ? dummySequences.find(s => s.category === category) : null;
+  
+  if (seq) {
+    const isLateStage = stage === "Quote Accepted" || stage === "Invoice Paid";
+    return {
+      name: seq.name,
+      items: seq.steps.map((step, i) => ({
+        type: step.channel,
+        label: step.channel === "email" ? `Email: Step ${i + 1}` : `SMS: Step ${i + 1}`,
+        opened: isLateStage ? true : i === 0 && job.ageDays > 5,
+        delay: `${step.delayValue} ${step.delayUnit}`,
+      })),
+    };
   }
-  if (["Invoiced","Invoice Paid"].includes(stage)) {
-    items.push({ type: "email", label: "Invoice email", opened: stage === "Invoice Paid" });
-    items.push({ type: "sms", label: "Payment reminder", opened: stage === "Invoice Paid" });
-  }
+  
   if (["In Progress","To Invoice"].includes(stage)) {
-    items.push({ type: "email", label: "Job confirmation", opened: true });
+    return {
+      name: "Job Confirmation",
+      items: [{ type: "email" as const, label: "Job confirmation email", opened: true, delay: "immediate" }],
+    };
   }
-  return items.length ? items : null;
+  
+  return null;
 }
 
 const PRIORITY_COLORS: { color: PriorityColor; bg: string; ring: string; dot: string }[] = [
@@ -243,7 +283,7 @@ export function ManagerMode() {
             <div className="flex">
               {filteredJobs.map((job) => {
                 const history = generateHistory(job, activeStage);
-                const sequence = generateSequence(activeStage);
+                const sequence = generateSequence(activeStage, job);
                 const actions = STAGE_ACTIONS[activeStage] || [];
 
                 return (
@@ -269,8 +309,8 @@ export function ManagerMode() {
                         <div className="space-y-1 pl-3 border-l-2 border-border">
                           {history.map((h, i) => (
                             <div key={i} className="flex items-center gap-2 text-xs">
-                              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 -ml-[calc(0.75rem+4px)]" />
-                              <span className="text-card-foreground">{h.label}</span>
+                              <span className={cn("w-1.5 h-1.5 rounded-full -ml-[calc(0.75rem+4px)]", h.icon === "sequence" ? "bg-primary" : "bg-muted-foreground/50")} />
+                              <span className={cn("text-card-foreground", h.icon === "sequence" && "text-primary")}>{h.label}</span>
                               <span className="text-muted-foreground ml-auto">{h.daysAgo}d ago</span>
                             </div>
                           ))}
@@ -280,9 +320,12 @@ export function ManagerMode() {
                       {/* Sequence Status */}
                       {sequence && (
                         <div className="space-y-1">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Follow-up Sequence</p>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            <Zap className="w-3 h-3 inline mr-1 text-primary" />
+                            {sequence.name}
+                          </p>
                           <div className="space-y-1">
-                            {sequence.map((s, i) => (
+                            {sequence.items.map((s, i) => (
                               <div key={i} className="flex items-center gap-2 text-xs">
                                 {s.type === "email" ? (
                                   <Mail className="w-3.5 h-3.5 text-muted-foreground" />
@@ -290,6 +333,7 @@ export function ManagerMode() {
                                   <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />
                                 )}
                                 <span className="text-card-foreground">{s.label}</span>
+                                <span className="text-muted-foreground text-[10px]">({s.delay})</span>
                                 {s.opened ? (
                                   <span className="ml-auto flex items-center gap-1 text-green-500">
                                     <Check className="w-3 h-3" /> Opened
