@@ -357,76 +357,79 @@ export function ManagerMode() {
 
   return (
     <div className="flex flex-col gap-3 pb-4">
-      {/* Stage Picker */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1 px-1 -mx-1 scrollbar-none">
-        {STAGES.map((stage) => (
-          <button
-            key={stage}
-            onClick={() => setActiveStage(stage)}
-            className={cn(
-              "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
-              activeStage === stage
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-secondary text-secondary-foreground border-border hover:bg-accent"
-            )}
-          >
-            {stage}
-          </button>
-        ))}
-      </div>
+      {/* Sticky toolbar */}
+      <div className="sticky top-0 z-10 bg-background pb-2 flex flex-col gap-3 pt-1">
+        {/* Stage Picker */}
+        <div className="flex gap-1.5 overflow-x-auto pb-1 px-1 -mx-1 scrollbar-none">
+          {STAGES.map((stage) => (
+            <button
+              key={stage}
+              onClick={() => setActiveStage(stage)}
+              className={cn(
+                "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
+                activeStage === stage
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-secondary text-secondary-foreground border-border hover:bg-accent"
+              )}
+            >
+              {stage}
+            </button>
+          ))}
+        </div>
 
-      {/* Priority Filter — stacked vertically with descriptions */}
-      <div className="flex flex-col gap-1.5 px-1">
-        {priorityCounts.map((p) => (
-          <button
-            key={p.color}
-            onClick={() => setActivePriority(p.color)}
-            className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all border w-full",
-              activePriority === p.color
-                ? `${p.bg} ring-2 ${p.ring} border-transparent`
-                : "bg-secondary border-border"
-            )}
-          >
-            <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", p.dot)} />
-            <span className="font-bold">{p.count}</span>
-            <span className="text-muted-foreground">
-              {getLabel(activeStage, p.color)}
-            </span>
-          </button>
-        ))}
-      </div>
+        {/* Priority Filter — stacked vertically with descriptions */}
+        <div className="flex flex-col gap-1.5 px-1">
+          {priorityCounts.map((p) => (
+            <button
+              key={p.color}
+              onClick={() => setActivePriority(p.color)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all border w-full",
+                activePriority === p.color
+                  ? `${p.bg} ring-2 ${p.ring} border-transparent`
+                  : "bg-secondary border-border"
+              )}
+            >
+              <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", p.dot)} />
+              <span className="font-bold">{p.count}</span>
+              <span className="text-muted-foreground">
+                {getLabel(activeStage, p.color)}
+              </span>
+            </button>
+          ))}
+        </div>
 
-      {/* View Toggle */}
-      <div className="flex items-center justify-between px-1">
-        <span className="text-xs text-muted-foreground font-medium">
-          {filteredJobs.length} job{filteredJobs.length !== 1 ? "s" : ""}
-        </span>
-        <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setViewMode("swipe")}
-            className={cn(
-              "h-7 px-2 gap-1 text-xs",
-              viewMode === "swipe" && "bg-primary text-primary-foreground hover:bg-primary/90"
-            )}
-          >
-            <GalleryHorizontal className="w-3.5 h-3.5" />
-            Swipe
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setViewMode("list")}
-            className={cn(
-              "h-7 px-2 gap-1 text-xs",
-              viewMode === "list" && "bg-primary text-primary-foreground hover:bg-primary/90"
-            )}
-          >
-            <LayoutList className="w-3.5 h-3.5" />
-            List
-          </Button>
+        {/* View Toggle */}
+        <div className="flex items-center justify-between px-1">
+          <span className="text-xs text-muted-foreground font-medium">
+            {filteredJobs.length} job{filteredJobs.length !== 1 ? "s" : ""}
+          </span>
+          <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewMode("swipe")}
+              className={cn(
+                "h-7 px-2 gap-1 text-xs",
+                viewMode === "swipe" && "bg-primary text-primary-foreground hover:bg-primary/90"
+              )}
+            >
+              <GalleryHorizontal className="w-3.5 h-3.5" />
+              Swipe
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "h-7 px-2 gap-1 text-xs",
+                viewMode === "list" && "bg-primary text-primary-foreground hover:bg-primary/90"
+              )}
+            >
+              <LayoutList className="w-3.5 h-3.5" />
+              List
+            </Button>
+          </div>
         </div>
       </div>
 
