@@ -31,6 +31,7 @@ interface LineItem {
 interface QuoteTabProps {
   job: JobDetail;
   initialBundle?: import("@/data/dummyJobDetails").BundleTemplate;
+  beforeActions?: React.ReactNode;
 }
 
 type QuoteStatus = "Draft" | "Sent" | "Approved";
@@ -137,7 +138,7 @@ function ItemRow({
 }
 
 /* ── Main QuoteTab ──────────────────────────────────────── */
-export function QuoteTab({ job, initialBundle }: QuoteTabProps) {
+export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
   // If a bundle was passed from the funnel, use its items; otherwise fall back to job data
   const initialLabour: LineItem[] = initialBundle
     ? initialBundle.labour.map((i) => ({ id: genId(), name: i.name, qty: i.qty, unitPrice: i.unitPrice }))
@@ -501,6 +502,9 @@ export function QuoteTab({ job, initialBundle }: QuoteTabProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* ── Before-actions slot (e.g. sequence selector) ── */}
+      {beforeActions}
 
       {/* ── Action buttons ───────────────────────────────── */}
       <div className="flex gap-2">
