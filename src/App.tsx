@@ -27,7 +27,7 @@ function AppLayout() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <div key={location.pathname}>
+      <div>
         <Routes>
           <Route path="/" element={<Hub />} />
           <Route path="/pipeline" element={<Index />} />
