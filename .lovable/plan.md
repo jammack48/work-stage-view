@@ -1,87 +1,112 @@
 
 
-## Follow-Up Sequence Builder for Quotes and Invoices
+## Simplify Navigation: Focused Page Toolbars + Dedicated Invoice Page
 
-### What Changes
+### Problem
 
-Replace the current simple template dropdown selectors on the Quote page with a **follow-up sequence builder**. Instead of picking one template, users build a pipeline of follow-up steps — each step picks a template and sets a delay in days. This applies to both Email and SMS sequences, and will also be added to the Invoice/Job page.
+Every page currently prepends 3 "common tabs" (Home, Customers, Schedule) before its own contextual tabs. This clutters the sidebar, especially on focused workspaces like Quote, Job Card, and Settings. The user wants each page to only show tabs relevant to its own task. If you need to go elsewhere, use the browser back button or the Home icon in the AppHeader.
 
-### Location in the UI
+Additionally, invoices currently route to `/job/new?stage=To+Invoice` which opens a generic Job Card. The user wants a dedicated Invoice page with a funnel flow similar to the Quote page (pick customer, add job details, choose follow-up sequence).
 
-On the Quote page (`line-items` tab), just below the "Send Quote" button:
+### Changes
 
-1. **"Enable Email Sequence"** toggle (Switch component)
-   - When enabled, shows a sequence builder:
-     - Each step shows: template selector (from email/quotes templates) + days delay input + delete button
-     - A `+` icon button at the bottom to add another step
-     - Steps are numbered (Step 1, Step 2, etc.)
-2. **"Enable SMS Sequence"** toggle (Switch component)
-   - Same structure but uses SMS/quotes templates
+#### 1. Remove common tabs from all non-home pages
 
-Same pattern on the Invoice page for invoice follow-ups and overdue reminders.
+**`src/config/toolbarTabs.ts`**
 
-### Files to Create
+- Change `buildTabs()` to stop prepending `COMMON_TABS` — just return the extras directly
+- Keep `COMMON_TABS` only for the Pipeline/Home page (`Index.tsx`)
+- Remove `handleCommonTab` calls from all non-home pages since those tabs won't exist
+- Add a single "Home" back-navigation tab as the first item in each non-home page's extras, so users can always get back
 
-**`src/components/FollowUpSequenceBuilder.tsx`**
+Resulting toolbar per page:
+```text
+Pipeline:    Home | Customers | Schedule | Bundles | Email | SMS | New Quote | Invoices | Settings
+Quote:       ← Back | Overview | Line Items | Sequences | Notes | History
+Job Card:    ← Back | Overview | History | Quote | Materials | Notes | Photos | Time | Forms | Invoice | Sequences
+Invoice:     ← Back | Overview | Line Items | Sequences | Notes | History
+Customers:   ← Back | Leads | Active | Archived
+Customer:    ← Back | Overview | Jobs | Contacts | Notes | Spend | New Job
+Settings:    ← Back | Business | Notifications | Appearance | Billing | Team | Integrations
+Email:       ← Back | Quotes | Invoices | Reminders | Services | Reviews
+SMS:         ← Back | Quotes | Invoices | Reminders | Services | Reviews
+Schedule:    ← Back | Settings
+Bundles:     ← Back | New Quote | Invoices | Settings
+```
 
-A reusable component that renders:
-- A list of sequence steps, each with:
-  - Select dropdown to pick a template (filtered by channel + category)
-  - Number input for "days after send" (0 = immediately)
-  - Delete (X) button per step
-- A `+ Add Step` button (just a Plus icon) to append a new empty step
-- Props: `channel: "email" | "sms"`, `category: string`, `steps`, `onStepsChange`
+The "← Back" tab uses an `ArrowLeft` icon, navigates to `/` (home).
 
-### Files to Modify
+#### 2. Create dedicated Invoice page
 
-**`src/pages/QuotePage.tsx`**
+**`src/pages/InvoicePage.tsx`** — Create
 
-- Remove the current email/SMS template Select dropdowns (lines 160-179)
-- Add state for `emailSequenceEnabled`, `smsSequenceEnabled`, and their step arrays
-- Below the "Send Quote" / "Save Draft" buttons area (rendered inside the `line-items` tab content), add:
-  - Switch + label "Enable Email Sequence" 
-  - When on: render `<FollowUpSequenceBuilder channel="email" category="quotes" />`
-  - Switch + label "Enable SMS Sequence"
-  - When on: render `<FollowUpSequenceBuilder channel="sms" category="quotes" />`
+Mirrors the Quote page structure:
+- Route: `/invoice/new` and `/invoice/:id`
+- 3-step funnel for new invoices: Select Customer → Confirm Address → Define Job Details
+- Post-funnel workspace with tabs: Overview, Line Items, Sequences, Notes, History
+- Line Items tab reuses `QuoteTab` component (labour/materials/extras) repurposed for invoice line items
+- Sequence selector at bottom (using `invoices` category pipelines)
+- Status badge cycles: Draft → Sent → Paid
 
-**`src/components/job/InvoiceTab.tsx`** (if it exists, otherwise note for future)
-
-- Same pattern: enable email/SMS sequence toggles for invoice follow-ups using category "invoices" and "reminders"
-
-### Data Shape
+**`src/config/toolbarTabs.ts`** — Add `INVOICE_EXTRAS`
 
 ```typescript
-interface SequenceStep {
-  id: string;
-  templateId: string;  // references a dummyTemplate id
-  delayDays: number;   // 0 = immediately, 3 = after 3 days, etc.
-}
+export const INVOICE_EXTRAS: ToolbarTab[] = [
+  { id: "back", label: "Back", icon: ArrowLeft },
+  { id: "overview", label: "Overview", icon: ClipboardList },
+  { id: "line-items", label: "Line Items", icon: List },
+  { id: "sequences", label: "Sequences", icon: Settings },
+  { id: "notes", label: "Notes", icon: StickyNote },
+  { id: "history", label: "History", icon: History },
+];
 ```
 
-### Visual Layout
+**`src/App.tsx`** — Add route `/invoice/:id`
 
-```text
-┌─────────────────────────────────────────┐
-│ [Send Quote]              [Save Draft]  │
-├─────────────────────────────────────────┤
-│ ○ Enable Email Sequence                 │
-│                                         │
-│  Step 1: [Quote Ready      ▾] after [0] days
-│  Step 2: [Quote Follow-up  ▾] after [3] days
-│  [+ Add Step]                           │
-│                                         │
-│ ○ Enable SMS Sequence                   │
-│                                         │
-│  Step 1: [Quote Ready SMS  ▾] after [0] days
-│  [+ Add Step]                           │
-└─────────────────────────────────────────┘
-```
+**`src/pages/Index.tsx`** — Update "Invoices" navigation to go to `/invoice/new` instead of `/job/new?stage=To+Invoice`
+
+#### 3. Update all page files to remove common tab handling
+
+Files to update (remove `handleCommonTab` usage, use extras directly instead of `buildTabs`):
+- `src/pages/QuotePage.tsx`
+- `src/pages/JobCard.tsx`
+- `src/pages/Customers.tsx`
+- `src/pages/CustomerCard.tsx`
+- `src/pages/SettingsPage.tsx`
+- `src/pages/BundlesPage.tsx`
+- `src/pages/SchedulePage.tsx`
+- `src/pages/EmailTemplatesPage.tsx`
+- `src/pages/SmsTemplatesPage.tsx`
+
+Each page:
+- Adds a "Back" tab as first item (navigates home)
+- Uses its own extras directly (no `buildTabs`)
+- Removes `handleCommonTab` — the only special ID is "back" which navigates to `/`
+
+#### 4. Update toolbarTabs.ts
+
+- Add `ArrowLeft` import
+- Add a `BACK_TAB` constant: `{ id: "back", label: "Back", icon: ArrowLeft }`
+- Prepend `BACK_TAB` to every non-home extras array
+- Update `buildTabs` to just prepend `BACK_TAB` for non-home pages
+- Keep `COMMON_TABS` usage only in `Index.tsx`
+- Update `handleCommonTab` route for `invoices` to `/invoice/new`
 
 ### Files Summary
 
 | File | Action |
 |------|--------|
-| `src/components/FollowUpSequenceBuilder.tsx` | Create — reusable sequence builder component |
-| `src/pages/QuotePage.tsx` | Edit — replace template dropdowns with sequence toggles + builder |
-| `src/components/job/InvoiceTab.tsx` | Edit — add sequence toggles for invoice follow-ups |
+| `src/config/toolbarTabs.ts` | Edit — add BACK_TAB, INVOICE_EXTRAS, simplify buildTabs |
+| `src/pages/InvoicePage.tsx` | Create — dedicated invoice workspace with funnel |
+| `src/App.tsx` | Edit — add `/invoice/:id` route |
+| `src/pages/Index.tsx` | Edit — update invoice navigation path |
+| `src/pages/QuotePage.tsx` | Edit — remove common tabs, use back + extras only |
+| `src/pages/JobCard.tsx` | Edit — remove common tabs |
+| `src/pages/Customers.tsx` | Edit — remove common tabs |
+| `src/pages/CustomerCard.tsx` | Edit — remove common tabs |
+| `src/pages/SettingsPage.tsx` | Edit — remove common tabs |
+| `src/pages/BundlesPage.tsx` | Edit — remove common tabs |
+| `src/pages/SchedulePage.tsx` | Edit — remove common tabs |
+| `src/pages/EmailTemplatesPage.tsx` | Edit — remove common tabs |
+| `src/pages/SmsTemplatesPage.tsx` | Edit — remove common tabs |
 
