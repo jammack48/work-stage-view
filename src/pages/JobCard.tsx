@@ -14,11 +14,9 @@ import { FormsTab } from "@/components/job/FormsTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequencesTab } from "@/components/SequencesTab";
 import { cn } from "@/lib/utils";
-import { buildTabs, handleCommonTab, JOB_EXTRAS } from "@/config/toolbarTabs";
+import { JOB_EXTRAS } from "@/config/toolbarTabs";
 
 type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences";
-
-const JOB_TABS = buildTabs(...JOB_EXTRAS);
 
 function statusColor(stage: string) {
   if (stage.includes("Paid")) return "bg-[hsl(var(--status-green))] text-white";
@@ -71,10 +69,10 @@ export default function JobCard() {
   return (
     <>
       <PageToolbar
-        tabs={JOB_TABS}
+        tabs={JOB_EXTRAS}
         activeTab={activeTab}
         onTabChange={(id) => {
-          if (handleCommonTab(id, navigate)) return;
+          if (id === "back") { navigate("/"); return; }
           setActiveTab(id as JobTab);
         }}
         pageHeading={jobHeading}

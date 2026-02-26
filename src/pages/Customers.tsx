@@ -7,11 +7,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import { DUMMY_CUSTOMERS } from "@/data/dummyCustomers";
-import { buildTabs, handleCommonTab, CUSTOMER_LIST_EXTRAS } from "@/config/toolbarTabs";
+import { CUSTOMER_LIST_EXTRAS } from "@/config/toolbarTabs";
 
 type CustomerTab = "all" | "leads" | "active" | "archived";
-
-const CUST_TABS = buildTabs(...CUSTOMER_LIST_EXTRAS);
 
 export default function Customers() {
   const navigate = useNavigate();
@@ -27,10 +25,10 @@ export default function Customers() {
 
       <PageToolbar
         currentPage="customers"
-        tabs={CUST_TABS}
+        tabs={CUSTOMER_LIST_EXTRAS}
         activeTab={activeTab}
         onTabChange={(id) => {
-          if (handleCommonTab(id, navigate)) return;
+          if (id === "back") { navigate("/"); return; }
           setActiveTab(id as CustomerTab);
         }}
         pageHeading={<h2 className="text-base font-bold text-card-foreground">Customer Directory</h2>}

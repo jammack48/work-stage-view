@@ -8,9 +8,7 @@ import { DayStrip } from "@/components/schedule/DayStrip";
 import { TimeGridDesktop } from "@/components/schedule/TimeGridDesktop";
 import { TimeGridMobile } from "@/components/schedule/TimeGridMobile";
 import { DEMO_JOBS } from "@/components/schedule/scheduleData";
-import { COMMON_TABS, SCHEDULE_EXTRAS, buildTabs, handleCommonTab } from "@/config/toolbarTabs";
-
-const HOME_TABS = buildTabs(...SCHEDULE_EXTRAS);
+import { SCHEDULE_EXTRAS, handleCommonTab } from "@/config/toolbarTabs";
 
 const SchedulePage = () => {
   const navigate = useNavigate();
@@ -27,12 +25,13 @@ const SchedulePage = () => {
   const weekEnd = addDays(weekStart, 4);
 
   const handleTabChange = (id: string) => {
+    if (id === "back") { navigate("/"); return; }
     handleCommonTab(id, navigate);
   };
 
   return (
     <PageToolbar
-      tabs={HOME_TABS}
+      tabs={SCHEDULE_EXTRAS}
       activeTab="schedule"
       onTabChange={handleTabChange}
       pageHeading={

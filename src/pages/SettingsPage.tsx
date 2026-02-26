@@ -5,12 +5,12 @@ import { PageToolbar } from "@/components/PageToolbar";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { buildTabs, handleCommonTab, SETTINGS_EXTRAS } from "@/config/toolbarTabs";
+import { SETTINGS_EXTRAS } from "@/config/toolbarTabs";
 import { dummyTemplates } from "@/data/dummyTemplates";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations";
 
-const SETTINGS_TABS = buildTabs(...SETTINGS_EXTRAS);
+
 
 function SettingsContent({ tab }: { tab: SettingsTab }) {
   const sections: Record<SettingsTab, React.ReactNode> = {
@@ -164,10 +164,10 @@ export default function SettingsPage() {
   return (
     <>
       <PageToolbar
-        tabs={SETTINGS_TABS}
+        tabs={SETTINGS_EXTRAS}
         activeTab={activeTab}
         onTabChange={(id) => {
-          if (handleCommonTab(id, navigate)) return;
+          if (id === "back") { navigate("/"); return; }
           setActiveTab(id as SettingsTab);
         }}
         pageHeading={<h2 className="text-base font-bold text-card-foreground">Settings</h2>}

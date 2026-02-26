@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { buildTabs, handleCommonTab, SMS_EXTRAS } from "@/config/toolbarTabs";
+import { SMS_EXTRAS } from "@/config/toolbarTabs";
 import { dummyTemplates, TEMPLATE_VARIABLES, type MessageTemplate } from "@/data/dummyTemplates";
 
 type Category = MessageTemplate["category"];
 
-const SMS_TABS = buildTabs(...SMS_EXTRAS);
+
 
 export default function SmsTemplatesPage() {
   const navigate = useNavigate();
@@ -69,10 +69,10 @@ export default function SmsTemplatesPage() {
 
   return (
     <PageToolbar
-      tabs={SMS_TABS}
+      tabs={SMS_EXTRAS}
       activeTab={activeTab}
       onTabChange={(id) => {
-        if (handleCommonTab(id, navigate)) return;
+        if (id === "back") { navigate("/"); return; }
         setActiveTab(id as Category);
         resetDraft();
       }}
