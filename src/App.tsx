@@ -17,6 +17,7 @@ import SettingsPage from "./pages/SettingsPage";
 import QuotePage from "./pages/QuotePage";
 import ComingSoon from "./pages/ComingSoon";
 import BundlesPage from "./pages/BundlesPage";
+import SchedulePage from "./pages/SchedulePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ function AppLayout() {
           <Route path="/customer/:id" element={<CustomerCard />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/bundles" element={<BundlesPage />} />
+          <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/coming-soon" element={<ComingSoon />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
