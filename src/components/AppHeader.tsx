@@ -1,12 +1,16 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Wrench, Users, Settings as SettingsIcon } from "lucide-react";
+import { Wrench, Users, Settings as SettingsIcon, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ThemePicker } from "@/components/ThemePicker";
+import { useTutorial } from "@/contexts/TutorialContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { tutorialOn, setTutorialOn } = useTutorial();
+  const isMobile = useIsMobile();
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -34,6 +38,21 @@ export function AppHeader() {
           title="Settings"
         >
           <SettingsIcon className="w-5 h-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setTutorialOn(!tutorialOn)}
+          className={cn(
+            "h-9 rounded-lg gap-1.5",
+            tutorialOn
+              ? "bg-primary text-primary-foreground hover:bg-primary/90"
+              : "text-muted-foreground hover:bg-accent"
+          )}
+          title="Toggle tutorial mode"
+        >
+          <GraduationCap className="w-5 h-5" />
+          {!isMobile && <span className="text-xs font-medium">Tutorial</span>}
         </Button>
         <ThemePicker />
       </div>

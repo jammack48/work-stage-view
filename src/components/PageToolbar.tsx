@@ -1,6 +1,10 @@
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToolbarPosition } from "@/contexts/ToolbarPositionContext";
+import { useTutorial } from "@/contexts/TutorialContext";
+import { sidebarTooltips } from "@/data/tutorialContent";
+import { TutorialBanner } from "@/components/TutorialBanner";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 interface TabDef {
   id: string;
@@ -21,7 +25,9 @@ interface PageToolbarProps {
 export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading, currentPage }: PageToolbarProps) {
   const isMobile = useIsMobile();
   const { position } = useToolbarPosition();
+  const { tutorialOn } = useTutorial();
 
+  const tutorialBanner = tutorialOn ? <TutorialBanner /> : null;
   const isActive = (id: string) => activeTab === id || currentPage === id;
 
   const headingBar = pageHeading ? (
@@ -43,24 +49,39 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
           position === "left" ? "rounded-r-xl border-r border-border" : "rounded-l-xl border-l border-border"
         )}>
           
-          {tabs.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => onTabChange(id)}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left min-h-[48px]",
-              isActive(id)
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground/70 hover:bg-accent hover:text-accent-foreground"
-              )}
-            >
-              <Icon className="w-6 h-6 shrink-0" />
-              {label}
-            </button>
-          ))}
+          {tabs.map(({ id, label, icon: Icon }) => {
+            const tip = tutorialOn ? sidebarTooltips[id] : undefined;
+            const btn = (
+              <button
+                key={id}
+                onClick={() => onTabChange(id)}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left min-h-[48px]",
+                isActive(id)
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground/70 hover:bg-accent hover:text-accent-foreground"
+                )}
+              >
+                <Icon className="w-6 h-6 shrink-0" />
+                {label}
+              </button>
+            );
+            if (tip) {
+              return (
+                <Tooltip key={id}>
+                  <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                  <TooltipContent side={position === "left" ? "right" : "left"}>
+                    <p className="text-xs">{tip}</p>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            }
+            return btn;
+          })}
         </nav>
         <main className="flex-1 min-w-0">
           {headingBar}
+          {tutorialBanner}
           <div className="p-4 sm:p-6">{children}</div>
         </main>
       </div>
@@ -72,21 +93,35 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
     const bar = (
       <nav className="flex items-center gap-1 px-2 py-1.5 border-b border-border overflow-x-auto">
         
-        {tabs.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => onTabChange(id)}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors shrink-0",
-              isActive(id)
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-            )}
-          >
-            <Icon className="w-4 h-4 shrink-0" />
-            {label}
-          </button>
-        ))}
+        {tabs.map(({ id, label, icon: Icon }) => {
+          const tip = tutorialOn ? sidebarTooltips[id] : undefined;
+          const btn = (
+            <button
+              key={id}
+              onClick={() => onTabChange(id)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors shrink-0",
+                isActive(id)
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              )}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              {label}
+            </button>
+          );
+          if (tip) {
+            return (
+              <Tooltip key={id}>
+                <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                <TooltipContent side={position === "top" ? "bottom" : "top"}>
+                  <p className="text-xs">{tip}</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          }
+          return btn;
+        })}
       </nav>
     );
 
@@ -94,7 +129,10 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
       <div className="flex flex-col">
         {position === "top" && bar}
         {headingBar}
-        <main className="flex-1 min-w-0 p-4 sm:p-6">{children}</main>
+        <main className="flex-1 min-w-0">
+          {tutorialBanner}
+          <div className="p-4 sm:p-6">{children}</div>
+        </main>
         {position === "bottom" && bar}
       </div>
     );
@@ -131,6 +169,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
         </nav>
         <main className="flex-1 min-w-0">
           {headingBar}
+          {tutorialBanner}
           <div className="p-4">{children}</div>
         </main>
       </div>
@@ -170,11 +209,12 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
       {headingBar}
       <main
         className={cn(
-          "flex-1 min-w-0 p-4",
+          "flex-1 min-w-0",
           position === "bottom" && "pb-24"
         )}
       >
-        {children}
+        {tutorialBanner}
+        <div className="p-4">{children}</div>
       </main>
       {position === "bottom" && bar}
     </div>
