@@ -15,7 +15,12 @@ const SchedulePage = () => {
   const isMobile = useIsMobile();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [selectedStaff, setSelectedStaff] = useState<string[]>([]);
-  const [selectedDay, setSelectedDay] = useState(0);
+  const [selectedDay, setSelectedDay] = useState(() => {
+    const today = new Date();
+    const start = startOfWeek(today, { weekStartsOn: 1 });
+    const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return diff >= 0 && diff <= 4 ? diff : 0;
+  });
 
   const filteredJobs = useMemo(() => {
     if (selectedStaff.length === 0) return DEMO_JOBS;
