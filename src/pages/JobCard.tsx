@@ -13,7 +13,6 @@ import { QuoteTab } from "@/components/job/QuoteTab";
 import { FormsTab } from "@/components/job/FormsTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequencesTab } from "@/components/SequencesTab";
-import { type SequenceStep } from "@/components/FollowUpSequenceBuilder";
 import { cn } from "@/lib/utils";
 import { buildTabs, handleCommonTab, JOB_EXTRAS } from "@/config/toolbarTabs";
 
@@ -33,10 +32,6 @@ export default function JobCard() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<JobTab>("overview");
-  const [emailSeqEnabled, setEmailSeqEnabled] = useState(false);
-  const [smsSeqEnabled, setSmsSeqEnabled] = useState(false);
-  const [emailSteps, setEmailSteps] = useState<SequenceStep[]>([]);
-  const [smsSteps, setSmsSteps] = useState<SequenceStep[]>([]);
 
   const job = id === "new"
     ? getNewJobDetail(searchParams.get("stage") || "Lead")
@@ -60,19 +55,7 @@ export default function JobCard() {
     time: <TimeTab timeEntries={job.timeEntries} />,
     forms: <FormsTab />,
     invoice: <InvoiceTab job={job} />,
-    sequences: (
-      <SequencesTab
-        category="invoices"
-        emailEnabled={emailSeqEnabled}
-        onEmailEnabledChange={setEmailSeqEnabled}
-        emailSteps={emailSteps}
-        onEmailStepsChange={setEmailSteps}
-        smsEnabled={smsSeqEnabled}
-        onSmsEnabledChange={setSmsSeqEnabled}
-        smsSteps={smsSteps}
-        onSmsStepsChange={setSmsSteps}
-      />
-    ),
+    sequences: <SequencesTab category="invoices" />,
   };
 
   const jobHeading = (
