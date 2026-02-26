@@ -28,8 +28,8 @@ export function DayStrip({ weekStart, selectedDay, onSelectDay, onPrevWeek, onNe
               key={i}
               onClick={() => onSelectDay(i)}
               className={cn(
-                "relative flex flex-col items-center py-2 px-4 sm:px-5 rounded-xl transition-all min-w-[52px]",
-                selected && "bg-primary text-primary-foreground ring-2 ring-white/30 shadow-[0_0_20px_hsl(var(--primary)/0.5)] font-bold border-2 border-white/20",
+                "relative flex flex-col items-center py-2 px-4 sm:px-5 rounded-xl transition-colors min-w-[52px] font-bold border-2 border-transparent",
+                selected && "bg-primary text-primary-foreground ring-2 ring-white/30 shadow-[0_0_20px_hsl(var(--primary)/0.5)] border-white/20",
                 !selected && "hover:bg-accent/50"
               )}
             >
