@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { getJobDetail, getNewJobDetail, type BundleTemplate } from "@/data/dummyJobDetails";
 
 import { PageToolbar } from "@/components/PageToolbar";
@@ -10,16 +10,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { NotesTab } from "@/components/job/NotesTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { cn } from "@/lib/utils";
-import { ClipboardList, List, StickyNote, History } from "lucide-react";
+import { buildTabs, handleCommonTab, QUOTE_EXTRAS } from "@/config/toolbarTabs";
 
 type QuotePageTab = "overview" | "line-items" | "notes" | "history";
 
-const QUOTE_TABS = [
-  { id: "overview", label: "Overview", icon: ClipboardList },
-  { id: "line-items", label: "Line Items", icon: List },
-  { id: "notes", label: "Notes", icon: StickyNote },
-  { id: "history", label: "History", icon: History },
-];
+const QUOTE_TABS = buildTabs(...QUOTE_EXTRAS);
 
 type QuoteStatus = "Draft" | "Sent" | "Approved";
 
@@ -31,6 +26,7 @@ const statusColor: Record<QuoteStatus, string> = {
 
 export default function QuotePage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<QuotePageTab>("line-items");
   const [scope, setScope] = useState("");
   const [status, setStatus] = useState<QuoteStatus>("Draft");
@@ -147,7 +143,10 @@ export default function QuotePage() {
       <PageToolbar
         tabs={QUOTE_TABS}
         activeTab={activeTab}
-        onTabChange={(id) => setActiveTab(id as QuotePageTab)}
+        onTabChange={(id) => {
+          if (handleCommonTab(id, navigate)) return;
+          setActiveTab(id as QuotePageTab);
+        }}
         pageHeading={quoteHeading}
       >
         {tabContent[activeTab]}

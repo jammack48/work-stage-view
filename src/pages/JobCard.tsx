@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
 
 import { PageToolbar } from "@/components/PageToolbar";
@@ -13,23 +13,11 @@ import { QuoteTab } from "@/components/job/QuoteTab";
 import { FormsTab } from "@/components/job/FormsTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { cn } from "@/lib/utils";
-import {
-  ClipboardList, Package, StickyNote, Camera, Clock, FileText, DollarSign, ClipboardCheck, History,
-} from "lucide-react";
+import { buildTabs, handleCommonTab, JOB_EXTRAS } from "@/config/toolbarTabs";
 
 type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history";
 
-const JOB_TABS = [
-  { id: "overview", label: "Overview", icon: ClipboardList },
-  { id: "history", label: "History", icon: History },
-  { id: "quote", label: "Quote", icon: DollarSign },
-  { id: "materials", label: "Materials", icon: Package },
-  { id: "notes", label: "Notes", icon: StickyNote },
-  { id: "photos", label: "Photos", icon: Camera },
-  { id: "time", label: "Time", icon: Clock },
-  { id: "forms", label: "Forms", icon: ClipboardCheck },
-  { id: "invoice", label: "Invoice", icon: FileText },
-];
+const JOB_TABS = buildTabs(...JOB_EXTRAS);
 
 function statusColor(stage: string) {
   if (stage.includes("Paid")) return "bg-[hsl(var(--status-green))] text-white";
@@ -41,6 +29,7 @@ function statusColor(stage: string) {
 export default function JobCard() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<JobTab>("overview");
 
   const job = id === "new"
@@ -82,7 +71,10 @@ export default function JobCard() {
       <PageToolbar
         tabs={JOB_TABS}
         activeTab={activeTab}
-        onTabChange={(id) => setActiveTab(id as JobTab)}
+        onTabChange={(id) => {
+          if (handleCommonTab(id, navigate)) return;
+          setActiveTab(id as JobTab);
+        }}
         pageHeading={jobHeading}
       >
         {tabContent[activeTab]}
