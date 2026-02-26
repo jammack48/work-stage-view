@@ -32,7 +32,7 @@ export default function InvoicePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const fromManager = (location.state as any)?.fromManager;
+  const managerState = (location.state as any);
   const [activeTab, setActiveTab] = useState<InvoiceTab>("line-items");
   const [scope, setScope] = useState("");
   const [status, setStatus] = useState<InvoiceStatus>("Draft");
@@ -46,7 +46,7 @@ export default function InvoicePage() {
   const isNew = id === "new";
 
   const handleTabChange = (tabId: string) => {
-    if (tabId === "back") { fromManager ? navigate(-1) : navigate("/"); return; }
+    if (tabId === "back") { managerState?.fromManager ? navigate("/", { state: managerState }) : navigate("/"); return; }
     if (isNew && !funnelComplete) {
       setPendingNavId(tabId);
       setShowLeaveDialog(true);
