@@ -287,11 +287,17 @@ function JobCard({ job, activeStage, activePriority, note, setNote, onAction, on
   );
 }
 
-export function ManagerMode() {
+interface ManagerModeProps {
+  initialStage?: Stage;
+  initialPriority?: PriorityColor;
+  initialIndex?: number;
+}
+
+export function ManagerMode({ initialStage, initialPriority, initialIndex }: ManagerModeProps = {}) {
   const navigate = useNavigate();
   const { getThresholds, getLabel } = useThresholds();
-  const [activeStage, setActiveStage] = useState<Stage>("Lead");
-  const [activePriority, setActivePriority] = useState<PriorityColor>("red");
+  const [activeStage, setActiveStage] = useState<Stage>(initialStage || "Lead");
+  const [activePriority, setActivePriority] = useState<PriorityColor>(initialPriority || "red");
   const [note, setNote] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("swipe");
 
@@ -321,12 +327,22 @@ export function ManagerMode() {
     setCurrentIndex(0);
   }, [activeStage, activePriority, emblaApi]);
 
+  // Scroll to initial index after embla is ready
+  useEffect(() => {
+    if (initialIndex != null && initialIndex > 0 && emblaApi) {
+      emblaApi.scrollTo(initialIndex);
+      setCurrentIndex(initialIndex);
+    }
+  }, [emblaApi]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const managerNavState = { fromManager: true, stage: activeStage, priority: activePriority, slideIndex: currentIndex };
+
   const handleAction = (job: Job, action: string, actionDef: ActionDef) => {
     if (action === "open") {
       const earlyStages = ["Lead", "To Quote", "Quote Sent"];
-      if (earlyStages.includes(activeStage)) navigate(`/quote/${job.id}`);
-      else if (["Invoiced", "Invoice Paid"].includes(activeStage)) navigate(`/invoice/${job.id}`);
-      else navigate(`/job/${job.id}`);
+      if (earlyStages.includes(activeStage)) navigate(`/quote/${job.id}`, { state: managerNavState });
+      else if (["Invoiced", "Invoice Paid"].includes(activeStage)) navigate(`/invoice/${job.id}`, { state: managerNavState });
+      else navigate(`/job/${job.id}`, { state: managerNavState });
       return;
     }
     if (actionDef.requiresNote && !note.trim()) {

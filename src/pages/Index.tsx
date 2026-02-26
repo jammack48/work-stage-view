@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
@@ -28,12 +28,15 @@ const ACTION_BOXES: Record<string, string> = {
 
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const managerState = location.state as { fromManager?: boolean; stage?: string; priority?: string; slideIndex?: number } | null;
+
   const [expandedStage, setExpandedStage] = useState<Stage | null>(null);
   const [layout, setLayout] = useState<Layout>("horizontal");
   const isMobile = useIsMobile();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "center" });
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [activeView, setActiveView] = useState<HomeView>("pipeline");
+  const [activeView, setActiveView] = useState<HomeView>(managerState?.fromManager ? "manager" : "pipeline");
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -127,7 +130,11 @@ const Index = () => {
       >
 
         {activeView === "manager" ? (
-          <ManagerMode />
+          <ManagerMode
+            initialStage={managerState?.stage as any}
+            initialPriority={managerState?.priority as any}
+            initialIndex={managerState?.slideIndex}
+          />
         ) : isMobile ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between px-1">

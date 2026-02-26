@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getJobDetail, getNewJobDetail, type BundleTemplate } from "@/data/dummyJobDetails";
 
 import { PageToolbar } from "@/components/PageToolbar";
@@ -33,6 +33,8 @@ const statusColor: Record<QuoteStatus, string> = {
 export default function QuotePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromManager = (location.state as any)?.fromManager;
   const [activeTab, setActiveTab] = useState<QuotePageTab>("line-items");
   const [scope, setScope] = useState("");
   const [status, setStatus] = useState<QuoteStatus>("Draft");
@@ -46,7 +48,7 @@ export default function QuotePage() {
   const isNew = id === "new";
 
   const handleTabChange = (tabId: string) => {
-    if (tabId === "back") { navigate("/"); return; }
+    if (tabId === "back") { fromManager ? navigate(-1) : navigate("/"); return; }
     if (isNew && !funnelComplete) {
       setPendingNavId(tabId);
       setShowLeaveDialog(true);
