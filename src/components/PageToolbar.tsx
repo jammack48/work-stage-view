@@ -108,10 +108,9 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
       <div className="flex flex-row min-h-0" style={position === "right" ? { flexDirection: "row-reverse" } : undefined}>
         <nav
           className={cn(
-            "w-16 shrink-0 flex flex-col items-center gap-1 py-2 bg-card overflow-y-auto",
+            "w-16 shrink-0 flex flex-col items-center gap-1 py-2 bg-card overflow-y-auto sticky top-0 self-start max-h-screen",
             position === "left" ? "rounded-r-xl border-r border-border" : "rounded-l-xl border-l border-border"
           )}
-          style={{ minHeight: "calc(100vh - 6rem)" }}
         >
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
