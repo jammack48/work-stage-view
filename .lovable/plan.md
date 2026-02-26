@@ -1,91 +1,80 @@
 
 
-## Schedule Page Overhaul — Time-Based Layout with Staff Filtering
+## Problem
 
-### What's changing
+Currently only Pipeline, Schedule, and Bundles pages use the shared `COMMON_TABS` (Pipeline, Customers, Schedule). The other pages — **QuotePage**, **Customers**, **CustomerCard**, **JobCard**, and **SettingsPage** — each define their own isolated tab arrays with no common navigation. This means once you navigate into a quote, job, or customer page, you lose the familiar core navigation buttons.
 
-The current schedule shows jobs as simple cards in a grid without any sense of time positioning. Based on the Fergus reference, the schedule needs to actually show the **working day timeline** with jobs positioned/sized by their time slots, and allow filtering to view **all staff** or **individual staff members**.
+## Solution
 
-### Current problems
-- Jobs are just stacked cards — no visual representation of time blocks or duration
-- No way to filter by individual staff member
-- No "today" highlight on the day strip
-- Mobile doesn't show time context at all
+Every page's toolbar will show the **same core tabs first** (Pipeline, Customers, Schedule), followed by that page's own contextual tabs. The `handleCommonTab` function already handles routing for the core tabs — each page just needs to prepend `COMMON_TABS` and wire up the handler.
 
----
+Additionally, the Home button in `PageToolbar` currently hardcodes navigation to `/pipeline`. Per the user's request, the Home button should go to `/pipeline` (the main dashboard), which it already does — this is correct.
 
-### 1. Staff filter — checkboxes/chips to toggle visibility
+## Changes
 
-Add a staff filter bar below the heading:
-- "All" chip (selected by default) — shows everyone
-- Individual staff chips with their colour dot — toggle on/off
-- Clicking a single staff member deselects "All" and shows only that person
-- Clicking "All" resets to everyone
-- State: `selectedStaff: string[]` (empty = all)
+### 1. `src/config/toolbarTabs.ts` — Add extras for remaining pages
 
-### 2. Day strip with "Today" highlight
+Add new extras arrays for Quote, Job, Customer, CustomerCard, and Settings pages so each page can do `buildTabs(...PAGE_EXTRAS)`.
 
-Replace the current week nav with a horizontal day strip (like Fergus):
-- Mon–Sun row showing day name + date number
-- Today's date gets a filled circle/highlight (primary colour)
-- Tapping a day on mobile selects that day for the single-day view
-- Keep prev/next week arrows at the edges
+### 2. `src/pages/QuotePage.tsx`
 
-### 3. Desktop view — Time axis (vertical) with days across
+- Import `buildTabs`, `handleCommonTab` from `@/config/toolbarTabs`
+- Replace `QUOTE_TABS` with `buildTabs(...QUOTE_EXTRAS)` where `QUOTE_EXTRAS` contains the page-specific tabs (Overview, Line Items, Notes, History)
+- Add `handleCommonTab(id, navigate)` check in `onTabChange` before handling local tabs
 
-**Layout:**
-```text
-         Mon 24    Tue 25    Wed 26    Thu 27    Fri 28
- 7am  |          |          |          |          |
- 8am  | ████████ |          | ████████ |          |
- 9am  | ████████ | ████████ | ████████ |          |
-10am  | ████████ | ████████ |          | ████████ |
-11am  |          | ████████ |          | ████████ |
- ...
+### 3. `src/pages/Customers.tsx`
+
+- Import `buildTabs`, `handleCommonTab`
+- Current tabs (All, Leads, Active, Archived) become extras after the common tabs
+- Wire up `handleCommonTab` in `onTabChange`
+
+### 4. `src/pages/CustomerCard.tsx`
+
+- Import `buildTabs`, `handleCommonTab`
+- Current tabs (Overview, Jobs, Contacts, Notes, Spend, New Job) become extras
+- Wire up `handleCommonTab` in `onTabChange`
+
+### 5. `src/pages/JobCard.tsx`
+
+- Import `buildTabs`, `handleCommonTab`
+- Current tabs (Overview, History, Quote, Materials, etc.) become extras
+- Wire up `handleCommonTab` in `onTabChange`
+
+### 6. `src/pages/SettingsPage.tsx`
+
+- Import `buildTabs`, `handleCommonTab`
+- Current tabs (Business, Notifications, etc.) become extras
+- Wire up `handleCommonTab` in `onTabChange`
+
+### Pattern for each page
+
+Every page follows the same pattern:
+
+```typescript
+import { buildTabs, handleCommonTab } from "@/config/toolbarTabs";
+
+const PAGE_EXTRAS = [
+  { id: "overview", label: "Overview", icon: ClipboardList },
+  // ... page-specific tabs
+];
+
+const PAGE_TABS = buildTabs(...PAGE_EXTRAS);
+
+// In component:
+const handleTabChange = (id: string) => {
+  if (handleCommonTab(id, navigate)) return;
+  setActiveTab(id as LocalTabType);
+};
 ```
-- Time labels down the left (7am–5pm, configurable)
-- 5 day columns
-- Job cards are **absolutely positioned** within each day column based on `startHour` and sized by `durationHours`
-- Jobs from different staff in the same time slot sit side-by-side within the column
-- Each job card shows: staff colour left border, job name, client, time range
-- When filtered to one staff member, cards take full column width
 
-### 4. Mobile view — Single day with time axis
-
-On mobile, show **one day at a time** (selected from the day strip):
-- Time axis runs vertically down the left (7am–5pm)
-- Job cards positioned by time, full width
-- Staff name shown on each card with colour indicator
-- Swipe or tap day strip to change days
-- When filtered to one person, it looks like the Fergus screenshot — their name at top, jobs stacked by time
-
-### 5. Demo data updates
-
-Add `address` field to `ScheduleJob` interface and demo data for richer cards (matching Fergus style). Add a `status` field too (e.g. "In Progress", "Scheduled", "Invoiced") shown as a small badge.
-
----
-
-### Technical Details
-
-**File: `src/pages/SchedulePage.tsx`** — Major rewrite of views
-
-- New state: `selectedStaff: string[]`, `selectedDay: number` (for mobile)
-- New component: `StaffFilterBar` — row of toggleable chips
-- New component: `DayStrip` — horizontal Mon–Sun with today highlight
-- New component: `TimeGridDesktop` — CSS Grid with time rows and day columns, jobs absolutely positioned
-- New component: `TimeGridMobile` — single-day vertical timeline
-- Job cards: add status badge, address line, keep staff colour border
-- Time grid uses `gridTemplateRows` based on hour range (7am–5pm = 10 rows)
-- Job positioning: `top` = `(startHour - 7) * rowHeight`, `height` = `durationHours * rowHeight`
-- Overlap handling: jobs in same column & overlapping times get `width: 50%` and offset
-
-**Constants:**
-- `WORK_START = 7`, `WORK_END = 17` (7am–5pm)
-- `HOUR_HEIGHT = 60` (px per hour on desktop), `48` on mobile
-
-**Files changed:**
+### Files changed
 
 | File | Change |
 |------|--------|
-| `src/pages/SchedulePage.tsx` | Major rewrite — time-based grid, staff filter, day strip, mobile single-day view |
+| `src/config/toolbarTabs.ts` | Add QUOTE_EXTRAS, JOB_EXTRAS, CUSTOMER_LIST_EXTRAS, CUSTOMER_CARD_EXTRAS, SETTINGS_EXTRAS |
+| `src/pages/QuotePage.tsx` | Prepend common tabs, add handleCommonTab |
+| `src/pages/Customers.tsx` | Prepend common tabs, add handleCommonTab |
+| `src/pages/CustomerCard.tsx` | Prepend common tabs, add handleCommonTab |
+| `src/pages/JobCard.tsx` | Prepend common tabs, add handleCommonTab |
+| `src/pages/SettingsPage.tsx` | Prepend common tabs, add handleCommonTab |
 
