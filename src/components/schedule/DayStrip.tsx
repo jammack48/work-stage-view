@@ -28,18 +28,21 @@ export function DayStrip({ weekStart, selectedDay, onSelectDay, onPrevWeek, onNe
               key={i}
               onClick={() => onSelectDay(i)}
               className={cn(
-                "flex flex-col items-center py-1 px-2 sm:px-3 rounded-lg transition-colors min-w-[44px]",
-                selected && "bg-primary/15 ring-2 ring-primary",
+                "flex flex-col items-center py-1.5 px-3 sm:px-4 rounded-xl transition-all min-w-[48px]",
+                selected && "bg-primary text-primary-foreground shadow-md scale-105",
                 !selected && "hover:bg-accent/50"
               )}
             >
-              <span className="text-[10px] font-medium text-muted-foreground uppercase">
+              <span className={cn(
+                "text-[10px] font-medium uppercase",
+                selected ? "text-primary-foreground/80" : "text-muted-foreground"
+              )}>
                 {format(d, "EEE")}
               </span>
               <span
                 className={cn(
                   "text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full",
-                  today && "bg-primary text-primary-foreground",
+                  selected ? "text-primary-foreground" : today ? "bg-primary text-primary-foreground" : "",
                 )}
               >
                 {format(d, "d")}
