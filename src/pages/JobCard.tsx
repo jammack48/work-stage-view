@@ -13,10 +13,11 @@ import { QuoteTab } from "@/components/job/QuoteTab";
 import { FormsTab } from "@/components/job/FormsTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequencesTab } from "@/components/SequencesTab";
+import { MessagesTab } from "@/components/job/MessagesTab";
 import { cn } from "@/lib/utils";
 import { JOB_EXTRAS } from "@/config/toolbarTabs";
 
-type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences";
+type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences" | "messages";
 
 function statusColor(stage: string) {
   if (stage.includes("Paid")) return "bg-[hsl(var(--status-green))] text-white";
@@ -47,6 +48,7 @@ export default function JobCard() {
 
   const tabContent: Record<JobTab, React.ReactNode> = {
     overview: <OverviewTab job={job} />,
+    messages: <MessagesTab />,
     history: <HistoryTab job={job} />,
     quote: <QuoteTab job={job} />,
     materials: <MaterialsTab materials={job.materials} />,

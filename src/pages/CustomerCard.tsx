@@ -36,60 +36,35 @@ export default function CustomerCard() {
     return "bg-muted text-muted-foreground";
   }
 
+  const outstanding = customer.jobHistory.filter(j => !j.stage.includes("Paid")).reduce((s, j) => s + j.value, 0);
+  const openQuotes = customer.jobHistory.filter(j => j.stage.includes("Quote")).length;
+
   const tabContent: Record<CustTab, React.ReactNode> = {
     overview: (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full">
-        <div className="rounded-lg bg-card border border-border p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", statusColor(customer.status))}>
-              {customer.status === "leads" ? "Lead" : customer.status === "active" ? "Active" : "Archived"}
-            </span>
+        {/* Communication Summary Card */}
+        <div className="rounded-lg bg-card border border-border p-3 md:col-span-2">
+          <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1.5">
+            <Mail className="w-3.5 h-3.5" /> Communication Summary
           </div>
-          <div className="text-lg font-bold text-card-foreground">{customer.name}</div>
-          <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" />{customer.phone}</span>
-            <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" />{customer.email}</span>
-          </div>
-          <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
-            <MapPin className="w-3.5 h-3.5" />{customer.address}
-          </div>
-        </div>
-        <div className="rounded-lg bg-card border border-border p-3">
-          <div className="text-xs text-muted-foreground mb-1">Total Spend</div>
-          <div className="text-2xl font-bold text-card-foreground">${customer.totalSpend.toLocaleString()}</div>
-          <div className="text-xs text-muted-foreground mt-2">{customer.jobs} jobs total</div>
-          <div className="flex gap-2 mt-3">
-            <div className="flex-1 rounded-md bg-[hsl(var(--status-green))]/20 p-2 text-center">
-              <div className="text-sm font-bold text-card-foreground">{customer.jobHistory.filter(j => j.stage.includes("Paid")).length}</div>
-              <div className="text-[10px] text-muted-foreground">Completed</div>
-            </div>
-            <div className="flex-1 rounded-md bg-[hsl(var(--status-orange))]/20 p-2 text-center">
-              <div className="text-sm font-bold text-card-foreground">{customer.jobHistory.filter(j => j.stage === "In Progress" || j.stage === "To Invoice").length}</div>
-              <div className="text-[10px] text-muted-foreground">In Progress</div>
-            </div>
-            <div className="flex-1 rounded-md bg-primary/20 p-2 text-center">
-              <div className="text-sm font-bold text-card-foreground">{customer.jobHistory.filter(j => j.stage.includes("Quote") || j.stage === "Lead").length}</div>
-              <div className="text-[10px] text-muted-foreground">Pipeline</div>
-            </div>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {[
+              ["Messages Sent", "14"],
+              ["Last Contact", "2 days ago"],
+              ["Last Reply", "1 day ago"],
+              ["Open Quotes", String(openQuotes)],
+              ["Outstanding", `$${outstanding.toLocaleString()}`],
+            ].map(([label, value]) => (
+              <div key={label} className="text-center">
+                <div className="text-lg font-bold text-card-foreground">{value}</div>
+                <div className="text-[10px] text-muted-foreground">{label}</div>
+              </div>
+            ))}
           </div>
         </div>
+
         <div className="rounded-lg bg-card border border-border p-3">
-          <div className="text-xs font-semibold text-muted-foreground mb-2">LATEST NOTES</div>
-          {customer.notes.slice(0, 3).map((n, i) => (
-            <div key={i} className="text-sm text-card-foreground py-1 border-b border-border last:border-0">{n}</div>
-          ))}
-        </div>
-        <div className="rounded-lg bg-card border border-border p-3 flex flex-col gap-2">
-          <div className="text-xs font-semibold text-muted-foreground mb-1">QUICK ACTIONS</div>
-          <Button size="sm" variant="outline" className="justify-start gap-2" onClick={() => setActiveTab("add-job")}>
-            <Plus className="w-4 h-4" /> Create New Job
-          </Button>
-          <Button size="sm" variant="outline" className="justify-start gap-2">
-            <Phone className="w-4 h-4" /> Call {customer.name.split(" ")[0]}
-          </Button>
-          <Button size="sm" variant="outline" className="justify-start gap-2">
-            <Mail className="w-4 h-4" /> Send Email
-          </Button>
+...
           <Button size="sm" variant="outline" className="justify-start gap-2" onClick={() => setActiveTab("notes")}>
             <StickyNote className="w-4 h-4" /> Add Note
           </Button>

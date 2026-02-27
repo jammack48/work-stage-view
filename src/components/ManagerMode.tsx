@@ -371,8 +371,34 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
     count: stageJobs.filter((j) => getJobColor(j, thresholds.greenMax, thresholds.orangeMax) === p.color).length,
   }));
 
+  // Notification counters — computed from all stages
+  const notificationCounters = [
+    { label: "Quotes Awaiting Reply", count: jobsByStage("Quote Sent").filter(j => getJobColor(j, getThresholds("Quote Sent").greenMax, getThresholds("Quote Sent").orangeMax) === "red").length, color: "bg-[hsl(var(--status-red))]", stage: "Quote Sent" as Stage },
+    { label: "Invoices Overdue", count: jobsByStage("Invoiced").filter(j => getJobColor(j, getThresholds("Invoiced").greenMax, getThresholds("Invoiced").orangeMax) === "red").length, color: "bg-[hsl(var(--status-orange))]", stage: "Invoiced" as Stage },
+    { label: "Messages Unread", count: 5, color: "bg-primary", stage: "Lead" as Stage },
+  ].filter(c => c.count > 0);
+
   return (
     <div className="flex flex-col gap-3 pb-4">
+      {/* Notification Counters */}
+      {notificationCounters.length > 0 && (
+        <div className="flex flex-wrap gap-2 px-1">
+          {notificationCounters.map((counter) => (
+            <button
+              key={counter.label}
+              onClick={() => { setActiveStage(counter.stage); setActivePriority("red"); }}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white transition-all hover:scale-105 active:scale-95",
+                counter.color
+              )}
+            >
+              <span className="font-bold">{counter.count}</span>
+              <span>{counter.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Sticky toolbar */}
       <div className="flex flex-col gap-3 pt-1 pb-2">
         {/* Stage Picker */}
