@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useThresholds } from "@/contexts/ThresholdContext";
 import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
 import { TutorialTip } from "@/components/TutorialTip";
+import { LeadActionMenu } from "@/components/LeadActionMenu";
 
 interface ExpandedStagePanelProps {
   stage: string;
@@ -34,6 +35,7 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
   const { style: notifStyle } = useNotificationStyle();
   const thresholds = getThresholds(stage);
   const sorted = sortByStatus(jobs, thresholds.greenMax, thresholds.orangeMax);
+  const isLeadStage = stage === "Lead";
   const isQuoteStage = ["Lead", "To Quote", "Quote Sent"].includes(stage);
 
   return (
@@ -74,8 +76,12 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
 
       {/* Job rows sorted green → orange → red */}
       <div className="divide-y divide-border/30">
-        {sorted.map((job) => (
-          <TutorialTip key={job.id} tip={`Click to open ${job.client}'s ${isQuoteStage ? "quote" : "job"}`} side="left">
+        {sorted.map((job) => {
+          const tipText = isLeadStage
+            ? `Click to see actions for ${job.client}`
+            : `Click to open ${job.client}'s ${isQuoteStage ? "quote" : "job"}`;
+
+          const rowContent = (
             <div
               className={cn(
                 "grid gap-2 sm:gap-4 px-4 sm:px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm cursor-pointer",
@@ -83,7 +89,7 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
                   ? "grid-cols-[auto_1fr_60px] sm:grid-cols-[auto_1fr_1fr_80px_70px]"
                   : "grid-cols-[auto_1fr_80px_60px] sm:grid-cols-[auto_1fr_1fr_100px_80px_70px]"
               )}
-              onClick={() => navigate(isQuoteStage ? `/quote/${job.id}` : `/job/${job.id}`)}
+              onClick={isLeadStage ? undefined : () => navigate(isQuoteStage ? `/quote/${job.id}` : `/job/${job.id}`)}
             >
               <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job, thresholds.greenMax, thresholds.orangeMax))} />
               <div className="flex items-center gap-2 min-w-0">
@@ -110,8 +116,24 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
               <span className="text-right text-muted-foreground whitespace-nowrap">{job.ageDays}d ago</span>
               <span className="hidden sm:inline text-right font-mono text-muted-foreground text-xs">{job.id}</span>
             </div>
-          </TutorialTip>
-        ))}
+          );
+
+          if (isLeadStage) {
+            return (
+              <LeadActionMenu key={job.id} job={job} side="left" align="start">
+                <TutorialTip tip={tipText} side="left">
+                  {rowContent}
+                </TutorialTip>
+              </LeadActionMenu>
+            );
+          }
+
+          return (
+            <TutorialTip key={job.id} tip={tipText} side="left">
+              {rowContent}
+            </TutorialTip>
+          );
+        })}
       </div>
     </div>
   );
