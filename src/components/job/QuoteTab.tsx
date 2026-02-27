@@ -82,12 +82,12 @@ function ItemRow({ item, isLast, onUpdate, onDelete, onEnterLast, lastRef, globa
         <Input className="flex-1 h-9 text-sm" value={item.name} placeholder="Item name" onChange={(e) => onUpdate(item.id, "name", e.target.value)} onKeyDown={handleKeyDown} ref={isLast ? lastRef : undefined} />
         <button onClick={() => onDelete(item.id)} className="shrink-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"><X className="w-4 h-4" /></button>
       </div>
-      <div className="flex items-center gap-1.5">
-        <div className="flex flex-col"><span className="text-[10px] text-muted-foreground leading-none mb-0.5">Qty</span><Input className="w-14 h-8 text-xs text-center" type="number" min={0} value={item.qty} onChange={(e) => onUpdate(item.id, "qty", parseFloat(e.target.value) || 0)} /></div>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex flex-col"><span className="text-[10px] text-muted-foreground leading-none mb-0.5">Qty</span><Input className="min-w-[3rem] w-14 h-8 text-xs text-center" type="number" min={0} value={item.qty} onChange={(e) => onUpdate(item.id, "qty", parseFloat(e.target.value) || 0)} /></div>
         <span className="text-xs text-muted-foreground mt-3">×</span>
-        <div className="flex flex-col"><span className="text-[10px] text-muted-foreground leading-none mb-0.5">Buy</span><Input className="w-20 h-8 text-xs text-center" type="number" min={0} step={0.01} value={item.unitPrice} onChange={(e) => onUpdate(item.id, "unitPrice", parseFloat(e.target.value) || 0)} /></div>
+        <div className="flex flex-col flex-1 min-w-[4rem]"><span className="text-[10px] text-muted-foreground leading-none mb-0.5">Buy</span><Input className="w-full h-8 text-xs text-center" type="number" min={0} step={0.01} value={item.unitPrice} onChange={(e) => onUpdate(item.id, "unitPrice", parseFloat(e.target.value) || 0)} /></div>
         <span className="text-xs text-muted-foreground mt-3">→</span>
-        <div className="flex flex-col"><span className="text-[10px] text-muted-foreground leading-none mb-0.5">Sell</span><Input className="w-20 h-8 text-xs text-center" type="number" min={0} step={0.01} value={item.sellPrice} onChange={(e) => onUpdate(item.id, "sellPrice", parseFloat(e.target.value) || 0)} /></div>
+        <div className="flex flex-col flex-1 min-w-[4rem]"><span className="text-[10px] text-muted-foreground leading-none mb-0.5">Sell</span><Input className="w-full h-8 text-xs text-center" type="number" min={0} step={0.01} value={item.sellPrice} onChange={(e) => onUpdate(item.id, "sellPrice", parseFloat(e.target.value) || 0)} /></div>
       </div>
       <div className="flex items-center gap-1.5">
         <div className="flex items-center gap-0.5">

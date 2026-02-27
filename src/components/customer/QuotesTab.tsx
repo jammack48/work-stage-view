@@ -16,7 +16,7 @@ export function QuotesTab({ customer }: QuotesTabProps) {
     <div className="space-y-2">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold text-card-foreground">Quotes ({quotes.length})</h2>
-        <Button size="sm" className="gap-1.5" onClick={() => navigate("/quote/new")}><Plus className="w-4 h-4" /> New Quote</Button>
+        <Button size="sm" className="gap-1.5" onClick={() => navigate("/quote/new", { state: { customer } })}><Plus className="w-4 h-4" /> New Quote</Button>
       </div>
       {quotes.length === 0 ? (
         <p className="text-sm text-muted-foreground py-8 text-center">No quotes yet</p>
