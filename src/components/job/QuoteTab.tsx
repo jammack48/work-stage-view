@@ -355,9 +355,17 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
           <p className="text-sm text-muted-foreground">No jobs added yet. Add a bundle or custom job to start building your quote.</p>
           <div className="flex gap-2 justify-center flex-wrap">
             <Button variant="outline" size="sm" onClick={addCustomBlock} className="gap-1"><Plus className="w-4 h-4" /> Custom Job</Button>
-            {bundleTemplates.map((b) => (
-              <Button key={b.id} variant="outline" size="sm" onClick={() => openBundleDialog(b.id)} className="gap-1"><Package className="w-4 h-4" /> {b.name}</Button>
-            ))}
+            <Select onValueChange={(val) => openBundleDialog(val)}>
+              <SelectTrigger className="h-9 w-auto min-w-[160px] text-sm gap-1">
+                <Package className="w-4 h-4 shrink-0" />
+                <SelectValue placeholder="Add Bundle" />
+              </SelectTrigger>
+              <SelectContent>
+                {bundleTemplates.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       )}
@@ -415,9 +423,17 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
           <p className="text-xs text-muted-foreground text-center">Add another job to this quote</p>
           <div className="flex gap-2 justify-center flex-wrap">
             <Button variant="outline" size="sm" onClick={addCustomBlock} className="gap-1"><Plus className="w-4 h-4" /> Custom Job</Button>
-            {bundleTemplates.map((b) => (
-              <Button key={b.id} variant="outline" size="sm" onClick={() => openBundleDialog(b.id)} className="gap-1"><Package className="w-4 h-4" /> {b.name}</Button>
-            ))}
+            <Select onValueChange={(val) => openBundleDialog(val)}>
+              <SelectTrigger className="h-9 w-auto min-w-[160px] text-sm gap-1">
+                <Package className="w-4 h-4 shrink-0" />
+                <SelectValue placeholder="Add Bundle" />
+              </SelectTrigger>
+              <SelectContent>
+                {bundleTemplates.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       )}
