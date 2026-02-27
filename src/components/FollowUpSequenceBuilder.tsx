@@ -6,7 +6,7 @@ import { dummyTemplates } from "@/data/dummyTemplates";
 import type { PipelineStep } from "@/data/dummySequences";
 
 interface FollowUpSequenceBuilderProps {
-  category: "quotes" | "invoices";
+  category: "quotes" | "invoices" | "reviews";
   steps: PipelineStep[];
   onStepsChange: (steps: PipelineStep[]) => void;
 }
