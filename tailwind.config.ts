@@ -84,12 +84,17 @@ export default {
           "60%": { transform: "rotate(5deg)" },
           "75%": { transform: "rotate(-3deg)" },
         },
+        "card-pulse": {
+          "0%, 100%": { transform: "scale(1)", boxShadow: "0 0 0 0 hsl(var(--primary) / 0.4)" },
+          "50%": { transform: "scale(1.03)", boxShadow: "0 0 12px 4px hsl(var(--primary) / 0.25)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.25s ease-out",
         "wiggle": "wiggle 1.5s ease-in-out infinite",
+        "card-pulse": "card-pulse 2s ease-in-out infinite",
       },
     },
   },

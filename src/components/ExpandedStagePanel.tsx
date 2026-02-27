@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { Job } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
 import { useThresholds } from "@/contexts/ThresholdContext";
+import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
 
 interface ExpandedStagePanelProps {
   stage: string;
@@ -29,6 +30,7 @@ function sortByStatus(jobs: Job[], greenMax: number, orangeMax: number): Job[] {
 export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelProps) {
   const navigate = useNavigate();
   const { getThresholds } = useThresholds();
+  const { style: notifStyle } = useNotificationStyle();
   const thresholds = getThresholds(stage);
   const sorted = sortByStatus(jobs, thresholds.greenMax, thresholds.orangeMax);
   const isQuoteStage = ["Lead", "To Quote", "Quote Sent"].includes(stage);
@@ -84,7 +86,7 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
             <div className="flex items-center gap-2 min-w-0">
               <span className="font-semibold text-card-foreground truncate">{job.client}</span>
               {job.urgent && <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0" />}
-              {job.hasUnread && <Mail className="w-3.5 h-3.5 text-destructive shrink-0 animate-wiggle" />}
+              {job.hasUnread && notifStyle === "icon" && <Mail className="w-3.5 h-3.5 text-primary shrink-0 animate-wiggle" />}
             </div>
             <span className="hidden sm:inline text-muted-foreground truncate">{job.jobName}</span>
             {!isQuoteStage && (
