@@ -5,7 +5,8 @@ import { getCustomer } from "@/data/dummyCustomers";
 import { PageToolbar } from "@/components/PageToolbar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Phone, Mail, MapPin, Plus, Users, StickyNote, UserPlus } from "lucide-react";
+import { Phone, Mail, MapPin, Plus, Users, StickyNote, UserPlus, MessageSquare } from "lucide-react";
+import { MessagesTab } from "@/components/job/MessagesTab";
 import { CUSTOMER_CARD_EXTRAS } from "@/config/toolbarTabs";
 import { HistoryTab } from "@/components/customer/HistoryTab";
 import { CustomerPhotosTab } from "@/components/customer/CustomerPhotosTab";
@@ -13,7 +14,7 @@ import { DocumentsTab } from "@/components/customer/DocumentsTab";
 import { QuotesTab } from "@/components/customer/QuotesTab";
 import { InvoicesTab } from "@/components/customer/InvoicesTab";
 
-type CustTab = "overview" | "jobs" | "contacts" | "notes" | "spend" | "add-job" | "history" | "photos" | "documents" | "quotes" | "invoices";
+type CustTab = "overview" | "messages" | "jobs" | "contacts" | "notes" | "spend" | "add-job" | "history" | "photos" | "documents" | "quotes" | "invoices";
 
 export default function CustomerCard() {
   const { id } = useParams<{ id: string }>();
@@ -42,24 +43,44 @@ export default function CustomerCard() {
   const tabContent: Record<CustTab, React.ReactNode> = {
     overview: (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full">
-        {/* Communication Summary Card */}
-        <div className="rounded-lg bg-card border border-border p-3 md:col-span-2">
-          <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1.5">
-            <Mail className="w-3.5 h-3.5" /> Communication Summary
+        {/* Channel Summary Cards */}
+        <div className="rounded-lg bg-card border border-border p-3 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setActiveTab("messages")}>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+              <MessageSquare className="w-4 h-4 text-primary" />
+            </div>
+            <span className="text-sm font-semibold text-card-foreground">SMS</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {[
-              ["Messages Sent", "14"],
-              ["Last Contact", "2 days ago"],
-              ["Last Reply", "1 day ago"],
-              ["Open Quotes", String(openQuotes)],
-              ["Outstanding", `$${outstanding.toLocaleString()}`],
-            ].map(([label, value]) => (
-              <div key={label} className="text-center">
-                <div className="text-lg font-bold text-card-foreground">{value}</div>
-                <div className="text-[10px] text-muted-foreground">{label}</div>
-              </div>
-            ))}
+          <div className="text-xs text-muted-foreground space-y-1">
+            <div className="flex justify-between"><span>Sent</span><span className="font-medium text-card-foreground">8</span></div>
+            <div className="flex justify-between"><span>Received</span><span className="font-medium text-card-foreground">3</span></div>
+            <div className="flex justify-between"><span>Last contact</span><span className="font-medium text-card-foreground">1 day ago</span></div>
+          </div>
+        </div>
+        <div className="rounded-lg bg-card border border-border p-3 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setActiveTab("messages")}>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-full bg-[hsl(var(--status-orange))]/20 flex items-center justify-center">
+              <Mail className="w-4 h-4 text-[hsl(var(--status-orange))]" />
+            </div>
+            <span className="text-sm font-semibold text-card-foreground">Email</span>
+          </div>
+          <div className="text-xs text-muted-foreground space-y-1">
+            <div className="flex justify-between"><span>Sent</span><span className="font-medium text-card-foreground">6</span></div>
+            <div className="flex justify-between"><span>Received</span><span className="font-medium text-card-foreground">2</span></div>
+            <div className="flex justify-between"><span>Last contact</span><span className="font-medium text-card-foreground">2 days ago</span></div>
+          </div>
+        </div>
+        {/* Financial Summary */}
+        <div className="rounded-lg bg-card border border-border p-3 md:col-span-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center">
+              <div className="text-lg font-bold text-card-foreground">{openQuotes}</div>
+              <div className="text-[10px] text-muted-foreground">Open Quotes</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-card-foreground">${outstanding.toLocaleString()}</div>
+              <div className="text-[10px] text-muted-foreground">Outstanding</div>
+            </div>
           </div>
         </div>
 
@@ -173,6 +194,7 @@ export default function CustomerCard() {
         <Button onClick={() => navigate(`/job/new?stage=Lead`)} className="gap-1.5"><Plus className="w-4 h-4" /> Create Job</Button>
       </div>
     ),
+    messages: <MessagesTab />,
     history: <HistoryTab customer={customer} />,
     photos: <CustomerPhotosTab customer={customer} />,
     documents: <DocumentsTab customer={customer} />,
