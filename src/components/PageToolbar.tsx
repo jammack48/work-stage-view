@@ -50,7 +50,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
     return (
       <div className={cn("flex flex-row", position === "right" && "flex-row-reverse")}>
         <nav className={cn(
-          "w-[200px] shrink-0 flex flex-col gap-1 py-2 bg-card",
+          "w-[200px] shrink-0 flex flex-col gap-1 py-2 bg-card sticky top-0 h-screen overflow-y-auto",
           position === "left" ? "rounded-r-xl border-r border-border" : "rounded-l-xl border-l border-border"
         )}>
           
@@ -99,7 +99,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   // Desktop horizontal bar
   if (!isMobile && isHorizontal) {
     const bar = (
-      <nav className="flex items-center gap-1 px-2 py-1.5 border-b border-border overflow-x-auto">
+      <nav className="flex items-center gap-1 px-2 py-1.5 border-b border-border overflow-x-auto sticky top-0 z-40 bg-card">
         
         {tabs.map(({ id, label, icon: Icon }) => {
           const tip = tutorialOn ? sidebarTooltips[id] : undefined;

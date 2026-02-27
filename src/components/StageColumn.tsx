@@ -73,11 +73,11 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
         isVertical ? "min-w-[220px] w-full" : "flex-1 min-w-0"
       )}
       style={{ backgroundColor: "hsl(var(--column-bg))" }}
-      onClick={onToggle}
     >
       {/* Header — arrow-shaped pointing right */}
       <div
-        className="relative px-3 py-2 flex items-start justify-between text-primary-foreground font-bold text-sm h-[52px]"
+        onClick={onToggle}
+        className="relative px-3 py-2 flex items-start justify-between text-primary-foreground font-bold text-sm h-[52px] cursor-pointer"
         style={{
           backgroundColor: "hsl(var(--stage-header))",
           backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 8px, hsl(var(--border) / 0.2) 8px, hsl(var(--border) / 0.2) 9px)",
@@ -121,7 +121,10 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
       {/* Color cards with count + first job details */}
       <div className="p-2 flex flex-col gap-1.5">
         {/* Green */}
-        <div className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow">
+        <div
+          className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); if (firstGreen) { const isQ = ["Lead","To Quote","Quote Sent"].includes(firstGreen.stage); navigate(isQ ? `/quote/${firstGreen.id}` : `/job/${firstGreen.id}`); } }}
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/90">{getLabel(stage, "green")}</span>
             <span className="text-sm font-bold text-white">{counts.green}</span>
@@ -133,7 +136,10 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
           ) : null}
         </div>
         {/* Orange */}
-        <div className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow">
+        <div
+          className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); if (firstOrange) { const isQ = ["Lead","To Quote","Quote Sent"].includes(firstOrange.stage); navigate(isQ ? `/quote/${firstOrange.id}` : `/job/${firstOrange.id}`); } }}
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/90">{getLabel(stage, "orange")}</span>
             <span className="text-sm font-bold text-white">{counts.orange}</span>
@@ -145,7 +151,10 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
           ) : null}
         </div>
         {/* Red */}
-        <div className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow">
+        <div
+          className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); if (firstRed) { const isQ = ["Lead","To Quote","Quote Sent"].includes(firstRed.stage); navigate(isQ ? `/quote/${firstRed.id}` : `/job/${firstRed.id}`); } }}
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/90">{getLabel(stage, "red")}</span>
             <span className="text-sm font-bold text-white">{counts.red}</span>
