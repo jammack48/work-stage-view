@@ -1,87 +1,53 @@
 
 
-# Full App Beta Test Audit — Issues & Fixes
+## Make Tutorial Banners Tab-Aware with Deep Benefit Explanations
 
-After walking through every page as a tradie would, here are the issues found, grouped by severity.
+### Problem
+The tutorial banner only changes based on route (e.g. `/customer/1` always shows "Customer Details"). When a user clicks the Messages tab, the banner still says "Customer Details" — it should explain what the Messages tab does and WHY it's valuable.
 
----
+### Approach
+1. **Add tab-specific tutorial entries** to `tutorialContent.ts` — keyed like `customer-card:messages`, `customer-card:overview`, `job:overview`, `job:materials`, etc. Each entry written in plain tradie language explaining the benefit, not just what it does.
 
-## Critical Issues (Broken / Confusing UX)
+2. **Update `TutorialBanner`** to accept an optional `tabKey` prop and compose the lookup key as `${routeKey}:${tabKey}` when a tab is active, falling back to the route-level entry.
 
-### 1. Customer link on Job Overview always goes to `/customer/1`
-In `src/components/job/OverviewTab.tsx` line 72, the customer link is hardcoded to `navigate('/customer/1')` regardless of which customer it is. A tradie clicks their customer's name and always sees the wrong person.
+3. **Update `PageToolbar`** to pass the current `activeTab` to `TutorialBanner`.
 
-### 2. Hub page — CRM, Calendar, Payroll tiles lead to dead "Coming Soon" page
-12 of 13 hub tiles navigate to `/coming-soon` which is a dead end. Only "Job Management" works. A tradie lands here first and thinks the app is empty. Should at least route Calendar to `/schedule` and CRM to `/customers`.
+4. **Rewrite ALL existing page-level entries** to be more benefit-focused — explain WHY, not just WHAT.
 
-### 3. Pipeline "Add Customer" button goes to `/customers` not a "new customer" flow
-The `+` dashed box under Lead says "Add Customer" but navigates to the customer list — there's no create-customer form anywhere.
+### New Tutorial Content (examples of tone)
 
-### 4. Unread Inbox popover on mobile — fixed 340px width overflows small screens
-`UnreadInbox` has `w-[340px]` hardcoded. On a 320px phone this overflows. Should use `w-[calc(100vw-2rem)]` or render as a drawer on mobile.
+**Customer Card tabs:**
+- `customer-card:overview` — "Everything about this customer at a glance — contact details, how much they owe you, open quotes, and quick actions. No more flicking through spreadsheets or digging through emails. One tap and you know exactly where you stand."
+- `customer-card:messages` — "Every SMS and email between you and this customer, in one thread. You can see what your automated sequences sent, what they replied, and fire off a new message without leaving the app. No more 'did we follow that up?' — it's all right here."
+- `customer-card:jobs` — "Every job you've done or quoted for this customer. Tap any job to jump straight into it. This is how you spot repeat customers and know their full history before you pick up the phone."
+- `customer-card:spend` — "See exactly how much this customer has spent with you, what's outstanding, and where the money sits across your pipeline. This is gold when deciding whether to offer a discount or chase harder."
+- `customer-card:quotes` — "All quotes for this customer in one place. See which ones are pending, accepted, or expired. No more guessing which version you sent."
+- `customer-card:invoices` — "Track every invoice — paid, unpaid, overdue. Know instantly if this customer owes you money without opening your accounting software."
 
-### 5. Schedule page "Back" button goes to `/` but there's no obvious way to get TO the schedule from pipeline
-The pipeline toolbar has a Schedule tab but on SchedulePage the only tabs are Back and Settings — no way to get to Customers or Pipeline without hitting Back. Navigation feels one-directional.
+**Job Card tabs:**
+- `job:overview` — "The full picture of this job — customer details, address, value, status, and what stage it's at. Think of it as the front page of the job file. Everything you need before you pick up the phone or head to site."
+- `job:messages` — "Every message sent to or received from the customer about THIS job. Your automated follow-ups show here too, so you can see exactly what's been sent and when they last replied."
+- `job:materials` — "Log every material you use on this job. When it comes time to invoice, you'll know exactly what you spent. No more guessing margins or forgetting that extra bag of cement."
+- `job:photos` — "Snap before, during, and after photos. Attached to the job forever. Protects you from disputes and makes your quotes look professional when you show past work."
+- `job:time` — "Track hours worked on this job by you and your team. Essential for knowing if a job made money or not. Also handy if you charge by the hour."
+- `job:notes` — "Jot down anything — site access codes, customer preferences, what was discussed on the phone. Your future self will thank you when you come back to this job in 3 months."
+- `job:forms` — "Digital job forms — site assessments, safety checklists, sign-offs. No more paper forms getting lost in the ute."
+- `job:invoice` — "Create or view the invoice for this job. Once you send it, the follow-up sequence kicks in and chases payment for you automatically."
+- `job:quote` — "View or edit the quote attached to this job. See exactly what you promised the customer and at what price."
+- `job:history` — "A timeline of everything that's happened on this job — when it was created, quoted, messages sent, status changes. Your paper trail if anything goes sideways."
+- `job:sequences` — "Automated follow-up sequences attached to this job. These send emails and SMS on a schedule so you don't have to remember to chase. Set it and forget it."
 
----
+**Page-level rewrites (benefit-focused):**
+- `pipeline` — "This is your money map. Every job you're working on, from the first phone call to getting paid, laid out in stages. Swipe through to see what needs attention. Cards glow when a customer has replied. The colour tells you how old each job is — green is fresh, orange is getting stale, red means you're losing money by not acting."
+- `customers` — "Your entire customer database. Every person you've ever quoted or done work for. Tap a name to see their full history — every job, every message, every dollar. Filter by leads, active, or archived. This is your CRM without the jargon."
+- `schedule` — "Your crew's diary. See who's booked where and when. Each coloured block is a job assigned to someone. Spot gaps, avoid double-bookings, and know at a glance if tomorrow's sorted or a mess."
+- `settings` — "Set up your business once and forget about it. Company name, team members, notification preferences, billing. Come back here when you hire someone new or want to change how alerts work."
+- `hub` — "Your command centre. Every tool in the app, one tap away. Think of it as your toolbox — jobs, customers, quotes, invoices, schedule, templates. Everything starts here."
 
-## UX Issues (Confusing / Annoying for a Tradie)
+**Other pages similarly rewritten with benefits.**
 
-### 6. Pipeline has 8 stages but mobile carousel only shows one at a time — no stage labels visible
-When swiping, a tradie can't tell which stage they're on without counting dots. Need a visible stage name above/below the carousel.
-
-### 7. PipelineFlowBanner only shows on desktop horizontal mode — mobile gets nothing
-The flow banner showing all 8 stages with the active one highlighted is desktop-only. Mobile has no orientation of where they are in the pipeline.
-
-### 8. Manager Mode note state is shared across all cards
-`note` state is a single string shared across all job cards in the swipe carousel. If you start typing a note on one card and swipe to the next, the note carries over. Should be per-job.
-
-### 9. Settings notification toggles are fake
-The notification toggle switches in Settings are just CSS divs (`<div className="w-10 h-5 rounded-full...">`) not actual `<Switch>` components. They don't toggle.
-
-### 10. Job overview "Open in Maps" link doesn't actually open maps
-Line 149 of OverviewTab — it's just text, not a clickable link. Should be an `<a href>` to Google Maps.
-
-### 11. No way to create a new customer
-There's an "Add Customer" button on the Customers page but it doesn't do anything — no onClick handler or form.
-
-### 12. Quote/Invoice "Discard" and "Save Draft" do the same thing
-In both QuotePage and InvoicePage, `handleLeaveConfirm` ignores the `saveDraft` parameter (InvoicePage doesn't even have one) — both just proceed. The user thinks they're saving a draft but nothing actually saves.
-
-### 13. Customer Card "New Job" button goes to `/job/new?stage=Lead` without pre-filling the customer
-The job isn't associated with the customer they're viewing.
-
----
-
-## Polish Issues (Small but noticeable)
-
-### 14. Hub "CRM" should say "Customers" and link to `/customers`
-### 15. Hub "Calendar" should link to `/schedule` since it exists
-### 16. ExpandedStagePanel sorts green→orange→red (least urgent first) — should be red first for a tradie
-### 17. Double chevrons `>>` on stage headers are confusing — look like a button but on mobile they advance the carousel
-### 18. ThresholdSettings gear icon in stage header is tiny and easy to miss
-### 19. Mobile bottom bar label text at 9px is too small to read
-
----
-
-## Implementation Plan
-
-### Batch 1: Critical fixes
-1. **Fix customer link in OverviewTab** — look up actual customer ID from `DUMMY_CUSTOMERS` by matching `job.client` name
-2. **Fix Hub routing** — route CRM→`/customers`, Calendar→`/schedule`
-3. **Fix UnreadInbox mobile overflow** — use drawer on mobile, cap width on desktop
-4. **Add current stage name to mobile carousel** — show stage name between prev/next buttons
-
-### Batch 2: UX fixes
-5. **Per-job notes in ManagerMode** — change `note` state from single string to `Record<string, string>`
-6. **Fix Settings notification toggles** — replace fake div toggles with actual `<Switch>` components
-7. **Fix "Open in Maps" link** — make it an actual Google Maps link using the job address
-8. **Fix ExpandedStagePanel sort order** — reverse to red→orange→green (urgent first)
-9. **Wire up "Add Customer" button** — add a simple inline form or toast placeholder
-
-### Batch 3: Polish
-10. **Fix Quote/Invoice discard vs save draft** — at minimum toast different messages
-11. **Pass customer context to new job** — pre-fill customer ID in the URL
-12. **Mobile bottom bar labels** — bump from 9px to 10px
-13. **Add schedule/customers to Schedule toolbar** — so you're not trapped
+### Files to modify
+- `src/data/tutorialContent.ts` — add ~40 tab-specific entries, rewrite all page-level entries
+- `src/components/TutorialBanner.tsx` — accept `tabKey` prop, compose lookup
+- `src/components/PageToolbar.tsx` — pass `activeTab` to `TutorialBanner`
 
