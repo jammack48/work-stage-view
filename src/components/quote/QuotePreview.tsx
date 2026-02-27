@@ -29,7 +29,7 @@ interface QuotePreviewProps {
   gstRate?: number;
 }
 
-type Preset = "detailed" | "summary" | "total-only";
+type Preset = "detailed" | "summary" | "sub-section" | "total-only";
 
 export function QuotePreview({
   items,
@@ -53,6 +53,8 @@ export function QuotePreview({
       setShowLineItems(true); setShowQty(true); setShowUnitPrices(true); setShowSections(true); setShowMarkup(false);
     } else if (p === "summary") {
       setShowLineItems(true); setShowQty(false); setShowUnitPrices(false); setShowSections(true); setShowMarkup(false);
+    } else if (p === "sub-section") {
+      setShowLineItems(false); setShowQty(false); setShowUnitPrices(false); setShowSections(true); setShowMarkup(false);
     } else {
       setShowLineItems(false); setShowQty(false); setShowUnitPrices(false); setShowSections(false); setShowMarkup(false);
     }
@@ -89,8 +91,8 @@ export function QuotePreview({
         </DialogHeader>
 
         {/* Presets */}
-        <div className="flex gap-1.5 mb-2">
-          {(["detailed", "summary", "total-only"] as Preset[]).map((p) => (
+        <div className="flex gap-1.5 mb-2 flex-wrap">
+          {(["detailed", "summary", "sub-section", "total-only"] as Preset[]).map((p) => (
             <Button
               key={p}
               size="sm"
@@ -140,13 +142,13 @@ export function QuotePreview({
             <p className="text-xs whitespace-pre-line border-t border-border pt-2">{resolvedCoverLetter}</p>
           )}
 
-          {showLineItems && (
+          {(showLineItems || showSections) && (
             <div className="space-y-2 border-t border-border pt-2">
               {showSections ? (
                 grouped.map((g) => (
                   <div key={g.label}>
                     <p className="text-xs font-semibold uppercase text-muted-foreground mb-1">{g.label}</p>
-                    {g.items.map((item, idx) => (
+                    {showLineItems && g.items.map((item, idx) => (
                       <div key={idx} className="flex justify-between text-xs py-0.5">
                         <span>
                           {item.name}
@@ -164,7 +166,7 @@ export function QuotePreview({
                   </div>
                 ))
               ) : (
-                items.map((item, idx) => (
+                showLineItems && items.map((item, idx) => (
                   <div key={idx} className="flex justify-between text-xs py-0.5">
                     <span>
                       {item.name}
