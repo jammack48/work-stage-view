@@ -7,7 +7,7 @@ import { dummySequences, type SequencePipeline, type PipelineStep } from "@/data
 import { dummyTemplates } from "@/data/dummyTemplates";
 
 interface SequencesTabProps {
-  category: "quotes" | "invoices";
+  category: "quotes" | "invoices" | "reviews";
 }
 
 export function SequencesTab({ category }: SequencesTabProps) {

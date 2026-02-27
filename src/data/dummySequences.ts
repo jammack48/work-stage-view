@@ -9,7 +9,7 @@ export interface PipelineStep {
 export interface SequencePipeline {
   id: string;
   name: string;
-  category: "quotes" | "invoices";
+  category: "quotes" | "invoices" | "reviews";
   steps: PipelineStep[];
 }
 
@@ -41,6 +41,15 @@ export const dummySequences: SequencePipeline[] = [
       { id: "s6", channel: "email", templateId: "e-i-1", delayValue: 0, delayUnit: "hours" },
       { id: "s7", channel: "sms", templateId: "s-r-1", delayValue: 7, delayUnit: "days" },
       { id: "s8", channel: "email", templateId: "e-r-2", delayValue: 14, delayUnit: "days" },
+    ],
+  },
+  {
+    id: "seq-4",
+    name: "Post-Job Review Chase",
+    category: "reviews",
+    steps: [
+      { id: "s9", channel: "sms", templateId: "s-rv-1", delayValue: 1, delayUnit: "days" },
+      { id: "s10", channel: "email", templateId: "e-rv-1", delayValue: 3, delayUnit: "days" },
     ],
   },
 ];

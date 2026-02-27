@@ -3,7 +3,7 @@ import { dummySequences, type SequencePipeline } from "@/data/dummySequences";
 import { dummyTemplates } from "@/data/dummyTemplates";
 
 interface SequenceSelectorProps {
-  category: "quotes" | "invoices";
+  category: "quotes" | "invoices" | "reviews";
   selectedId: string | null;
   onSelect: (id: string | null) => void;
 }

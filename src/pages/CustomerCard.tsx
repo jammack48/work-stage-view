@@ -6,6 +6,7 @@ import { PageToolbar } from "@/components/PageToolbar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, MapPin, Plus, Users, StickyNote, UserPlus, MessageSquare, User } from "lucide-react";
+import { ReviewRequestDialog } from "@/components/customer/ReviewRequestDialog";
 import { MessagesTab } from "@/components/job/MessagesTab";
 import { CUSTOMER_CARD_EXTRAS } from "@/config/toolbarTabs";
 import { HistoryTab } from "@/components/customer/HistoryTab";
@@ -139,6 +140,7 @@ export default function CustomerCard() {
           <Button size="sm" variant="outline" className="justify-start gap-2" onClick={() => setActiveTab("notes")}>
             <StickyNote className="w-4 h-4" /> Add Note
           </Button>
+          <ReviewRequestDialog customerName={customer.name} />
         </div>
       </div>
     ),
