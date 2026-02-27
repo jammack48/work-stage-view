@@ -88,6 +88,7 @@ export const CUSTOMER_LIST_EXTRAS: ToolbarTab[] = [
 export const CUSTOMER_CARD_EXTRAS: ToolbarTab[] = [
   BACK_TAB,
   { id: "overview", label: "Overview", icon: ClipboardList },
+  { id: "messages", label: "Messages", icon: Mail },
   { id: "jobs", label: "Jobs", icon: Briefcase },
   { id: "quotes", label: "Quotes", icon: FilePlus },
   { id: "invoices", label: "Invoices", icon: Receipt },
