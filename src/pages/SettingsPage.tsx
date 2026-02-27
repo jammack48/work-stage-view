@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SETTINGS_EXTRAS } from "@/config/toolbarTabs";
 import { dummyTemplates } from "@/data/dummyTemplates";
 import { NotificationStyleSettings } from "@/components/NotificationStyleSettings";
 
-type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations";
+type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations" | "documents";
 
 
 
@@ -154,6 +155,75 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
             <Button size="sm" variant="outline">Connect</Button>
           </div>
         ))}
+      </div>
+    ),
+    documents: (
+      <div className="space-y-5">
+        <h2 className="text-lg font-semibold text-card-foreground">Document Settings</h2>
+
+        {/* Quote Defaults */}
+        <h3 className="text-sm font-semibold text-card-foreground">Quote Defaults</h3>
+        <div className="space-y-3">
+          <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+            <div className="text-xs text-muted-foreground">Default Cover Letter Template</div>
+            <Select defaultValue="professional">
+              <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="professional">Professional</SelectItem>
+                <SelectItem value="friendly">Friendly</SelectItem>
+                <SelectItem value="minimal">Minimal</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+            <div className="text-xs text-muted-foreground">Default Display Preset</div>
+            <Select defaultValue="detailed">
+              <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="detailed">Detailed</SelectItem>
+                <SelectItem value="summary">Summary</SelectItem>
+                <SelectItem value="total-only">Total Only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+            <div className="text-xs text-muted-foreground">Default Markup %</div>
+            <Input type="number" defaultValue={15} min={0} className="w-24 text-sm" />
+          </div>
+          <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+            <div className="text-xs text-muted-foreground">Terms & Conditions</div>
+            <textarea className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm" defaultValue="Quote valid for 30 days. 50% deposit required to commence work." />
+          </div>
+          <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+            <div className="text-xs text-muted-foreground">Company Logo</div>
+            <Button size="sm" variant="outline">Upload Logo</Button>
+          </div>
+        </div>
+
+        {/* Invoice Defaults */}
+        <h3 className="text-sm font-semibold text-card-foreground pt-2">Invoice Defaults</h3>
+        <div className="space-y-3">
+          <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+            <div className="text-xs text-muted-foreground">Default Payment Terms</div>
+            <Select defaultValue="14">
+              <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7">7 days</SelectItem>
+                <SelectItem value="14">14 days</SelectItem>
+                <SelectItem value="20">20th of the month</SelectItem>
+                <SelectItem value="30">30 days</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+            <div className="text-xs text-muted-foreground">Bank Details</div>
+            <textarea className="w-full min-h-[60px] rounded-md border border-input bg-background px-3 py-2 text-sm" defaultValue="ANZ 06-0123-0456789-00" />
+          </div>
+          <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+            <div className="text-xs text-muted-foreground">Invoice Notes</div>
+            <textarea className="w-full min-h-[60px] rounded-md border border-input bg-background px-3 py-2 text-sm" defaultValue="Thank you for your business." />
+          </div>
+        </div>
       </div>
     ),
   };
