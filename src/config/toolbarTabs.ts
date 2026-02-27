@@ -95,7 +95,7 @@ export const CUSTOMER_CARD_EXTRAS: ToolbarTab[] = [
   { id: "history", label: "History", icon: History },
   { id: "photos", label: "Photos", icon: Camera },
   { id: "documents", label: "Documents", icon: FileText },
-  { id: "contacts", label: "Contacts", icon: UserPlus },
+  
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "spend", label: "Spend", icon: BarChart3 },
   { id: "add-job", label: "New Job", icon: Plus },
