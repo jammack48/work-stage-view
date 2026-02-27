@@ -17,7 +17,7 @@ interface QuotePreviewProps {
   gstRate?: number;
 }
 
-type Preset = "detailed" | "summary" | "sub-section" | "total-only";
+type Preset = "detailed" | "summary" | "sub-section" | "job-totals" | "jobs-only" | "total-only";
 
 export function QuotePreview({
   blocks,
@@ -44,6 +44,12 @@ export function QuotePreview({
       setShowLineItems(true); setShowQty(false); setShowUnitPrices(false); setShowSections(true); setShowMarkup(false); setShowBlocks(true);
     } else if (p === "sub-section") {
       setShowLineItems(false); setShowQty(false); setShowUnitPrices(false); setShowSections(true); setShowMarkup(false); setShowBlocks(true);
+    } else if (p === "job-totals") {
+      // Each job with description + subtotal, no line items or sections
+      setShowLineItems(false); setShowQty(false); setShowUnitPrices(false); setShowSections(false); setShowMarkup(false); setShowBlocks(true);
+    } else if (p === "jobs-only") {
+      // Each job description only, no prices anywhere except grand total
+      setShowLineItems(false); setShowQty(false); setShowUnitPrices(false); setShowSections(false); setShowMarkup(false); setShowBlocks(true);
     } else {
       setShowLineItems(false); setShowQty(false); setShowUnitPrices(false); setShowSections(false); setShowMarkup(false); setShowBlocks(false);
     }
@@ -101,8 +107,8 @@ export function QuotePreview({
 
         {/* Presets */}
         <div className="flex gap-1.5 mb-2 flex-wrap">
-          {(["detailed", "summary", "sub-section", "total-only"] as Preset[]).map((p) => (
-            <Button key={p} size="sm" variant={preset === p ? "default" : "outline"} className="text-xs capitalize h-7" onClick={() => applyPreset(p)}>{p.replace("-", " ")}</Button>
+          {(["detailed", "summary", "sub-section", "job-totals", "jobs-only", "total-only"] as Preset[]).map((p) => (
+            <Button key={p} size="sm" variant={preset === p ? "default" : "outline"} className="text-xs capitalize h-7" onClick={() => applyPreset(p)}>{p.replace(/-/g, " ")}</Button>
           ))}
         </div>
 
@@ -141,7 +147,39 @@ export function QuotePreview({
           )}
 
           {/* Render per-block or flat */}
-          {(showLineItems || showSections) && (
+          {/* Jobs-only: descriptions only, no prices per job */}
+          {preset === "jobs-only" && showBlocks && (
+            <div className="space-y-3 border-t border-border pt-2">
+              {blocks.map((block) => (
+                <div key={block.id} className="space-y-1">
+                  <p className="text-sm font-bold">{block.name || "Job"}{block.qty > 1 && <span className="text-muted-foreground font-normal"> ×{block.qty}</span>}</p>
+                  {block.description && <p className="text-xs text-muted-foreground">{block.description}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Job-totals: descriptions + subtotal per job, no line items */}
+          {preset === "job-totals" && showBlocks && (
+            <div className="space-y-3 border-t border-border pt-2">
+              {blocks.map((block) => {
+                const blockTotal = [...block.labour, ...block.materials, ...block.extras].reduce((s, i) => s + i.qty * i.sellPrice, 0);
+                return (
+                  <div key={block.id} className="space-y-1">
+                    <p className="text-sm font-bold">{block.name || "Job"}{block.qty > 1 && <span className="text-muted-foreground font-normal"> ×{block.qty}</span>}</p>
+                    {block.description && <p className="text-xs text-muted-foreground">{block.description}</p>}
+                    <div className="flex justify-between text-xs font-bold border-t border-border pt-1 mt-1">
+                      <span>{block.name || "Job"} total</span>
+                      <span>${blockTotal.toFixed(2)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Other presets with line items / sections */}
+          {preset !== "jobs-only" && preset !== "job-totals" && (showLineItems || showSections) && (
             <div className="space-y-3 border-t border-border pt-2">
               {showBlocks ? (
                 blocks.map((block) => {
