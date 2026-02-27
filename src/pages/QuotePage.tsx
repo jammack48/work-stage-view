@@ -93,8 +93,9 @@ export default function QuotePage() {
         >
           <QuoteFunnel
             onComplete={(data) => {
-              setFunnelData(data);
-              setScope(data.description);
+            setFunnelData(data);
+              // Only pre-fill scope for custom descriptions, not bundle defaults
+              setScope(data.bundle ? "" : data.description);
               setFunnelComplete(true);
             }}
             onStepChange={setFunnelStep}
