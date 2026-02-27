@@ -357,17 +357,38 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
     setPaletteOpen(false);
   }, []);
 
-  const applyBundle = useCallback((bundleId: string) => {
+  // Bundle add dialog state
+  const [bundleDialogOpen, setBundleDialogOpen] = useState(false);
+  const [selectedBundleId, setSelectedBundleId] = useState<string | null>(null);
+  const [bundleQty, setBundleQty] = useState(1);
+
+  const openBundleDialog = useCallback((bundleId: string) => {
+    setSelectedBundleId(bundleId);
+    setBundleQty(1);
+    setBundleDialogOpen(true);
+  }, []);
+
+  const applyBundle = useCallback((bundleId: string, multiplier: number = 1) => {
     const bundle = bundleTemplates.find((b) => b.id === bundleId);
     if (!bundle) return;
-    setLabourItems(bundle.labour.map((i) => mkItem(i.name, i.qty, i.unitPrice)));
-    setMaterialItems(bundle.materials.map((i) => mkItem(i.name, i.qty, i.unitPrice)));
-    setExtrasItems(bundle.extras.map((i) => mkItem(i.name, i.qty, i.unitPrice)));
+    const defaultMarkup = useGlobalMarkup ? globalMarkupValue : 0;
+    const mkWithMarkup = (name: string, qty: number, unitPrice: number) => {
+      const sellPrice = unitPrice * (1 + defaultMarkup / 100);
+      return { id: genId(), name, qty: qty * multiplier, unitPrice, sellPrice, markup: defaultMarkup };
+    };
+    setLabourItems((prev) => [...prev, ...bundle.labour.map((i) => mkWithMarkup(i.name, i.qty, i.unitPrice))]);
+    setMaterialItems((prev) => [...prev, ...bundle.materials.map((i) => mkWithMarkup(i.name, i.qty, i.unitPrice))]);
+    setExtrasItems((prev) => [...prev, ...bundle.extras.map((i) => mkWithMarkup(i.name, i.qty, i.unitPrice))]);
     setLabourOpen(true);
     setMaterialsOpen(true);
-    setExtrasOpen(bundle.extras.length > 0);
-    toast({ title: `${bundle.name} bundle loaded` });
-  }, []);
+    setExtrasOpen((prev) => prev || bundle.extras.length > 0);
+    toast({ title: `${bundle.name} ×${multiplier} added` });
+  }, [useGlobalMarkup, globalMarkupValue]);
+
+  const confirmBundleAdd = useCallback(() => {
+    if (selectedBundleId) applyBundle(selectedBundleId, bundleQty);
+    setBundleDialogOpen(false);
+  }, [selectedBundleId, bundleQty, applyBundle]);
 
   const cycleStatus = () => {
     const next: Record<QuoteStatus, QuoteStatus> = { Draft: "Sent", Sent: "Approved", Approved: "Draft" };
@@ -416,19 +437,51 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
         )}
       </div>
 
-      {/* ── Bundles bar ──────────────────────────────────── */}
+      {/* ── Bundles bar (add, not replace) ────────────── */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
         {bundleTemplates.map((b) => (
           <button
             key={b.id}
-            onClick={() => applyBundle(b.id)}
+            onClick={() => openBundleDialog(b.id)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-background hover:bg-muted text-xs font-medium whitespace-nowrap transition-colors cursor-pointer"
           >
-            <Package className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5" />
             {b.name}
           </button>
         ))}
       </div>
+
+      {/* ── Bundle qty dialog ────────────────────────────── */}
+      <Dialog open={bundleDialogOpen} onOpenChange={setBundleDialogOpen}>
+        <DialogContent className="max-w-xs">
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-card-foreground">
+              Add {bundleTemplates.find((b) => b.id === selectedBundleId)?.name}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {bundleTemplates.find((b) => b.id === selectedBundleId)?.description}
+            </p>
+            <div className="flex items-center gap-3">
+              <Label className="text-xs">Quantity</Label>
+              <div className="flex items-center gap-1">
+                <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => setBundleQty((q) => Math.max(1, q - 1))}>−</Button>
+                <Input
+                  className="w-14 h-8 text-center text-sm"
+                  type="number"
+                  min={1}
+                  value={bundleQty}
+                  onChange={(e) => setBundleQty(Math.max(1, parseInt(e.target.value) || 1))}
+                />
+                <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => setBundleQty((q) => q + 1)}>+</Button>
+              </div>
+            </div>
+            <Button className="w-full" onClick={confirmBundleAdd}>
+              <Plus className="w-4 h-4 mr-1" />
+              Add ×{bundleQty}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Quick-add bar ────────────────────────────────── */}
       <div className="relative">
