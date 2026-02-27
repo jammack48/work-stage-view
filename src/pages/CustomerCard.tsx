@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { getCustomer } from "@/data/dummyCustomers";
 
 import { PageToolbar } from "@/components/PageToolbar";
@@ -19,7 +19,9 @@ type CustTab = "overview" | "messages" | "jobs" | "contacts" | "notes" | "spend"
 export default function CustomerCard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<CustTab>("overview");
+  const [searchParams] = useSearchParams();
+  const initialTab = (searchParams.get("tab") as CustTab) || "overview";
+  const [activeTab, setActiveTab] = useState<CustTab>(initialTab);
 
   const customer = getCustomer(Number(id));
 

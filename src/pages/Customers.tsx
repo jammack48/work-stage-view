@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, UserPlus, Phone, Mail, MapPin } from "lucide-react";
+import { UNREAD_CLIENTS } from "@/data/dummyJobs";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -48,7 +49,18 @@ export default function Customers() {
                 <Users className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-sm text-card-foreground truncate">{c.name}</div>
+                <div className="font-medium text-sm text-card-foreground truncate flex items-center gap-1.5">
+                  {c.name}
+                  {UNREAD_CLIENTS.has(c.name) && (
+                    <>
+                      <span className="relative flex h-2.5 w-2.5 shrink-0">
+                        <span className="animate-glow-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary shadow-[0_0_6px_2px_hsl(var(--primary)/0.5)]" />
+                      </span>
+                      <Mail className="w-3.5 h-3.5 text-primary animate-wiggle shrink-0" />
+                    </>
+                  )}
+                </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                   <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{c.phone}</span>
                   {!isMobile && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{c.email}</span>}

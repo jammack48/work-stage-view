@@ -1,6 +1,7 @@
 import { Mail, MessageSquare, X, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { jobs, type Job } from "@/data/dummyJobs";
+import { DUMMY_CUSTOMERS } from "@/data/dummyCustomers";
 import { cn } from "@/lib/utils";
 
 const UNREAD_MESSAGES: { job: Job; preview: string; channel: "sms" | "email"; time: string }[] = (() => {
@@ -55,9 +56,10 @@ export function UnreadInbox({ onClose }: UnreadInboxProps) {
               className="w-full text-left px-4 py-3 hover:bg-accent/50 transition-colors flex gap-3 items-start group"
               onClick={() => {
                 onClose();
-                const isQuoteStage = ["Lead", "To Quote", "Quote Sent"].includes(msg.job.stage);
-                const base = isQuoteStage ? `/quote/${msg.job.id}` : `/job/${msg.job.id}`;
-                navigate(`${base}?tab=messages`);
+                const customer = DUMMY_CUSTOMERS.find(c => c.name === msg.job.client);
+                if (customer) {
+                  navigate(`/customer/${customer.id}?tab=messages`);
+                }
               }}
             >
               {/* Channel icon */}
