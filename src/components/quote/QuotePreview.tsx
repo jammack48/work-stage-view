@@ -15,6 +15,7 @@ interface PreviewLineItem {
   name: string;
   qty: number;
   unitPrice: number;
+  sellPrice: number;
   markup: number;
   section: string;
 }
@@ -57,8 +58,8 @@ export function QuotePreview({
     }
   };
 
-  const sellPrice = (i: PreviewLineItem) => i.unitPrice * (1 + i.markup / 100);
-  const subtotal = items.reduce((s, i) => s + i.qty * sellPrice(i), 0);
+  const getItemSellPrice = (i: PreviewLineItem) => i.sellPrice;
+  const subtotal = items.reduce((s, i) => s + i.qty * getItemSellPrice(i), 0);
   const gst = subtotal * gstRate;
   const total = subtotal + gst;
 
@@ -66,7 +67,7 @@ export function QuotePreview({
   const grouped = sections.map((sec) => ({
     label: sec.charAt(0).toUpperCase() + sec.slice(1),
     items: items.filter((i) => i.section === sec),
-    total: items.filter((i) => i.section === sec).reduce((s, i) => s + i.qty * sellPrice(i), 0),
+    total: items.filter((i) => i.section === sec).reduce((s, i) => s + i.qty * i.sellPrice, 0),
   })).filter((g) => g.items.length > 0);
 
   const resolvedCoverLetter = coverLetter
@@ -150,10 +151,10 @@ export function QuotePreview({
                         <span>
                           {item.name}
                           {showQty && <span className="text-muted-foreground"> × {item.qty}</span>}
-                          {showUnitPrices && <span className="text-muted-foreground"> @ ${sellPrice(item).toFixed(2)}</span>}
+                          {showUnitPrices && <span className="text-muted-foreground"> @ ${item.sellPrice.toFixed(2)}</span>}
                           {showMarkup && item.markup > 0 && <span className="text-muted-foreground"> (+{item.markup}%)</span>}
                         </span>
-                        <span className="font-medium">${(item.qty * sellPrice(item)).toFixed(2)}</span>
+                        <span className="font-medium">${(item.qty * item.sellPrice).toFixed(2)}</span>
                       </div>
                     ))}
                     <div className="flex justify-between text-xs font-medium border-t border-dashed border-border mt-1 pt-0.5">
@@ -168,9 +169,9 @@ export function QuotePreview({
                     <span>
                       {item.name}
                       {showQty && <span className="text-muted-foreground"> × {item.qty}</span>}
-                      {showUnitPrices && <span className="text-muted-foreground"> @ ${sellPrice(item).toFixed(2)}</span>}
+                      {showUnitPrices && <span className="text-muted-foreground"> @ ${item.sellPrice.toFixed(2)}</span>}
                     </span>
-                    <span className="font-medium">${(item.qty * sellPrice(item)).toFixed(2)}</span>
+                    <span className="font-medium">${(item.qty * item.sellPrice).toFixed(2)}</span>
                   </div>
                 ))
               )}

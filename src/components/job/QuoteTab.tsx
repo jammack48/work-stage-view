@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useMemo } from "react";
-import { DollarSign, Plus, Send, Save, X, ChevronDown, ChevronUp, Package, Search, Percent } from "lucide-react";
+import { DollarSign, Plus, Send, Save, X, ChevronDown, ChevronUp, Package, Search, Percent, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ interface LineItem {
   name: string;
   qty: number;
   unitPrice: number;
+  sellPrice: number;
   markup: number;
 }
 
@@ -82,7 +83,7 @@ function SectionHeader({
   );
 }
 
-/* ── Two-line mobile-friendly item row ──────────────────── */
+/* ── Three-line mobile-friendly item row ─────────────────── */
 function ItemRow({
   item,
   isLast,
@@ -90,7 +91,9 @@ function ItemRow({
   onDelete,
   onEnterLast,
   lastRef,
-  globalMarkup,
+  globalMarkupValue,
+  useGlobalMarkup,
+  onResetToGlobal,
 }: {
   item: LineItem;
   isLast: boolean;
@@ -98,7 +101,9 @@ function ItemRow({
   onDelete: (id: string) => void;
   onEnterLast: () => void;
   lastRef: React.RefObject<HTMLInputElement>;
-  globalMarkup: number | null;
+  globalMarkupValue: number;
+  useGlobalMarkup: boolean;
+  onResetToGlobal: (id: string) => void;
 }) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && isLast) {
@@ -107,13 +112,12 @@ function ItemRow({
     }
   };
 
-  const effectiveMarkup = globalMarkup !== null ? globalMarkup : item.markup;
-  const sellPrice = item.unitPrice * (1 + effectiveMarkup / 100);
-  const lineTotal = item.qty * sellPrice;
+  const lineTotal = item.qty * item.sellPrice;
+  const differsFromGlobal = useGlobalMarkup && Math.abs(item.markup - globalMarkupValue) > 0.01;
 
   return (
     <div className="group rounded-md p-2 hover:bg-muted/50 transition-colors space-y-1.5">
-      {/* Line 1: Item name */}
+      {/* Line 1: Item name + delete */}
       <div className="flex items-center gap-1.5">
         <Input
           className="flex-1 h-9 text-sm"
@@ -130,40 +134,71 @@ function ItemRow({
           <X className="w-4 h-4" />
         </button>
       </div>
-      {/* Line 2: Qty × Price | Markup% | Total */}
+      {/* Line 2: Qty + Buy Price + Sell Price */}
       <div className="flex items-center gap-1.5">
-        <Input
-          className="w-14 h-8 text-xs text-center"
-          type="number"
-          min={0}
-          value={item.qty}
-          onChange={(e) => onUpdate(item.id, "qty", parseFloat(e.target.value) || 0)}
-          placeholder="Qty"
-        />
-        <span className="text-xs text-muted-foreground">×</span>
-        <Input
-          className="w-20 h-8 text-xs text-center"
-          type="number"
-          min={0}
-          step={0.01}
-          value={item.unitPrice}
-          onChange={(e) => onUpdate(item.id, "unitPrice", parseFloat(e.target.value) || 0)}
-          placeholder="Cost"
-        />
-        <div className="flex items-center gap-0.5 shrink-0">
+        <div className="flex flex-col">
+          <span className="text-[10px] text-muted-foreground leading-none mb-0.5">Qty</span>
           <Input
             className="w-14 h-8 text-xs text-center"
             type="number"
             min={0}
-            step={1}
-            value={effectiveMarkup}
-            readOnly={globalMarkup !== null}
-            onChange={(e) => onUpdate(item.id, "markup", parseFloat(e.target.value) || 0)}
-            placeholder="%"
+            value={item.qty}
+            onChange={(e) => onUpdate(item.id, "qty", parseFloat(e.target.value) || 0)}
           />
-          <Percent className="w-3 h-3 text-muted-foreground" />
         </div>
-        <span className="ml-auto text-sm font-medium whitespace-nowrap">
+        <span className="text-xs text-muted-foreground mt-3">×</span>
+        <div className="flex flex-col">
+          <span className="text-[10px] text-muted-foreground leading-none mb-0.5">Buy</span>
+          <Input
+            className="w-20 h-8 text-xs text-center"
+            type="number"
+            min={0}
+            step={0.01}
+            value={item.unitPrice}
+            onChange={(e) => onUpdate(item.id, "unitPrice", parseFloat(e.target.value) || 0)}
+          />
+        </div>
+        <span className="text-xs text-muted-foreground mt-3">→</span>
+        <div className="flex flex-col">
+          <span className="text-[10px] text-muted-foreground leading-none mb-0.5">Sell</span>
+          <Input
+            className="w-20 h-8 text-xs text-center"
+            type="number"
+            min={0}
+            step={0.01}
+            value={item.sellPrice}
+            onChange={(e) => onUpdate(item.id, "sellPrice", parseFloat(e.target.value) || 0)}
+          />
+        </div>
+      </div>
+      {/* Line 3: Markup % + Line Total */}
+      <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-0.5">
+          <div className="flex flex-col">
+            <span className="text-[10px] text-muted-foreground leading-none mb-0.5">Markup</span>
+            <div className="flex items-center gap-0.5">
+              <Input
+                className="w-16 h-8 text-xs text-center"
+                type="number"
+                min={0}
+                step={1}
+                value={Math.round(item.markup * 100) / 100}
+                onChange={(e) => onUpdate(item.id, "markup", parseFloat(e.target.value) || 0)}
+              />
+              <Percent className="w-3 h-3 text-muted-foreground" />
+            </div>
+          </div>
+          {differsFromGlobal && (
+            <button
+              onClick={() => onResetToGlobal(item.id)}
+              className="ml-1 p-1 text-muted-foreground hover:text-primary transition-colors"
+              title="Reset to global markup"
+            >
+              <RotateCcw className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+        <span className="ml-auto text-sm font-bold whitespace-nowrap">
           ${lineTotal.toFixed(2)}
         </span>
       </div>
@@ -174,7 +209,7 @@ function ItemRow({
 /* ── Main QuoteTab ──────────────────────────────────────── */
 export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
   const mkItem = (name: string, qty: number, unitPrice: number): LineItem => ({
-    id: genId(), name, qty, unitPrice, markup: 0,
+    id: genId(), name, qty, unitPrice, sellPrice: unitPrice, markup: 0,
   });
 
   const initialLabour: LineItem[] = initialBundle
@@ -201,9 +236,33 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
   const [coverLetterTemplate, setCoverLetterTemplate] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
 
-  // Global markup
+  // Global markup — applies to all items as default, individually overridable
   const [useGlobalMarkup, setUseGlobalMarkup] = useState(false);
   const [globalMarkupValue, setGlobalMarkupValue] = useState(15);
+
+  // Apply global markup to all items
+  const applyGlobalMarkup = useCallback((markupVal: number) => {
+    const apply = (setter: React.Dispatch<React.SetStateAction<LineItem[]>>) => {
+      setter((prev) => prev.map((item) => ({
+        ...item,
+        markup: markupVal,
+        sellPrice: item.unitPrice * (1 + markupVal / 100),
+      })));
+    };
+    apply(setLabourItems);
+    apply(setMaterialItems);
+    apply(setExtrasItems);
+  }, []);
+
+  const handleToggleGlobal = useCallback((on: boolean) => {
+    setUseGlobalMarkup(on);
+    if (on) applyGlobalMarkup(globalMarkupValue);
+  }, [globalMarkupValue, applyGlobalMarkup]);
+
+  const handleGlobalValueChange = useCallback((val: number) => {
+    setGlobalMarkupValue(val);
+    if (useGlobalMarkup) applyGlobalMarkup(val);
+  }, [useGlobalMarkup, applyGlobalMarkup]);
 
   // Section collapse state
   const [labourOpen, setLabourOpen] = useState(true);
@@ -229,15 +288,10 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
     extras: () => setExtrasOpen(true),
   };
 
-  const effectiveGlobalMarkup = useGlobalMarkup ? globalMarkupValue : null;
-
-  // Totals with markup
+  // Totals — now sellPrice is stored per item
   const calcSectionTotals = (list: LineItem[]) => {
     const costTotal = list.reduce((s, i) => s + i.qty * i.unitPrice, 0);
-    const sellTotal = list.reduce((s, i) => {
-      const m = effectiveGlobalMarkup !== null ? effectiveGlobalMarkup : i.markup;
-      return s + i.qty * i.unitPrice * (1 + m / 100);
-    }, 0);
+    const sellTotal = list.reduce((s, i) => s + i.qty * i.sellPrice, 0);
     return { costTotal, sellTotal };
   };
 
@@ -251,11 +305,36 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
   const gst = sellSubtotal * 0.15;
   const grandTotal = sellSubtotal + gst;
 
-  // Update field
+  // Bidirectional pricing updater
   const makeUpdater = (setter: React.Dispatch<React.SetStateAction<LineItem[]>>) =>
     (id: string, field: keyof LineItem, value: string | number) => {
-      setter((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
+      setter((prev) => prev.map((item) => {
+        if (item.id !== id) return item;
+        const updated = { ...item, [field]: value };
+        const v = typeof value === "number" ? value : parseFloat(value) || 0;
+        if (field === "unitPrice") {
+          // Buy price changed → recalc sell from current markup
+          updated.sellPrice = v * (1 + item.markup / 100);
+        } else if (field === "sellPrice") {
+          // Sell price changed → recalc markup
+          updated.markup = v > 0 && item.unitPrice > 0 ? ((v - item.unitPrice) / item.unitPrice) * 100 : 0;
+        } else if (field === "markup") {
+          // Markup changed → recalc sell price
+          updated.sellPrice = item.unitPrice * (1 + v / 100);
+        }
+        return updated;
+      }));
     };
+
+  // Reset item to global markup
+  const resetToGlobal = useCallback((setter: React.Dispatch<React.SetStateAction<LineItem[]>>) =>
+    (id: string) => {
+      setter((prev) => prev.map((item) => {
+        if (item.id !== id) return item;
+        const newSell = item.unitPrice * (1 + globalMarkupValue / 100);
+        return { ...item, markup: globalMarkupValue, sellPrice: newSell };
+      }));
+    }, [globalMarkupValue]);
 
   const makeDeleter = (setter: React.Dispatch<React.SetStateAction<LineItem[]>>) =>
     (id: string) => {
@@ -263,12 +342,15 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
     };
 
   const addBlankTo = useCallback((section: Section) => {
-    sectionSetters[section]((prev) => [...prev, { id: genId(), name: "", qty: 1, unitPrice: 0, markup: 0 }]);
+    const defaultMarkup = useGlobalMarkup ? globalMarkupValue : 0;
+    sectionSetters[section]((prev) => [...prev, { id: genId(), name: "", qty: 1, unitPrice: 0, sellPrice: 0, markup: defaultMarkup }]);
     sectionOpeners[section]();
   }, []);
 
   const addCatalogueItem = useCallback((item: typeof catalogueItems[0]) => {
-    const newItem: LineItem = { id: genId(), name: item.name, qty: 1, unitPrice: item.unitPrice, markup: 0 };
+    const defaultMarkup = useGlobalMarkup ? globalMarkupValue : 0;
+    const sellPrice = item.unitPrice * (1 + defaultMarkup / 100);
+    const newItem: LineItem = { id: genId(), name: item.name, qty: 1, unitPrice: item.unitPrice, sellPrice, markup: defaultMarkup };
     sectionSetters[item.section]((prev) => [...prev, newItem]);
     sectionOpeners[item.section]();
     setQuickAddOpen(false);
@@ -307,9 +389,9 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
 
   // All items for preview
   const allPreviewItems = [
-    ...labourItems.map((i) => ({ ...i, section: "labour", markup: effectiveGlobalMarkup ?? i.markup })),
-    ...materialItems.map((i) => ({ ...i, section: "materials", markup: effectiveGlobalMarkup ?? i.markup })),
-    ...extrasItems.map((i) => ({ ...i, section: "extras", markup: effectiveGlobalMarkup ?? i.markup })),
+    ...labourItems.map((i) => ({ ...i, section: "labour" })),
+    ...materialItems.map((i) => ({ ...i, section: "materials" })),
+    ...extrasItems.map((i) => ({ ...i, section: "extras" })),
   ];
 
   return (
@@ -443,12 +525,13 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
 
       {/* ── Stacked collapsible sections ─────────────────── */}
       {/* Column hints */}
-      <div className="hidden sm:grid grid-cols-12 gap-2 px-2 text-xs font-medium text-muted-foreground">
-        <span className="col-span-5">Item</span>
-        <span className="col-span-2 text-center">Qty × Price</span>
-        <span className="col-span-2 text-center">Markup</span>
-        <span className="col-span-2 text-right">Total</span>
-        <span className="col-span-1" />
+      <div className="hidden sm:flex gap-2 px-2 text-xs font-medium text-muted-foreground">
+        <span className="flex-1">Item</span>
+        <span className="w-14 text-center">Qty</span>
+        <span className="w-20 text-center">Buy</span>
+        <span className="w-20 text-center">Sell</span>
+        <span className="w-16 text-center">Markup</span>
+        <span className="w-20 text-right">Total</span>
       </div>
 
       {/* LABOUR */}
@@ -466,7 +549,9 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
                   onDelete={makeDeleter(setLabourItems)}
                   onEnterLast={() => addBlankTo("labour")}
                   lastRef={lastInputRef}
-                  globalMarkup={effectiveGlobalMarkup}
+                  globalMarkupValue={globalMarkupValue}
+                  useGlobalMarkup={useGlobalMarkup}
+                  onResetToGlobal={resetToGlobal(setLabourItems)}
                 />
               ))}
             </div>
@@ -497,7 +582,9 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
                   onDelete={makeDeleter(setMaterialItems)}
                   onEnterLast={() => addBlankTo("materials")}
                   lastRef={lastInputRef}
-                  globalMarkup={effectiveGlobalMarkup}
+                  globalMarkupValue={globalMarkupValue}
+                  useGlobalMarkup={useGlobalMarkup}
+                  onResetToGlobal={resetToGlobal(setMaterialItems)}
                 />
               ))}
             </div>
@@ -528,7 +615,9 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
                   onDelete={makeDeleter(setExtrasItems)}
                   onEnterLast={() => addBlankTo("extras")}
                   lastRef={lastInputRef}
-                  globalMarkup={effectiveGlobalMarkup}
+                  globalMarkupValue={globalMarkupValue}
+                  useGlobalMarkup={useGlobalMarkup}
+                  onResetToGlobal={resetToGlobal(setExtrasItems)}
                 />
               ))}
             </div>
@@ -568,7 +657,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
           {/* Global markup toggle */}
           <div className="flex items-center justify-between pb-2 border-b border-border">
             <div className="flex items-center gap-2">
-              <Switch checked={useGlobalMarkup} onCheckedChange={setUseGlobalMarkup} className="scale-90" />
+              <Switch checked={useGlobalMarkup} onCheckedChange={handleToggleGlobal} className="scale-90" />
               <Label className="text-xs font-medium">Global Markup</Label>
             </div>
             {useGlobalMarkup && (
@@ -578,7 +667,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
                   type="number"
                   min={0}
                   value={globalMarkupValue}
-                  onChange={(e) => setGlobalMarkupValue(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => handleGlobalValueChange(parseFloat(e.target.value) || 0)}
                 />
                 <Percent className="w-3 h-3 text-muted-foreground" />
               </div>
