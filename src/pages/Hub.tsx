@@ -15,8 +15,8 @@ interface Tile {
 
 const TILES: Tile[] = [
   { id: "jobs", label: "Job Management", icon: Briefcase, route: "/pipeline" },
-  { id: "crm", label: "CRM", icon: Users, route: null },
-  { id: "calendar", label: "Calendar", icon: Calendar, route: null },
+  { id: "crm", label: "Customers", icon: Users, route: "/customers" },
+  { id: "calendar", label: "Calendar", icon: Calendar, route: "/schedule" },
   { id: "payroll", label: "Payroll", icon: DollarSign, route: null },
   { id: "accounting", label: "Accounting", icon: Calculator, route: null },
   { id: "forms", label: "Form Builder", icon: FileText, route: null },

@@ -26,7 +26,7 @@ function statusPriority(job: Job, greenMax: number, orangeMax: number): number {
 }
 
 function sortByStatus(jobs: Job[], greenMax: number, orangeMax: number): Job[] {
-  return [...jobs].sort((a, b) => statusPriority(a, greenMax, orangeMax) - statusPriority(b, greenMax, orangeMax));
+  return [...jobs].sort((a, b) => statusPriority(b, greenMax, orangeMax) - statusPriority(a, greenMax, orangeMax));
 }
 
 export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelProps) {

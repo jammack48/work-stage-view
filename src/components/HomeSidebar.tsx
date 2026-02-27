@@ -130,7 +130,7 @@ export function HomeSidebar({ activeView, onViewChange, mobileLayout, onMobileLa
               </span>
             )}
           </div>
-          <span className="text-[9px] font-medium leading-none">{label}</span>
+          <span className="text-[10px] font-medium leading-none">{label}</span>
         </button>
       ))}
     </nav>

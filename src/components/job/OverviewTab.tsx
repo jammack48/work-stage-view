@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import type { JobDetail } from "@/data/dummyJobDetails";
+import { DUMMY_CUSTOMERS } from "@/data/dummyCustomers";
 
 interface OverviewTabProps {
   job: JobDetail;
@@ -67,8 +68,8 @@ export function OverviewTab({ job }: OverviewTabProps) {
           <button
             className="text-sm font-semibold text-primary hover:underline text-left"
             onClick={() => {
-              const custId = job.client.replace(/\s/g, "").toLowerCase();
-              navigate(`/customer/1`);
+              const customer = DUMMY_CUSTOMERS.find(c => c.name === job.client);
+              navigate(`/customer/${customer?.id ?? 1}`);
             }}
           >
             {job.client || "No client assigned"}
@@ -144,10 +145,17 @@ export function OverviewTab({ job }: OverviewTabProps) {
             <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-muted-foreground" />
             <span>{job.address || "No address set"}</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <MapPin className="w-3.5 h-3.5" />
-            <span>Open in Maps</span>
-          </div>
+          {job.address && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-xs text-primary hover:underline transition-colors"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>Open in Maps</span>
+            </a>
+          )}
         </CardContent>
       </Card>
     </div>

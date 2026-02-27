@@ -241,7 +241,7 @@ export default function CustomerCard() {
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-card-foreground">Create New Job for {customer.name}</h2>
         <p className="text-sm text-muted-foreground">This would open the new job form pre-filled with this customer's details.</p>
-        <Button onClick={() => navigate(`/job/new?stage=Lead`)} className="gap-1.5"><Plus className="w-4 h-4" /> Create Job</Button>
+        <Button onClick={() => navigate(`/job/new?stage=Lead&customer=${id}`)} className="gap-1.5"><Plus className="w-4 h-4" /> Create Job</Button>
       </div>
     ),
     messages: <MessagesTab />,
