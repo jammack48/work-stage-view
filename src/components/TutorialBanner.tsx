@@ -4,10 +4,15 @@ import { X, GraduationCap } from "lucide-react";
 import { useTutorial } from "@/contexts/TutorialContext";
 import { tutorialPages, getTutorialKey } from "@/data/tutorialContent";
 
-export function TutorialBanner({ overrideKey }: { overrideKey?: string }) {
+export function TutorialBanner({ overrideKey, tabKey }: { overrideKey?: string; tabKey?: string }) {
   const { tutorialOn } = useTutorial();
   const { pathname } = useLocation();
-  const key = overrideKey ?? getTutorialKey(pathname);
+  const routeKey = overrideKey ?? getTutorialKey(pathname);
+
+  // Compose lookup: try "routeKey:tabKey" first, fall back to "routeKey"
+  const composedKey = routeKey && tabKey ? `${routeKey}:${tabKey}` : routeKey;
+  const key = composedKey && tutorialPages[composedKey] ? composedKey : routeKey;
+
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
   // Reset dismissed when navigating to a new page
@@ -15,7 +20,6 @@ export function TutorialBanner({ overrideKey }: { overrideKey?: string }) {
   useEffect(() => {
     if (key !== prevKey) {
       setPrevKey(key);
-      // Allow re-showing on navigation back
     }
   }, [key, prevKey]);
 
