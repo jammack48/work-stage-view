@@ -5,7 +5,7 @@ import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
 import { ManagerMode } from "@/components/ManagerMode";
-import { NotificationStyleSettings } from "@/components/NotificationStyleSettings";
+import { UnreadInbox } from "@/components/UnreadInbox";
 import { ChevronLeft, ChevronRight, LayoutGrid, Columns, Plus, Bell } from "lucide-react";
 import { jobs } from "@/data/dummyJobs";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ const Index = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "center" });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeView, setActiveView] = useState<HomeView>(managerState?.fromManager ? "manager" : "pipeline");
-  const [notifSettingsOpen, setNotifSettingsOpen] = useState(false);
+  const [inboxOpen, setInboxOpen] = useState(false);
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setCurrentSlide(emblaApi.selectedScrollSnap());
@@ -83,7 +83,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
-              <Popover open={notifSettingsOpen} onOpenChange={setNotifSettingsOpen}>
+              <Popover open={inboxOpen} onOpenChange={setInboxOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-7 w-7 p-0 relative">
                     <Bell className={cn("w-3.5 h-3.5", jobs.some(j => j.hasUnread) && "animate-bell-ring text-primary")} />
@@ -96,7 +96,7 @@ const Index = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 border-0 shadow-none" align="start">
-                  <NotificationStyleSettings onClose={() => setNotifSettingsOpen(false)} />
+                  <UnreadInbox onClose={() => setInboxOpen(false)} />
                 </PopoverContent>
               </Popover>
             </div>

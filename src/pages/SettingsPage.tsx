@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SETTINGS_EXTRAS } from "@/config/toolbarTabs";
 import { dummyTemplates } from "@/data/dummyTemplates";
+import { NotificationStyleSettings } from "@/components/NotificationStyleSettings";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations";
 
@@ -37,6 +38,10 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
     notifications: (
       <div className="space-y-5">
         <h2 className="text-lg font-semibold text-card-foreground">Notifications</h2>
+        
+        {/* Pipeline notification style */}
+        <NotificationStyleSettings onClose={() => {}} />
+
         {["New lead received", "Quote accepted", "Job completed", "Invoice overdue", "Team member assigned"].map((item) => (
           <div key={item} className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
             <span className="text-sm text-card-foreground">{item}</span>
