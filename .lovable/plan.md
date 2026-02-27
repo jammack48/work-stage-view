@@ -1,60 +1,51 @@
 
 
-## Restructure Quote into Per-Bundle Sections
+## Fix Quote Flow: Skip Redundant Steps and Mobile Layout Issues
 
-### Current problem
-All bundles merge their items into three flat arrays (labour, materials, extras). The user wants each bundle/job to be a distinct named section with its own labour, materials, extras breakdown — like a mini-quote per job.
+### Problems Identified
 
-### New data model
-**File: `src/components/job/QuoteTab.tsx`**
+1. **Customer → New Quote asks for customer again**: When clicking "New Quote" from a customer's QuotesTab, it navigates to `/quote/new` without passing customer info. The funnel then asks "Who is this quote for?" — redundant since the user is already viewing that customer.
 
-Replace `labourItems`, `materialItems`, `extrasItems` with a single array of `QuoteBlock`:
+2. **Lead → Create Quote also has no pre-fill**: LeadActionMenu navigates to `/quote/{job.id}` which loads an existing job, but doesn't pre-fill customer data for new quotes either.
 
-```text
-QuoteBlock {
-  id: string
-  name: string          // "Install Heat Pump", "Install Switchboard"
-  description: string   // editable scope text per block
-  qty: number           // bundle multiplier (e.g. ×2 heat pumps)
-  labour: LineItem[]
-  materials: LineItem[]
-  extras: LineItem[]
-}
-```
+3. **Multiple entry points don't pass context**: Dashboard "New Quote" box and customer QuotesTab both go to `/quote/new` without customer data.
 
-State becomes: `const [blocks, setBlocks] = useState<QuoteBlock[]>([])`
+4. **Mobile layout issues in QuoteTab**: The ItemRow component has horizontal input rows (Qty × Buy → Sell, Markup) that overflow on narrow screens. The preview dialog presets also wrap awkwardly.
 
-### UI layout per block
-Each block renders as a bordered card:
-1. **Block header**: Name (editable) + quantity badge + delete block button
-2. **Description**: Inline editable textarea
-3. **Labour section** (collapsible with items)
-4. **Materials section** (collapsible with items)
-5. **Extras section** (collapsible with items)
-6. **Block subtotal**
+### Plan
 
-### Bottom "Add" area
-After all blocks, show an "Add Another" section with two options:
-- **Add Bundle** — opens bundle picker dialog (existing bundle bar becomes this)
-- **Add Custom Job** — adds an empty block with blank name/description and empty sections
+**1. Pass customer data via navigation state (3 files)**
 
-### Bundle bar removal
-Remove the horizontal scrolling bundle bar from the top. Move bundle selection into the "Add Another" flow at the bottom (and also available when quote is empty as the initial prompt).
+- **`src/components/customer/QuotesTab.tsx`**: Change navigate to pass customer object in location state:
+  ```
+  navigate("/quote/new", { state: { customer } })
+  ```
 
-### Summary card
-Totals aggregate across all blocks. Cost, markup, subtotal, GST, grand total remain the same — just summed across all blocks.
+- **`src/pages/QuotePage.tsx`**: Read `location.state?.customer` and pass it to `QuoteFunnel` as an `initialCustomer` prop. If provided, the funnel skips step 1 and pre-fills the address.
 
-### Preview update
-**File: `src/components/quote/QuotePreview.tsx`**
+- **`src/components/quote/QuoteFunnel.tsx`**: Add `initialCustomer?: Customer` prop. If provided:
+  - Start at step 2 (address) instead of step 1
+  - Pre-fill `customer` and `address` from the initial customer
+  - Update StepIndicator to show step 1 as already complete
+  - "Back" from step 2 still allows going to step 1 to change customer if needed
 
-Update to receive `blocks: QuoteBlock[]` instead of flat items array. In "detailed" and "sub-section" modes, render per-block sections with block names as headings.
+**2. Fix mobile layout in QuoteTab (1 file)**
 
-### Initial state
-- If `initialBundle` is provided (from funnel), create one block from it
-- If loading existing job, create one block from the job's time entries and materials
-- Empty new quote shows the "Add Bundle or Custom Job" prompt
+- **`src/components/job/QuoteTab.tsx`**: 
+  - Wrap the Qty/Buy/Sell input row in `flex-wrap` so inputs stack on very narrow screens
+  - Make input widths responsive (`w-14` → `min-w-[3rem] flex-1`)
+  - Ensure the "Add another" section and bundle Select don't overflow
+
+**3. Fix mobile preview presets (1 file)**
+
+- **`src/components/quote/QuotePreview.tsx`**:
+  - Make preset buttons use smaller text and wrap properly on mobile
+  - Ensure the dialog content doesn't overflow the viewport
 
 ### Files to modify
-- `src/components/job/QuoteTab.tsx` — new QuoteBlock data model, per-block rendering, "Add Another" bottom section
-- `src/components/quote/QuotePreview.tsx` — accept blocks array, render per-block in preview
+- `src/components/customer/QuotesTab.tsx` — pass customer in nav state
+- `src/pages/QuotePage.tsx` — read customer from nav state, pass to funnel
+- `src/components/quote/QuoteFunnel.tsx` — accept initialCustomer, skip step 1
+- `src/components/job/QuoteTab.tsx` — mobile-friendly input layout
+- `src/components/quote/QuotePreview.tsx` — mobile preset button wrapping
 
