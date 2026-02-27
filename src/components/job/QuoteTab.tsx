@@ -1,9 +1,12 @@
 import { useState, useCallback, useRef, useMemo } from "react";
-import { DollarSign, Plus, Send, Save, X, ChevronDown, ChevronUp, Package, Search } from "lucide-react";
+import { DollarSign, Plus, Send, Save, X, ChevronDown, ChevronUp, Package, Search, Percent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import {
   Command,
@@ -20,12 +23,15 @@ import {
 import { toast } from "@/hooks/use-toast";
 import type { JobDetail } from "@/data/dummyJobDetails";
 import { catalogueItems, bundleTemplates } from "@/data/dummyJobDetails";
+import { coverLetterTemplates } from "@/data/coverLetterTemplates";
+import { QuotePreview } from "@/components/quote/QuotePreview";
 
 interface LineItem {
   id: string;
   name: string;
   qty: number;
   unitPrice: number;
+  markup: number;
 }
 
 interface QuoteTabProps {
@@ -76,7 +82,7 @@ function SectionHeader({
   );
 }
 
-/* ── Inline-editable row ────────────────────────────────── */
+/* ── Two-line mobile-friendly item row ──────────────────── */
 function ItemRow({
   item,
   isLast,
@@ -84,6 +90,7 @@ function ItemRow({
   onDelete,
   onEnterLast,
   lastRef,
+  globalMarkup,
 }: {
   item: LineItem;
   isLast: boolean;
@@ -91,6 +98,7 @@ function ItemRow({
   onDelete: (id: string) => void;
   onEnterLast: () => void;
   lastRef: React.RefObject<HTMLInputElement>;
+  globalMarkup: number | null;
 }) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && isLast) {
@@ -99,57 +107,86 @@ function ItemRow({
     }
   };
 
+  const effectiveMarkup = globalMarkup !== null ? globalMarkup : item.markup;
+  const sellPrice = item.unitPrice * (1 + effectiveMarkup / 100);
+  const lineTotal = item.qty * sellPrice;
+
   return (
-    <div className="grid grid-cols-12 gap-2 items-center group rounded-md p-1 hover:bg-muted/50 transition-colors">
-      <Input
-        className="col-span-5 h-9 text-sm"
-        value={item.name}
-        placeholder="Item name"
-        onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-        onKeyDown={handleKeyDown}
-        ref={isLast ? lastRef : undefined}
-      />
-      <Input
-        className="col-span-2 h-9 text-sm text-center"
-        type="number"
-        min={0}
-        value={item.qty}
-        onChange={(e) => onUpdate(item.id, "qty", parseFloat(e.target.value) || 0)}
-      />
-      <Input
-        className="col-span-2 h-9 text-sm text-center"
-        type="number"
-        min={0}
-        step={0.01}
-        value={item.unitPrice}
-        onChange={(e) => onUpdate(item.id, "unitPrice", parseFloat(e.target.value) || 0)}
-      />
-      <span className="col-span-2 text-sm text-right font-medium">
-        ${(item.qty * item.unitPrice).toFixed(2)}
-      </span>
-      <button
-        onClick={() => onDelete(item.id)}
-        className="col-span-1 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-      >
-        <X className="w-4 h-4" />
-      </button>
+    <div className="group rounded-md p-2 hover:bg-muted/50 transition-colors space-y-1.5">
+      {/* Line 1: Item name */}
+      <div className="flex items-center gap-1.5">
+        <Input
+          className="flex-1 h-9 text-sm"
+          value={item.name}
+          placeholder="Item name"
+          onChange={(e) => onUpdate(item.id, "name", e.target.value)}
+          onKeyDown={handleKeyDown}
+          ref={isLast ? lastRef : undefined}
+        />
+        <button
+          onClick={() => onDelete(item.id)}
+          className="shrink-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+      {/* Line 2: Qty × Price | Markup% | Total */}
+      <div className="flex items-center gap-1.5">
+        <Input
+          className="w-14 h-8 text-xs text-center"
+          type="number"
+          min={0}
+          value={item.qty}
+          onChange={(e) => onUpdate(item.id, "qty", parseFloat(e.target.value) || 0)}
+          placeholder="Qty"
+        />
+        <span className="text-xs text-muted-foreground">×</span>
+        <Input
+          className="w-20 h-8 text-xs text-center"
+          type="number"
+          min={0}
+          step={0.01}
+          value={item.unitPrice}
+          onChange={(e) => onUpdate(item.id, "unitPrice", parseFloat(e.target.value) || 0)}
+          placeholder="Cost"
+        />
+        <div className="flex items-center gap-0.5 shrink-0">
+          <Input
+            className="w-14 h-8 text-xs text-center"
+            type="number"
+            min={0}
+            step={1}
+            value={effectiveMarkup}
+            readOnly={globalMarkup !== null}
+            onChange={(e) => onUpdate(item.id, "markup", parseFloat(e.target.value) || 0)}
+            placeholder="%"
+          />
+          <Percent className="w-3 h-3 text-muted-foreground" />
+        </div>
+        <span className="ml-auto text-sm font-medium whitespace-nowrap">
+          ${lineTotal.toFixed(2)}
+        </span>
+      </div>
     </div>
   );
 }
 
 /* ── Main QuoteTab ──────────────────────────────────────── */
 export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
-  // If a bundle was passed from the funnel, use its items; otherwise fall back to job data
+  const mkItem = (name: string, qty: number, unitPrice: number): LineItem => ({
+    id: genId(), name, qty, unitPrice, markup: 0,
+  });
+
   const initialLabour: LineItem[] = initialBundle
-    ? initialBundle.labour.map((i) => ({ id: genId(), name: i.name, qty: i.qty, unitPrice: i.unitPrice }))
-    : job.timeEntries.map((t) => ({ id: genId(), name: `${t.staff} — ${t.description}`, qty: t.hours, unitPrice: HOURLY_RATE }));
+    ? initialBundle.labour.map((i) => mkItem(i.name, i.qty, i.unitPrice))
+    : job.timeEntries.map((t) => mkItem(`${t.staff} — ${t.description}`, t.hours, HOURLY_RATE));
 
   const initialMaterials: LineItem[] = initialBundle
-    ? initialBundle.materials.map((i) => ({ id: genId(), name: i.name, qty: i.qty, unitPrice: i.unitPrice }))
-    : job.materials.map((m) => ({ id: genId(), name: m.name, qty: m.quantity, unitPrice: m.unitPrice }));
+    ? initialBundle.materials.map((i) => mkItem(i.name, i.qty, i.unitPrice))
+    : job.materials.map((m) => mkItem(m.name, m.quantity, m.unitPrice));
 
   const initialExtras: LineItem[] = initialBundle
-    ? initialBundle.extras.map((i) => ({ id: genId(), name: i.name, qty: i.qty, unitPrice: i.unitPrice }))
+    ? initialBundle.extras.map((i) => mkItem(i.name, i.qty, i.unitPrice))
     : [];
 
   const [labourItems, setLabourItems] = useState<LineItem[]>(initialLabour);
@@ -159,7 +196,16 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
   const [notes, setNotes] = useState("");
   const [notesOpen, setNotesOpen] = useState(false);
 
-  // Section collapse state — Labour expanded by default, others collapsed if empty
+  // Cover letter
+  const [coverLetterOpen, setCoverLetterOpen] = useState(false);
+  const [coverLetterTemplate, setCoverLetterTemplate] = useState("");
+  const [coverLetter, setCoverLetter] = useState("");
+
+  // Global markup
+  const [useGlobalMarkup, setUseGlobalMarkup] = useState(false);
+  const [globalMarkupValue, setGlobalMarkupValue] = useState(15);
+
+  // Section collapse state
   const [labourOpen, setLabourOpen] = useState(true);
   const [materialsOpen, setMaterialsOpen] = useState(initialMaterials.length > 0);
   const [extrasOpen, setExtrasOpen] = useState(initialExtras.length > 0);
@@ -171,7 +217,6 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
 
   const lastInputRef = useRef<HTMLInputElement>(null);
 
-  // Section map for convenience
   const sectionSetters: Record<Section, React.Dispatch<React.SetStateAction<LineItem[]>>> = {
     labour: setLabourItems,
     materials: setMaterialItems,
@@ -184,14 +229,27 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
     extras: () => setExtrasOpen(true),
   };
 
-  // Totals
-  const sum = (list: LineItem[]) => list.reduce((s, i) => s + i.qty * i.unitPrice, 0);
-  const labourTotal = sum(labourItems);
-  const materialsTotal = sum(materialItems);
-  const extrasTotal = sum(extrasItems);
-  const subtotal = labourTotal + materialsTotal + extrasTotal;
-  const gst = subtotal * 0.15;
-  const total = subtotal + gst;
+  const effectiveGlobalMarkup = useGlobalMarkup ? globalMarkupValue : null;
+
+  // Totals with markup
+  const calcSectionTotals = (list: LineItem[]) => {
+    const costTotal = list.reduce((s, i) => s + i.qty * i.unitPrice, 0);
+    const sellTotal = list.reduce((s, i) => {
+      const m = effectiveGlobalMarkup !== null ? effectiveGlobalMarkup : i.markup;
+      return s + i.qty * i.unitPrice * (1 + m / 100);
+    }, 0);
+    return { costTotal, sellTotal };
+  };
+
+  const labour = calcSectionTotals(labourItems);
+  const materials = calcSectionTotals(materialItems);
+  const extras = calcSectionTotals(extrasItems);
+
+  const costTotal = labour.costTotal + materials.costTotal + extras.costTotal;
+  const sellSubtotal = labour.sellTotal + materials.sellTotal + extras.sellTotal;
+  const markupAmount = sellSubtotal - costTotal;
+  const gst = sellSubtotal * 0.15;
+  const grandTotal = sellSubtotal + gst;
 
   // Update field
   const makeUpdater = (setter: React.Dispatch<React.SetStateAction<LineItem[]>>) =>
@@ -199,44 +257,36 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
       setter((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
     };
 
-  // Delete item
   const makeDeleter = (setter: React.Dispatch<React.SetStateAction<LineItem[]>>) =>
     (id: string) => {
       setter((prev) => prev.filter((item) => item.id !== id));
     };
 
-  // Add blank row to a section
   const addBlankTo = useCallback((section: Section) => {
-    sectionSetters[section]((prev) => [...prev, { id: genId(), name: "", qty: 1, unitPrice: 0 }]);
+    sectionSetters[section]((prev) => [...prev, { id: genId(), name: "", qty: 1, unitPrice: 0, markup: 0 }]);
     sectionOpeners[section]();
   }, []);
 
-  // Add catalogue item to correct section
   const addCatalogueItem = useCallback((item: typeof catalogueItems[0]) => {
-    const newItem: LineItem = { id: genId(), name: item.name, qty: 1, unitPrice: item.unitPrice };
+    const newItem: LineItem = { id: genId(), name: item.name, qty: 1, unitPrice: item.unitPrice, markup: 0 };
     sectionSetters[item.section]((prev) => [...prev, newItem]);
     sectionOpeners[item.section]();
     setQuickAddOpen(false);
     setPaletteOpen(false);
   }, []);
 
-  // Apply bundle
   const applyBundle = useCallback((bundleId: string) => {
     const bundle = bundleTemplates.find((b) => b.id === bundleId);
     if (!bundle) return;
-
-    setLabourItems(bundle.labour.map((i) => ({ id: genId(), name: i.name, qty: i.qty, unitPrice: i.unitPrice })));
-    setMaterialItems(bundle.materials.map((i) => ({ id: genId(), name: i.name, qty: i.qty, unitPrice: i.unitPrice })));
-    setExtrasItems(bundle.extras.map((i) => ({ id: genId(), name: i.name, qty: i.qty, unitPrice: i.unitPrice })));
-
+    setLabourItems(bundle.labour.map((i) => mkItem(i.name, i.qty, i.unitPrice)));
+    setMaterialItems(bundle.materials.map((i) => mkItem(i.name, i.qty, i.unitPrice)));
+    setExtrasItems(bundle.extras.map((i) => mkItem(i.name, i.qty, i.unitPrice)));
     setLabourOpen(true);
     setMaterialsOpen(true);
     setExtrasOpen(bundle.extras.length > 0);
-
     toast({ title: `${bundle.name} bundle loaded` });
   }, []);
 
-  // Status cycling
   const cycleStatus = () => {
     const next: Record<QuoteStatus, QuoteStatus> = { Draft: "Sent", Sent: "Approved", Approved: "Draft" };
     setStatus(next[status]);
@@ -247,15 +297,20 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
     Approved: "bg-[hsl(var(--status-green))] text-white",
   };
 
-  // Grouped catalogue items for palette
   const labourCatalogue = catalogueItems.filter((i) => i.section === "labour");
   const materialsCatalogue = catalogueItems.filter((i) => i.section === "materials");
   const extrasCatalogue = catalogueItems.filter((i) => i.section === "extras");
 
-  // Filter palette to a section if opened from a section's "+ Add" button
   const paletteItems = paletteSection
     ? catalogueItems.filter((i) => i.section === paletteSection)
     : catalogueItems;
+
+  // All items for preview
+  const allPreviewItems = [
+    ...labourItems.map((i) => ({ ...i, section: "labour", markup: effectiveGlobalMarkup ?? i.markup })),
+    ...materialItems.map((i) => ({ ...i, section: "materials", markup: effectiveGlobalMarkup ?? i.markup })),
+    ...extrasItems.map((i) => ({ ...i, section: "extras", markup: effectiveGlobalMarkup ?? i.markup })),
+  ];
 
   return (
     <div className="space-y-4">
@@ -343,25 +398,62 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
                 )}
               </CommandList>
             </Command>
-            {/* Click-away overlay */}
             <div className="fixed inset-0 -z-10" onClick={() => setQuickAddOpen(false)} />
           </div>
         )}
       </div>
 
+      {/* ── Cover Letter ─────────────────────────────────── */}
+      <Collapsible open={coverLetterOpen} onOpenChange={setCoverLetterOpen}>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground w-full justify-start">
+            {coverLetterOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            Cover Letter
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2 mt-2">
+          <Select
+            value={coverLetterTemplate}
+            onValueChange={(val) => {
+              setCoverLetterTemplate(val);
+              const tpl = coverLetterTemplates.find((t) => t.id === val);
+              if (tpl) setCoverLetter(tpl.body);
+            }}
+          >
+            <SelectTrigger className="h-9 text-sm">
+              <SelectValue placeholder="Choose a template…" />
+            </SelectTrigger>
+            <SelectContent>
+              {coverLetterTemplates.map((t) => (
+                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Textarea
+            value={coverLetter}
+            onChange={(e) => setCoverLetter(e.target.value)}
+            placeholder="Write your cover letter… Use {{customer_name}}, {{business_name}}, {{quote_total}}, {{job_address}}"
+            className="min-h-[100px] text-sm"
+          />
+          <p className="text-[10px] text-muted-foreground">
+            Variables: {"{{customer_name}}"}, {"{{business_name}}"}, {"{{quote_total}}"}, {"{{job_address}}"}
+          </p>
+        </CollapsibleContent>
+      </Collapsible>
+
       {/* ── Stacked collapsible sections ─────────────────── */}
-      {/* Column headers (always visible) */}
-      <div className="grid grid-cols-12 gap-2 px-1 text-xs font-medium text-muted-foreground">
+      {/* Column hints */}
+      <div className="hidden sm:grid grid-cols-12 gap-2 px-2 text-xs font-medium text-muted-foreground">
         <span className="col-span-5">Item</span>
-        <span className="col-span-2 text-center">Qty</span>
-        <span className="col-span-2 text-center">Price</span>
+        <span className="col-span-2 text-center">Qty × Price</span>
+        <span className="col-span-2 text-center">Markup</span>
         <span className="col-span-2 text-right">Total</span>
         <span className="col-span-1" />
       </div>
 
       {/* LABOUR */}
       <div>
-        <SectionHeader label="Labour" total={labourTotal} isOpen={labourOpen} onToggle={() => setLabourOpen(!labourOpen)} />
+        <SectionHeader label="Labour" total={labour.sellTotal} isOpen={labourOpen} onToggle={() => setLabourOpen(!labourOpen)} />
         <Collapsible open={labourOpen}>
           <CollapsibleContent>
             <div className="space-y-1 mt-1">
@@ -374,6 +466,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
                   onDelete={makeDeleter(setLabourItems)}
                   onEnterLast={() => addBlankTo("labour")}
                   lastRef={lastInputRef}
+                  globalMarkup={effectiveGlobalMarkup}
                 />
               ))}
             </div>
@@ -381,10 +474,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
               variant="ghost"
               size="sm"
               className="gap-1 text-muted-foreground mt-1"
-              onClick={() => {
-                setPaletteSection("labour");
-                setPaletteOpen(true);
-              }}
+              onClick={() => { setPaletteSection("labour"); setPaletteOpen(true); }}
             >
               <Plus className="w-4 h-4" /> Add
             </Button>
@@ -394,7 +484,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
 
       {/* MATERIALS */}
       <div>
-        <SectionHeader label="Materials" total={materialsTotal} isOpen={materialsOpen} onToggle={() => setMaterialsOpen(!materialsOpen)} />
+        <SectionHeader label="Materials" total={materials.sellTotal} isOpen={materialsOpen} onToggle={() => setMaterialsOpen(!materialsOpen)} />
         <Collapsible open={materialsOpen}>
           <CollapsibleContent>
             <div className="space-y-1 mt-1">
@@ -407,6 +497,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
                   onDelete={makeDeleter(setMaterialItems)}
                   onEnterLast={() => addBlankTo("materials")}
                   lastRef={lastInputRef}
+                  globalMarkup={effectiveGlobalMarkup}
                 />
               ))}
             </div>
@@ -414,10 +505,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
               variant="ghost"
               size="sm"
               className="gap-1 text-muted-foreground mt-1"
-              onClick={() => {
-                setPaletteSection("materials");
-                setPaletteOpen(true);
-              }}
+              onClick={() => { setPaletteSection("materials"); setPaletteOpen(true); }}
             >
               <Plus className="w-4 h-4" /> Add
             </Button>
@@ -427,7 +515,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
 
       {/* EXTRAS */}
       <div>
-        <SectionHeader label="Extras" total={extrasTotal} isOpen={extrasOpen} onToggle={() => setExtrasOpen(!extrasOpen)} />
+        <SectionHeader label="Extras" total={extras.sellTotal} isOpen={extrasOpen} onToggle={() => setExtrasOpen(!extrasOpen)} />
         <Collapsible open={extrasOpen}>
           <CollapsibleContent>
             <div className="space-y-1 mt-1">
@@ -440,6 +528,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
                   onDelete={makeDeleter(setExtrasItems)}
                   onEnterLast={() => addBlankTo("extras")}
                   lastRef={lastInputRef}
+                  globalMarkup={effectiveGlobalMarkup}
                 />
               ))}
             </div>
@@ -447,10 +536,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
               variant="ghost"
               size="sm"
               className="gap-1 text-muted-foreground mt-1"
-              onClick={() => {
-                setPaletteSection("extras");
-                setPaletteOpen(true);
-              }}
+              onClick={() => { setPaletteSection("extras"); setPaletteOpen(true); }}
             >
               <Plus className="w-4 h-4" /> Add
             </Button>
@@ -476,20 +562,42 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
         </CollapsibleContent>
       </Collapsible>
 
-      {/* ── Summary card ─────────────────────────────────── */}
+      {/* ── Summary card with margin visibility ──────────── */}
       <Card>
         <CardContent className="pt-4 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Labour</span>
-            <span className="font-medium">${labourTotal.toFixed(2)}</span>
+          {/* Global markup toggle */}
+          <div className="flex items-center justify-between pb-2 border-b border-border">
+            <div className="flex items-center gap-2">
+              <Switch checked={useGlobalMarkup} onCheckedChange={setUseGlobalMarkup} className="scale-90" />
+              <Label className="text-xs font-medium">Global Markup</Label>
+            </div>
+            {useGlobalMarkup && (
+              <div className="flex items-center gap-1">
+                <Input
+                  className="w-16 h-7 text-xs text-center"
+                  type="number"
+                  min={0}
+                  value={globalMarkupValue}
+                  onChange={(e) => setGlobalMarkupValue(parseFloat(e.target.value) || 0)}
+                />
+                <Percent className="w-3 h-3 text-muted-foreground" />
+              </div>
+            )}
           </div>
+
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Materials</span>
-            <span className="font-medium">${materialsTotal.toFixed(2)}</span>
+            <span className="text-muted-foreground">Cost</span>
+            <span className="font-medium">${costTotal.toFixed(2)}</span>
           </div>
+          {markupAmount > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Markup</span>
+              <span className="font-medium text-[hsl(var(--status-green))]">+${markupAmount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Extras</span>
-            <span className="font-medium">${extrasTotal.toFixed(2)}</span>
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="font-medium">${sellSubtotal.toFixed(2)}</span>
           </div>
           <div className="border-t my-1" />
           <div className="flex justify-between text-sm text-muted-foreground">
@@ -498,12 +606,12 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
           </div>
           <div className="flex justify-between text-lg font-bold">
             <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+            <span>${grandTotal.toFixed(2)}</span>
           </div>
         </CardContent>
       </Card>
 
-      {/* ── Before-actions slot (e.g. sequence selector) ── */}
+      {/* ── Before-actions slot ──────────────────────────── */}
       {beforeActions}
 
       {/* ── Action buttons ───────────────────────────────── */}
@@ -512,18 +620,24 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
           size="lg"
           className="flex-1 h-12 gap-2"
           onClick={() =>
-            toast({ title: "Quote sent!", description: `$${total.toFixed(2)} quote sent to ${job.client}` })
+            toast({ title: "Quote sent!", description: `$${grandTotal.toFixed(2)} quote sent to ${job.client}` })
           }
         >
           <Send className="w-5 h-5" /> Send Quote
         </Button>
+        <QuotePreview
+          items={allPreviewItems}
+          coverLetter={coverLetter}
+          customerName={job.client}
+          jobAddress={job.address || ""}
+        />
         <Button
           size="lg"
           variant="outline"
           className="h-12 gap-2"
           onClick={() => toast({ title: "Draft saved" })}
         >
-          <Save className="w-4 h-4" /> Save Draft
+          <Save className="w-4 h-4" /> Save
         </Button>
       </div>
 
