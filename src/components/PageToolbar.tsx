@@ -166,7 +166,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               key={id}
               onClick={() => onTabChange(id)}
               className={cn(
-                "flex flex-col items-center justify-center w-12 min-h-[48px] rounded-lg transition-colors shrink-0 gap-0.5 px-0.5",
+                "flex flex-col items-center justify-center w-14 min-h-[52px] rounded-lg transition-colors shrink-0 gap-0.5 px-0.5",
                 isActive(id)
                   ? "bg-primary text-primary-foreground"
                   : "text-foreground/70 hover:bg-accent"
@@ -177,7 +177,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
                 <Icon className="w-5 h-5" />
                 {BADGE_TABS.has(id) && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-destructive" />}
               </span>
-              <span className="text-[8px] font-medium leading-none truncate w-full text-center">{label}</span>
+              <span className="text-[9px] font-medium leading-none truncate w-full text-center">{label}</span>
             </button>
           ))}
         </nav>
@@ -195,7 +195,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
     <nav
       className={cn(
         "bg-card flex items-center px-1 py-1 overflow-x-auto gap-0.5",
-        position === "bottom" ? "fixed left-0 right-0 bottom-0 z-40 border-t border-border safe-area-pb" : "sticky top-0 z-40 border-b border-border"
+        position === "bottom" ? "fixed left-0 right-0 bottom-0 z-40 border-t border-border safe-area-pb pb-[env(safe-area-inset-bottom)]" : "sticky top-0 z-40 border-b border-border"
       )}
     >
       
@@ -204,7 +204,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
           key={id}
           onClick={() => onTabChange(id)}
           className={cn(
-            "flex flex-col items-center justify-center min-w-[44px] min-h-[44px] rounded-lg transition-colors gap-0.5 shrink-0",
+            "flex flex-col items-center justify-center min-w-[48px] min-h-[52px] rounded-lg transition-colors gap-0.5 shrink-0 px-1",
             isActive(id)
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:bg-accent"

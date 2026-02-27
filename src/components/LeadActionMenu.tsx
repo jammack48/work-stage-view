@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarPlus, FileText, Archive, XCircle, Clock, Phone, Mail, MoreHorizontal } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Job } from "@/data/dummyJobs";
 
 interface LeadActionMenuProps {
@@ -25,6 +27,7 @@ const ACTIONS = [
 export function LeadActionMenu({ job, children, align = "start", side = "bottom" }: LeadActionMenuProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleAction = (id: string) => {
     setOpen(false);
@@ -54,6 +57,44 @@ export function LeadActionMenu({ job, children, align = "start", side = "bottom"
     }
   };
 
+  const menuContent = (
+    <>
+      <div className="px-3 py-2 border-b border-border mb-1">
+        <p className="text-sm font-bold text-card-foreground truncate">{job.client}</p>
+        <p className="text-xs text-muted-foreground truncate">{job.jobName}</p>
+      </div>
+      <div className="flex flex-col gap-0.5 px-1.5 pb-1.5">
+        {ACTIONS.map(({ id, label, icon: Icon, color }) => (
+          <button
+            key={id}
+            onClick={() => handleAction(id)}
+            className="flex items-center gap-3 px-3 py-3 sm:py-2 rounded-lg text-sm font-medium text-card-foreground hover:bg-accent transition-colors text-left min-h-[44px]"
+          >
+            <Icon className={`w-5 h-5 sm:w-4 sm:h-4 shrink-0 ${color}`} />
+            {label}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+
+  // Mobile: use bottom drawer
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerTrigger asChild>
+          {children}
+        </DrawerTrigger>
+        <DrawerContent className="pb-safe-area-inset-bottom">
+          <div className="max-h-[70vh] overflow-y-auto">
+            {menuContent}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  // Desktop: use popover
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -64,22 +105,7 @@ export function LeadActionMenu({ job, children, align = "start", side = "bottom"
         side={side}
         className="w-56 p-1.5 rounded-xl"
       >
-        <div className="px-2.5 py-1.5 border-b border-border mb-1">
-          <p className="text-xs font-bold text-card-foreground truncate">{job.client}</p>
-          <p className="text-[10px] text-muted-foreground truncate">{job.jobName}</p>
-        </div>
-        <div className="flex flex-col gap-0.5">
-          {ACTIONS.map(({ id, label, icon: Icon, color }) => (
-            <button
-              key={id}
-              onClick={() => handleAction(id)}
-              className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-card-foreground hover:bg-accent transition-colors text-left"
-            >
-              <Icon className={`w-4 h-4 shrink-0 ${color}`} />
-              {label}
-            </button>
-          ))}
-        </div>
+        {menuContent}
       </PopoverContent>
     </Popover>
   );

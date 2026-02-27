@@ -59,19 +59,19 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
         </TutorialTip>
       </div>
 
-      {/* Column headers */}
+      {/* Column headers — hidden on mobile for more space */}
       <div className={cn(
-        "grid gap-2 sm:gap-4 px-4 sm:px-5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/50",
+        "hidden sm:grid gap-4 px-5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/50",
         isQuoteStage
-          ? "grid-cols-[auto_1fr_60px] sm:grid-cols-[auto_1fr_1fr_80px_70px]"
-          : "grid-cols-[auto_1fr_80px_60px] sm:grid-cols-[auto_1fr_1fr_100px_80px_70px]"
+          ? "sm:grid-cols-[auto_1fr_1fr_80px_70px]"
+          : "sm:grid-cols-[auto_1fr_1fr_100px_80px_70px]"
       )}>
         <span className="w-3" />
         <span>Client</span>
-        <span className="hidden sm:inline">Job</span>
+        <span>Job</span>
         {!isQuoteStage && <span className="text-right">Value</span>}
         <span className="text-right">Age</span>
-        <span className="hidden sm:inline text-right">ID</span>
+        <span className="text-right">ID</span>
       </div>
 
       {/* Job rows sorted green → orange → red */}
@@ -84,15 +84,15 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
           const rowContent = (
             <div
               className={cn(
-                "grid gap-2 sm:gap-4 px-4 sm:px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm cursor-pointer",
+                "flex sm:grid gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3 items-center hover:bg-accent/30 transition-colors text-sm cursor-pointer min-h-[52px]",
                 isQuoteStage
-                  ? "grid-cols-[auto_1fr_60px] sm:grid-cols-[auto_1fr_1fr_80px_70px]"
-                  : "grid-cols-[auto_1fr_80px_60px] sm:grid-cols-[auto_1fr_1fr_100px_80px_70px]"
+                  ? "sm:grid-cols-[auto_1fr_1fr_80px_70px]"
+                  : "sm:grid-cols-[auto_1fr_1fr_100px_80px_70px]"
               )}
               onClick={isLeadStage ? undefined : () => navigate(isQuoteStage ? `/quote/${job.id}` : `/job/${job.id}`)}
             >
               <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job, thresholds.greenMax, thresholds.orangeMax))} />
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex-1 sm:flex-none flex items-center gap-2 min-w-0">
                 <span className="font-semibold text-card-foreground truncate">{job.client}</span>
                 {job.urgent && <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0" />}
                 {job.hasUnread && (
@@ -109,11 +109,11 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
               </div>
               <span className="hidden sm:inline text-muted-foreground truncate">{job.jobName}</span>
               {!isQuoteStage && (
-                <span className="text-right font-semibold text-card-foreground">
+                <span className="text-right font-semibold text-card-foreground text-xs sm:text-sm">
                   ${job.value.toLocaleString()}
                 </span>
               )}
-              <span className="text-right text-muted-foreground whitespace-nowrap">{job.ageDays}d ago</span>
+              <span className="text-right text-muted-foreground whitespace-nowrap text-xs sm:text-sm">{job.ageDays}d</span>
               <span className="hidden sm:inline text-right font-mono text-muted-foreground text-xs">{job.id}</span>
             </div>
           );

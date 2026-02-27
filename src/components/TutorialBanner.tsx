@@ -25,11 +25,11 @@ export function TutorialBanner({ overrideKey }: { overrideKey?: string }) {
   if (dismissed.has(key)) return null;
 
   return (
-    <div className="mx-4 sm:mx-6 mt-3 mb-1 rounded-lg border border-blue-400 bg-blue-500 px-4 py-3 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-      <GraduationCap className="w-5 h-5 text-white shrink-0 mt-0.5" />
+    <div className="mx-3 sm:mx-6 mt-2 sm:mt-3 mb-1 rounded-lg border border-blue-400 bg-blue-500 px-3 sm:px-4 py-2 sm:py-3 flex items-start gap-2 sm:gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+      <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-white shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-white">{entry.title}</p>
-        <p className="text-sm text-white/80 mt-0.5 leading-relaxed">{entry.body}</p>
+        <p className="text-xs sm:text-sm font-semibold text-white">{entry.title}</p>
+        <p className="text-xs sm:text-sm text-white/80 mt-0.5 leading-relaxed">{entry.body}</p>
       </div>
       <button
         onClick={() => setDismissed((prev) => new Set(prev).add(key))}
