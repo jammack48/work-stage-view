@@ -1,4 +1,3 @@
-import React, { forwardRef } from "react";
 import { useTutorial } from "@/contexts/TutorialContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -10,25 +9,18 @@ interface TutorialTipProps {
 }
 
 /** Wraps children in a tooltip ONLY when tutorial mode is on & desktop. No-op on mobile. */
-export const TutorialTip = forwardRef<HTMLElement, TutorialTipProps>(
-  ({ tip, children, side = "top" }, ref) => {
-    const { tutorialOn } = useTutorial();
-    const isMobile = useIsMobile();
+export function TutorialTip({ tip, children, side = "top" }: TutorialTipProps) {
+  const { tutorialOn } = useTutorial();
+  const isMobile = useIsMobile();
 
-    if (!tutorialOn || isMobile) {
-      return React.cloneElement(children, { ref });
-    }
+  if (!tutorialOn || isMobile) return children;
 
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {React.cloneElement(children, { ref })}
-        </TooltipTrigger>
-        <TooltipContent side={side} className="max-w-[220px] text-center">
-          <p className="text-xs leading-snug">{tip}</p>
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-);
-TutorialTip.displayName = "TutorialTip";
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent side={side} className="max-w-[220px] text-center">
+        <p className="text-xs leading-snug">{tip}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
