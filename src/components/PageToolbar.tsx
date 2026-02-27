@@ -12,6 +12,9 @@ interface TabDef {
   icon: React.ElementType;
 }
 
+/** Tab IDs that show a notification red dot */
+const BADGE_TABS = new Set(["messages", "sequences"]);
+
 interface PageToolbarProps {
   tabs: TabDef[];
   activeTab: string;
@@ -64,7 +67,10 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
                     : "text-foreground/70 hover:bg-accent hover:text-accent-foreground"
                 )}
               >
-                <Icon className="w-6 h-6 shrink-0" />
+                <span className="relative">
+                  <Icon className="w-6 h-6 shrink-0" />
+                  {BADGE_TABS.has(id) && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-destructive" />}
+                </span>
                 {label}
               </button>
             );
@@ -108,7 +114,10 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )}
             >
-              <Icon className="w-4 h-4 shrink-0" />
+              <span className="relative">
+                <Icon className="w-4 h-4 shrink-0" />
+                {BADGE_TABS.has(id) && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-destructive" />}
+              </span>
               {label}
             </button>
           );
@@ -164,7 +173,10 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               )}
               title={label}
             >
-              <Icon className="w-5 h-5" />
+              <span className="relative">
+                <Icon className="w-5 h-5" />
+                {BADGE_TABS.has(id) && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-destructive" />}
+              </span>
               <span className="text-[8px] font-medium leading-none truncate w-full text-center">{label}</span>
             </button>
           ))}
@@ -198,7 +210,10 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               : "text-muted-foreground hover:bg-accent"
           )}
         >
-          <Icon className="w-5 h-5" />
+          <span className="relative">
+            <Icon className="w-5 h-5" />
+            {BADGE_TABS.has(id) && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-destructive" />}
+          </span>
           <span className="text-[9px] font-medium leading-none">{label}</span>
         </button>
       ))}
