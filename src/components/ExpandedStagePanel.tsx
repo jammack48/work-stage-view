@@ -121,9 +121,7 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
           if (isLeadStage) {
             return (
               <LeadActionMenu key={job.id} job={job} side="left" align="start">
-                <TutorialTip tip={tipText} side="left">
-                  {rowContent}
-                </TutorialTip>
+                {rowContent}
               </LeadActionMenu>
             );
           }

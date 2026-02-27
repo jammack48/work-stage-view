@@ -169,7 +169,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
             </div>
           );
           const wrapped = <TutorialTip tip={COLOR_TIPS.green} side="right">{card}</TutorialTip>;
-          return isLeadStage && firstGreen ? <LeadActionMenu job={firstGreen} side="right">{wrapped}</LeadActionMenu> : wrapped;
+          return isLeadStage && firstGreen ? <LeadActionMenu job={firstGreen} side="right">{card}</LeadActionMenu> : wrapped;
         })()}
         {/* Orange */}
         {(() => {
@@ -190,7 +190,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
             </div>
           );
           const wrapped = <TutorialTip tip={COLOR_TIPS.orange} side="right">{card}</TutorialTip>;
-          return isLeadStage && firstOrange ? <LeadActionMenu job={firstOrange} side="right">{wrapped}</LeadActionMenu> : wrapped;
+          return isLeadStage && firstOrange ? <LeadActionMenu job={firstOrange} side="right">{card}</LeadActionMenu> : wrapped;
         })()}
         {/* Red */}
         {(() => {
@@ -211,7 +211,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
             </div>
           );
           const wrapped = <TutorialTip tip={COLOR_TIPS.red} side="right">{card}</TutorialTip>;
-          return isLeadStage && firstRed ? <LeadActionMenu job={firstRed} side="right">{wrapped}</LeadActionMenu> : wrapped;
+          return isLeadStage && firstRed ? <LeadActionMenu job={firstRed} side="right">{card}</LeadActionMenu> : wrapped;
         })()}
       </div>
     </div>
