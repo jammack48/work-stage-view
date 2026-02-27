@@ -4,6 +4,7 @@ import type { Job } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
 import { useThresholds } from "@/contexts/ThresholdContext";
 import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
+import { TutorialTip } from "@/components/TutorialTip";
 
 interface ExpandedStagePanelProps {
   stage: string;
@@ -46,12 +47,14 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
             ({jobs.length} jobs)
           </span>
         </h2>
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-accent transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <TutorialTip tip="Close this panel" side="left">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-accent transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </TutorialTip>
       </div>
 
       {/* Column headers */}
@@ -72,41 +75,42 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
       {/* Job rows sorted green → orange → red */}
       <div className="divide-y divide-border/30">
         {sorted.map((job) => (
-          <div
-            key={job.id}
-            className={cn(
-              "grid gap-2 sm:gap-4 px-4 sm:px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm cursor-pointer",
-              isQuoteStage
-                ? "grid-cols-[auto_1fr_60px] sm:grid-cols-[auto_1fr_1fr_80px_70px]"
-                : "grid-cols-[auto_1fr_80px_60px] sm:grid-cols-[auto_1fr_1fr_100px_80px_70px]"
-            )}
-            onClick={() => navigate(isQuoteStage ? `/quote/${job.id}` : `/job/${job.id}`)}
-          >
-            <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job, thresholds.greenMax, thresholds.orangeMax))} />
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="font-semibold text-card-foreground truncate">{job.client}</span>
-              {job.urgent && <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0" />}
-              {job.hasUnread && (
-                <>
-                  {notifStyle === "icon" && (
-                    <span className="relative flex h-3 w-3 shrink-0">
-                      <span className="animate-glow-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-primary shadow-[0_0_6px_2px_hsl(var(--primary)/0.5)]" />
-                    </span>
-                  )}
-                  <Mail className="w-3.5 h-3.5 text-primary shrink-0 animate-wiggle" />
-                </>
+          <TutorialTip key={job.id} tip={`Click to open ${job.client}'s ${isQuoteStage ? "quote" : "job"}`} side="left">
+            <div
+              className={cn(
+                "grid gap-2 sm:gap-4 px-4 sm:px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm cursor-pointer",
+                isQuoteStage
+                  ? "grid-cols-[auto_1fr_60px] sm:grid-cols-[auto_1fr_1fr_80px_70px]"
+                  : "grid-cols-[auto_1fr_80px_60px] sm:grid-cols-[auto_1fr_1fr_100px_80px_70px]"
               )}
+              onClick={() => navigate(isQuoteStage ? `/quote/${job.id}` : `/job/${job.id}`)}
+            >
+              <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job, thresholds.greenMax, thresholds.orangeMax))} />
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="font-semibold text-card-foreground truncate">{job.client}</span>
+                {job.urgent && <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0" />}
+                {job.hasUnread && (
+                  <>
+                    {notifStyle === "icon" && (
+                      <span className="relative flex h-3 w-3 shrink-0">
+                        <span className="animate-glow-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-primary shadow-[0_0_6px_2px_hsl(var(--primary)/0.5)]" />
+                      </span>
+                    )}
+                    <Mail className="w-3.5 h-3.5 text-primary shrink-0 animate-wiggle" />
+                  </>
+                )}
+              </div>
+              <span className="hidden sm:inline text-muted-foreground truncate">{job.jobName}</span>
+              {!isQuoteStage && (
+                <span className="text-right font-semibold text-card-foreground">
+                  ${job.value.toLocaleString()}
+                </span>
+              )}
+              <span className="text-right text-muted-foreground whitespace-nowrap">{job.ageDays}d ago</span>
+              <span className="hidden sm:inline text-right font-mono text-muted-foreground text-xs">{job.id}</span>
             </div>
-            <span className="hidden sm:inline text-muted-foreground truncate">{job.jobName}</span>
-            {!isQuoteStage && (
-              <span className="text-right font-semibold text-card-foreground">
-                ${job.value.toLocaleString()}
-              </span>
-            )}
-            <span className="text-right text-muted-foreground whitespace-nowrap">{job.ageDays}d ago</span>
-            <span className="hidden sm:inline text-right font-mono text-muted-foreground text-xs">{job.id}</span>
-          </div>
+          </TutorialTip>
         ))}
       </div>
     </div>

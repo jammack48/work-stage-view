@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useThresholds } from "@/contexts/ThresholdContext";
 import { ThresholdSettings } from "@/components/ThresholdSettings";
 import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
+import { TutorialTip } from "@/components/TutorialTip";
 
 function countByStatus(jobs: Job[], greenMax: number, orangeMax: number) {
   let red = 0, orange = 0, green = 0;
@@ -44,6 +45,22 @@ function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse
   );
 }
 
+/** Stage-specific tutorial tips */
+const STAGE_TIPS: Record<string, string> = {
+  "Lead": "Click to see all your new leads",
+  "To Quote": "Click to see jobs waiting for a quote",
+  "Quote Sent": "Click to see quotes you've sent out",
+  "In Progress": "Click to see jobs you're working on",
+  "To Invoice": "Click to see jobs ready to invoice",
+  "Paid": "Click to see completed & paid jobs",
+};
+
+const COLOR_TIPS = {
+  green: "These jobs are on track — click to open the first one",
+  orange: "These are getting old — click to jump in and follow up",
+  red: "Overdue! Click here to action the most urgent one first",
+};
+
 interface StageColumnProps {
   stage: string;
   jobs: Job[];
@@ -75,96 +92,106 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
       style={{ backgroundColor: "hsl(var(--column-bg))" }}
     >
       {/* Header — arrow-shaped pointing right */}
-      <div
-        onClick={onToggle}
-        className="relative px-3 py-2 flex items-start justify-between text-primary-foreground font-bold text-sm h-[52px] cursor-pointer"
-        style={{
-          backgroundColor: "hsl(var(--stage-header))",
-          backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 8px, hsl(var(--border) / 0.2) 8px, hsl(var(--border) / 0.2) 9px)",
-        }}
-      >
-        <div className="leading-snug min-w-0">
-          <div className="truncate">{(STAGE_LABELS[stage as keyof typeof STAGE_LABELS] ?? [stage])[0]}</div>
-          <div className="text-xs font-medium opacity-70 truncate h-[16px]">
-            {STAGE_LABELS[stage as keyof typeof STAGE_LABELS]?.[1] ?? "\u00A0"}
-          </div>
-        </div>
-        <div className="flex items-center gap-1 shrink-0 mt-0.5 mr-2">
-          <span
-            className="flex shrink-0 opacity-60 -space-x-2 cursor-pointer hover:opacity-100 transition-opacity"
-            onClick={(e) => {
-              if (onNext) {
-                e.stopPropagation();
-                onNext();
-              }
-            }}
-          >
-            <ChevronRight className="w-5 h-5" />
-            <ChevronRight className="w-5 h-5" />
-          </span>
-          <span className="bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-semibold">
-            {jobs.length}
-          </span>
-          <ThresholdSettings stage={stage} />
-        </div>
-        {/* Right arrow point */}
+      <TutorialTip tip={STAGE_TIPS[stage] || `Click to expand ${stage}`} side="top">
         <div
-          className="absolute right-0 top-0 h-full w-[14px] translate-x-[7px] z-10"
+          onClick={onToggle}
+          className="relative px-3 py-2 flex items-start justify-between text-primary-foreground font-bold text-sm h-[52px] cursor-pointer"
           style={{
-            clipPath: "polygon(0 0, 0 100%, 100% 50%)",
             backgroundColor: "hsl(var(--stage-header))",
             backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 8px, hsl(var(--border) / 0.2) 8px, hsl(var(--border) / 0.2) 9px)",
           }}
-        />
-      </div>
+        >
+          <div className="leading-snug min-w-0">
+            <div className="truncate">{(STAGE_LABELS[stage as keyof typeof STAGE_LABELS] ?? [stage])[0]}</div>
+            <div className="text-xs font-medium opacity-70 truncate h-[16px]">
+              {STAGE_LABELS[stage as keyof typeof STAGE_LABELS]?.[1] ?? "\u00A0"}
+            </div>
+          </div>
+          <div className="flex items-center gap-1 shrink-0 mt-0.5 mr-2">
+            <span
+              className="flex shrink-0 opacity-60 -space-x-2 cursor-pointer hover:opacity-100 transition-opacity"
+              onClick={(e) => {
+                if (onNext) {
+                  e.stopPropagation();
+                  onNext();
+                }
+              }}
+            >
+              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5" />
+            </span>
+            <TutorialTip tip={`${jobs.length} jobs in this stage`} side="bottom">
+              <span className="bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-semibold">
+                {jobs.length}
+              </span>
+            </TutorialTip>
+            <ThresholdSettings stage={stage} />
+          </div>
+          {/* Right arrow point */}
+          <div
+            className="absolute right-0 top-0 h-full w-[14px] translate-x-[7px] z-10"
+            style={{
+              clipPath: "polygon(0 0, 0 100%, 100% 50%)",
+              backgroundColor: "hsl(var(--stage-header))",
+              backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 8px, hsl(var(--border) / 0.2) 8px, hsl(var(--border) / 0.2) 9px)",
+            }}
+          />
+        </div>
+      </TutorialTip>
 
       {/* Color cards with count + first job details */}
       <div className="p-2 flex flex-col gap-1.5">
         {/* Green */}
-        <div
-          className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
-          onClick={(e) => { e.stopPropagation(); if (firstGreen) { const isQ = ["Lead","To Quote","Quote Sent"].includes(firstGreen.stage); navigate(isQ ? `/quote/${firstGreen.id}` : `/job/${firstGreen.id}`); } }}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white/90">{getLabel(stage, "green")}</span>
-            <span className="text-sm font-bold text-white">{counts.green}</span>
+        <TutorialTip tip={COLOR_TIPS.green} side="right">
+          <div
+            className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); if (firstGreen) { const isQ = ["Lead","To Quote","Quote Sent"].includes(firstGreen.stage); navigate(isQ ? `/quote/${firstGreen.id}` : `/job/${firstGreen.id}`); } }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-white/90">{getLabel(stage, "green")}</span>
+              <span className="text-sm font-bold text-white">{counts.green}</span>
+            </div>
+            {firstGreen ? (
+              <JobPreview job={firstGreen} notifStyle={notifStyle} />
+            ) : counts.green === 0 ? (
+              <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
+            ) : null}
           </div>
-          {firstGreen ? (
-            <JobPreview job={firstGreen} notifStyle={notifStyle} />
-          ) : counts.green === 0 ? (
-            <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
-          ) : null}
-        </div>
+        </TutorialTip>
         {/* Orange */}
-        <div
-          className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
-          onClick={(e) => { e.stopPropagation(); if (firstOrange) { const isQ = ["Lead","To Quote","Quote Sent"].includes(firstOrange.stage); navigate(isQ ? `/quote/${firstOrange.id}` : `/job/${firstOrange.id}`); } }}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white/90">{getLabel(stage, "orange")}</span>
-            <span className="text-sm font-bold text-white">{counts.orange}</span>
+        <TutorialTip tip={COLOR_TIPS.orange} side="right">
+          <div
+            className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); if (firstOrange) { const isQ = ["Lead","To Quote","Quote Sent"].includes(firstOrange.stage); navigate(isQ ? `/quote/${firstOrange.id}` : `/job/${firstOrange.id}`); } }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-white/90">{getLabel(stage, "orange")}</span>
+              <span className="text-sm font-bold text-white">{counts.orange}</span>
+            </div>
+            {firstOrange ? (
+              <JobPreview job={firstOrange} notifStyle={notifStyle} />
+            ) : counts.orange === 0 ? (
+              <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
+            ) : null}
           </div>
-          {firstOrange ? (
-            <JobPreview job={firstOrange} notifStyle={notifStyle} />
-          ) : counts.orange === 0 ? (
-            <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
-          ) : null}
-        </div>
+        </TutorialTip>
         {/* Red */}
-        <div
-          className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
-          onClick={(e) => { e.stopPropagation(); if (firstRed) { const isQ = ["Lead","To Quote","Quote Sent"].includes(firstRed.stage); navigate(isQ ? `/quote/${firstRed.id}` : `/job/${firstRed.id}`); } }}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white/90">{getLabel(stage, "red")}</span>
-            <span className="text-sm font-bold text-white">{counts.red}</span>
+        <TutorialTip tip={COLOR_TIPS.red} side="right">
+          <div
+            className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); if (firstRed) { const isQ = ["Lead","To Quote","Quote Sent"].includes(firstRed.stage); navigate(isQ ? `/quote/${firstRed.id}` : `/job/${firstRed.id}`); } }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-white/90">{getLabel(stage, "red")}</span>
+              <span className="text-sm font-bold text-white">{counts.red}</span>
+            </div>
+            {firstRed ? (
+              <JobPreview job={firstRed} notifStyle={notifStyle} />
+            ) : counts.red === 0 ? (
+              <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
+            ) : null}
           </div>
-          {firstRed ? (
-            <JobPreview job={firstRed} notifStyle={notifStyle} />
-          ) : counts.red === 0 ? (
-            <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
-          ) : null}
-        </div>
+        </TutorialTip>
       </div>
     </div>
   );
