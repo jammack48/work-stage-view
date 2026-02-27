@@ -106,9 +106,9 @@ export function QuotePreview({
         <DialogHeader><DialogTitle>Quote Preview</DialogTitle></DialogHeader>
 
         {/* Presets */}
-        <div className="flex gap-1.5 mb-2 flex-wrap">
+        <div className="grid grid-cols-3 gap-1.5 mb-2">
           {(["detailed", "summary", "sub-section", "job-totals", "jobs-only", "total-only"] as Preset[]).map((p) => (
-            <Button key={p} size="sm" variant={preset === p ? "default" : "outline"} className="text-xs capitalize h-7" onClick={() => applyPreset(p)}>{p.replace(/-/g, " ")}</Button>
+            <Button key={p} size="sm" variant={preset === p ? "default" : "outline"} className="text-[11px] capitalize h-7 px-2" onClick={() => applyPreset(p)}>{p.replace(/-/g, " ")}</Button>
           ))}
         </div>
 

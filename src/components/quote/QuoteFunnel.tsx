@@ -19,6 +19,7 @@ interface QuoteFunnelProps {
   onComplete: (data: FunnelResult) => void;
   onStepChange?: (step: number) => void;
   label?: string;
+  initialCustomer?: Customer;
 }
 
 const BUNDLE_ICONS: Record<string, React.ElementType> = {
@@ -311,11 +312,12 @@ function StepBundle({
 }
 
 /* ── Main Funnel (pure content, no page shell) ─────────── */
-export function QuoteFunnel({ onComplete, onStepChange, label = "quote" }: QuoteFunnelProps) {
-  const [step, _setStep] = useState(1);
+export function QuoteFunnel({ onComplete, onStepChange, label = "quote", initialCustomer }: QuoteFunnelProps) {
+  const startStep = initialCustomer ? 2 : 1;
+  const [step, _setStep] = useState(startStep);
   const setStep = (s: number) => { _setStep(s); onStepChange?.(s); };
-  const [customer, setCustomer] = useState<Customer | null>(null);
-  const [address, setAddress] = useState("");
+  const [customer, setCustomer] = useState<Customer | null>(initialCustomer || null);
+  const [address, setAddress] = useState(initialCustomer?.address || "");
 
   const handleSelectCustomer = (c: Customer) => {
     setCustomer(c);

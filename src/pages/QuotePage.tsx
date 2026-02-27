@@ -35,12 +35,13 @@ export default function QuotePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const managerState = (location.state as any);
+  const initialCustomer = managerState?.customer || null;
   const [activeTab, setActiveTab] = useState<QuotePageTab>("line-items");
   const [scope, setScope] = useState("");
   const [status, setStatus] = useState<QuoteStatus>("Draft");
   const [funnelComplete, setFunnelComplete] = useState(false);
   const [funnelData, setFunnelData] = useState<FunnelResult | null>(null);
-  const [funnelStep, setFunnelStep] = useState(1);
+  const [funnelStep, setFunnelStep] = useState(initialCustomer ? 2 : 1);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
@@ -97,6 +98,7 @@ export default function QuotePage() {
               setFunnelComplete(true);
             }}
             onStepChange={setFunnelStep}
+            initialCustomer={initialCustomer}
           />
 
           <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
