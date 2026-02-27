@@ -396,6 +396,26 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
 
   return (
     <div className="space-y-4">
+      {/* ── Global markup (set first) ────────────────────── */}
+      <div className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-border bg-card">
+        <div className="flex items-center gap-2">
+          <Switch checked={useGlobalMarkup} onCheckedChange={handleToggleGlobal} className="scale-90" />
+          <Label className="text-xs font-medium">Global Markup</Label>
+        </div>
+        {useGlobalMarkup && (
+          <div className="flex items-center gap-1">
+            <Input
+              className="w-16 h-7 text-xs text-center"
+              type="number"
+              min={0}
+              value={globalMarkupValue}
+              onChange={(e) => handleGlobalValueChange(parseFloat(e.target.value) || 0)}
+            />
+            <Percent className="w-3 h-3 text-muted-foreground" />
+          </div>
+        )}
+      </div>
+
       {/* ── Bundles bar ──────────────────────────────────── */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
         {bundleTemplates.map((b) => (
@@ -485,43 +505,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
         )}
       </div>
 
-      {/* ── Cover Letter ─────────────────────────────────── */}
-      <Collapsible open={coverLetterOpen} onOpenChange={setCoverLetterOpen}>
-        <CollapsibleTrigger asChild>
-          <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground w-full justify-start">
-            {coverLetterOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            Cover Letter
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="space-y-2 mt-2">
-          <Select
-            value={coverLetterTemplate}
-            onValueChange={(val) => {
-              setCoverLetterTemplate(val);
-              const tpl = coverLetterTemplates.find((t) => t.id === val);
-              if (tpl) setCoverLetter(tpl.body);
-            }}
-          >
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue placeholder="Choose a template…" />
-            </SelectTrigger>
-            <SelectContent>
-              {coverLetterTemplates.map((t) => (
-                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Textarea
-            value={coverLetter}
-            onChange={(e) => setCoverLetter(e.target.value)}
-            placeholder="Write your cover letter… Use {{customer_name}}, {{business_name}}, {{quote_total}}, {{job_address}}"
-            className="min-h-[100px] text-sm"
-          />
-          <p className="text-[10px] text-muted-foreground">
-            Variables: {"{{customer_name}}"}, {"{{business_name}}"}, {"{{quote_total}}"}, {"{{job_address}}"}
-          </p>
-        </CollapsibleContent>
-      </Collapsible>
+      {/* Cover letter moved to bottom before send */}
 
       {/* ── Stacked collapsible sections ─────────────────── */}
       {/* Column hints */}
@@ -654,26 +638,6 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
       {/* ── Summary card with margin visibility ──────────── */}
       <Card>
         <CardContent className="pt-4 space-y-2">
-          {/* Global markup toggle */}
-          <div className="flex items-center justify-between pb-2 border-b border-border">
-            <div className="flex items-center gap-2">
-              <Switch checked={useGlobalMarkup} onCheckedChange={handleToggleGlobal} className="scale-90" />
-              <Label className="text-xs font-medium">Global Markup</Label>
-            </div>
-            {useGlobalMarkup && (
-              <div className="flex items-center gap-1">
-                <Input
-                  className="w-16 h-7 text-xs text-center"
-                  type="number"
-                  min={0}
-                  value={globalMarkupValue}
-                  onChange={(e) => handleGlobalValueChange(parseFloat(e.target.value) || 0)}
-                />
-                <Percent className="w-3 h-3 text-muted-foreground" />
-              </div>
-            )}
-          </div>
-
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Cost</span>
             <span className="font-medium">${costTotal.toFixed(2)}</span>
@@ -702,6 +666,44 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
 
       {/* ── Before-actions slot ──────────────────────────── */}
       {beforeActions}
+
+      {/* ── Cover Letter (before send) ───────────────────── */}
+      <Collapsible open={coverLetterOpen} onOpenChange={setCoverLetterOpen}>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground w-full justify-start">
+            {coverLetterOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            Cover Letter
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2 mt-2">
+          <Select
+            value={coverLetterTemplate}
+            onValueChange={(val) => {
+              setCoverLetterTemplate(val);
+              const tpl = coverLetterTemplates.find((t) => t.id === val);
+              if (tpl) setCoverLetter(tpl.body);
+            }}
+          >
+            <SelectTrigger className="h-9 text-sm">
+              <SelectValue placeholder="Choose a template…" />
+            </SelectTrigger>
+            <SelectContent>
+              {coverLetterTemplates.map((t) => (
+                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Textarea
+            value={coverLetter}
+            onChange={(e) => setCoverLetter(e.target.value)}
+            placeholder="Write your cover letter… Use {{customer_name}}, {{business_name}}, {{quote_total}}, {{job_address}}"
+            className="min-h-[100px] text-sm"
+          />
+          <p className="text-[10px] text-muted-foreground">
+            Variables: {"{{customer_name}}"}, {"{{business_name}}"}, {"{{quote_total}}"}, {"{{job_address}}"}
+          </p>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* ── Action buttons ───────────────────────────────── */}
       <div className="flex gap-2">
