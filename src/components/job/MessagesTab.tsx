@@ -20,13 +20,25 @@ import {
 import { toast } from "sonner";
 import { Mail, MessageSquare, Send, Zap, ArrowLeft, Reply, Clock } from "lucide-react";
 
-const STATUS_COLORS: Record<Message["status"], string> = {
-  Sent: "bg-muted text-muted-foreground",
-  Delivered: "bg-primary/20 text-primary",
-  Opened: "bg-[hsl(var(--status-green))]/20 text-[hsl(var(--status-green))]",
-  Replied: "bg-[hsl(var(--status-green))] text-white",
-  Failed: "bg-destructive/20 text-destructive",
+const STATUS_COLORS: Record<string, string> = {
+  "Sequence Sent": "bg-muted text-muted-foreground",
+  "You Replied": "bg-muted text-muted-foreground",
+  "Delivered": "bg-primary/20 text-primary",
+  "Opened": "bg-[hsl(var(--status-green))]/20 text-[hsl(var(--status-green))]",
+  "Customer Replied": "bg-[hsl(var(--status-green))] text-white",
+  "Failed": "bg-destructive/20 text-destructive",
 };
+
+function getSmartStatus(msg: Message): string {
+  const isInbound = msg.direction === "inbound";
+  if (isInbound) return "Customer Replied";
+  // Outbound
+  if (msg.status === "Replied") return "You Replied";
+  if (msg.status === "Sent" || msg.status === "Delivered") return "Sequence Sent";
+  if (msg.status === "Opened") return "Opened";
+  if (msg.status === "Failed") return "Failed";
+  return msg.status;
+}
 
 /* ─── Inbox List Item ─── */
 function InboxItem({ msg, onClick, isActive }: { msg: Message; onClick: () => void; isActive: boolean }) {
@@ -41,7 +53,7 @@ function InboxItem({ msg, onClick, isActive }: { msg: Message; onClick: () => vo
         isActive
           ? "bg-accent border-primary/30"
           : isInbound
-            ? "bg-primary/10 border-primary/40 hover:bg-primary/15 shadow-[0_0_12px_hsl(var(--primary)/0.2)] animate-card-pulse"
+            ? "bg-primary/15 border-primary shadow-[0_0_16px_hsl(var(--primary)/0.35)] animate-card-pulse"
             : "bg-card border-border hover:bg-accent/50"
       )}
     >
@@ -60,9 +72,11 @@ function InboxItem({ msg, onClick, isActive }: { msg: Message; onClick: () => vo
             <span className="text-xs font-semibold text-card-foreground">
               {isSms ? "SMS" : "Email"} · {isInbound ? "Received" : "Sent"}
             </span>
-            <Badge className={cn("text-[9px] px-1.5 py-0 h-4 ml-auto shrink-0", STATUS_COLORS[msg.status])}>
-              {msg.status}
-            </Badge>
+            {(() => { const s = getSmartStatus(msg); return (
+              <Badge className={cn("text-[9px] px-1.5 py-0 h-4 ml-auto shrink-0", STATUS_COLORS[s] || "bg-muted text-muted-foreground")}>
+                {s}
+              </Badge>
+            ); })()}
           </div>
           {msg.subject && (
             <div className="text-xs font-medium text-card-foreground truncate mt-0.5">{msg.subject}</div>
@@ -111,9 +125,11 @@ function MessageDetail({ msg, onBack, onReply }: { msg: Message; onBack: () => v
               <div className="text-sm text-card-foreground font-medium">{msg.subject}</div>
             )}
           </div>
-          <Badge className={cn("text-[9px] px-1.5 py-0 h-4 shrink-0", STATUS_COLORS[msg.status])}>
-            {msg.status}
-          </Badge>
+          {(() => { const s = getSmartStatus(msg); return (
+            <Badge className={cn("text-[9px] px-1.5 py-0 h-4 shrink-0", STATUS_COLORS[s] || "bg-muted text-muted-foreground")}>
+              {s}
+            </Badge>
+          ); })()}
         </div>
 
         <div className="text-[10px] text-muted-foreground flex items-center gap-1.5">
