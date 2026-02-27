@@ -3,8 +3,8 @@ import { useNotificationStyle, type NotificationStyle } from "@/contexts/Notific
 import { cn } from "@/lib/utils";
 
 const OPTIONS: { id: NotificationStyle; label: string; desc: string }[] = [
-  { id: "icon", label: "Blue Icon", desc: "Show a blue mail icon next to unread jobs" },
-  { id: "pulse", label: "Card Pulse", desc: "Pulse the entire card with a vibrating effect" },
+  { id: "icon", label: "Blue Dot + Icon", desc: "Glowing blue dot and wiggling mail icon on unread jobs" },
+  { id: "pulse", label: "Card Pulse", desc: "The job preview card gently pulses when there's an unread" },
 ];
 
 export function NotificationStyleSettings({ onClose }: { onClose: () => void }) {

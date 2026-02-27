@@ -86,7 +86,17 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
             <div className="flex items-center gap-2 min-w-0">
               <span className="font-semibold text-card-foreground truncate">{job.client}</span>
               {job.urgent && <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0" />}
-              {job.hasUnread && notifStyle === "icon" && <Mail className="w-3.5 h-3.5 text-primary shrink-0 animate-wiggle" />}
+              {job.hasUnread && (
+                <>
+                  {notifStyle === "icon" && (
+                    <span className="relative flex h-3 w-3 shrink-0">
+                      <span className="animate-glow-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-primary shadow-[0_0_6px_2px_hsl(var(--primary)/0.5)]" />
+                    </span>
+                  )}
+                  <Mail className="w-3.5 h-3.5 text-primary shrink-0 animate-wiggle" />
+                </>
+              )}
             </div>
             <span className="hidden sm:inline text-muted-foreground truncate">{job.jobName}</span>
             {!isQuoteStage && (

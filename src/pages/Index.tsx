@@ -7,6 +7,7 @@ import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
 import { ManagerMode } from "@/components/ManagerMode";
 import { NotificationStyleSettings } from "@/components/NotificationStyleSettings";
 import { ChevronLeft, ChevronRight, LayoutGrid, Columns, Plus, Bell } from "lucide-react";
+import { jobs } from "@/data/dummyJobs";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -84,8 +85,14 @@ const Index = () => {
               <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
               <Popover open={notifSettingsOpen} onOpenChange={setNotifSettingsOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                    <Bell className="w-3.5 h-3.5" />
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 relative">
+                    <Bell className={cn("w-3.5 h-3.5", jobs.some(j => j.hasUnread) && "animate-bell-ring text-primary")} />
+                    {jobs.some(j => j.hasUnread) && (
+                      <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                        <span className="animate-glow-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                      </span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 border-0 shadow-none" align="start">
