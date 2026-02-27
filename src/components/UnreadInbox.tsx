@@ -55,9 +55,9 @@ export function UnreadInbox({ onClose }: UnreadInboxProps) {
               className="w-full text-left px-4 py-3 hover:bg-accent/50 transition-colors flex gap-3 items-start group"
               onClick={() => {
                 onClose();
-                // Navigate to the job where the message is
                 const isQuoteStage = ["Lead", "To Quote", "Quote Sent"].includes(msg.job.stage);
-                navigate(isQuoteStage ? `/quote/${msg.job.id}` : `/job/${msg.job.id}`);
+                const base = isQuoteStage ? `/quote/${msg.job.id}` : `/job/${msg.job.id}`;
+                navigate(`${base}?tab=messages`);
               }}
             >
               {/* Channel icon */}

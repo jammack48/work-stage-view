@@ -32,7 +32,8 @@ export default function JobCard() {
   const navigate = useNavigate();
   const location = useLocation();
   const managerState = (location.state as any);
-  const [activeTab, setActiveTab] = useState<JobTab>("overview");
+  const initialTab = (searchParams.get("tab") as JobTab) || "overview";
+  const [activeTab, setActiveTab] = useState<JobTab>(initialTab);
 
   const job = id === "new"
     ? getNewJobDetail(searchParams.get("stage") || "Lead")
