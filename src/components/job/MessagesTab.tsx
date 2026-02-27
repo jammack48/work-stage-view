@@ -40,7 +40,9 @@ function InboxItem({ msg, onClick, isActive }: { msg: Message; onClick: () => vo
         "w-full text-left p-3 rounded-lg border transition-colors",
         isActive
           ? "bg-accent border-primary/30"
-          : "bg-card border-border hover:bg-accent/50"
+          : isInbound
+            ? "bg-primary/5 border-primary/20 hover:bg-primary/10 ring-1 ring-primary/10"
+            : "bg-card border-border hover:bg-accent/50"
       )}
     >
       <div className="flex items-center gap-2 mb-1">
