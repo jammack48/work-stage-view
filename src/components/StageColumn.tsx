@@ -7,6 +7,7 @@ import { useThresholds } from "@/contexts/ThresholdContext";
 import { ThresholdSettings } from "@/components/ThresholdSettings";
 import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
 import { TutorialTip } from "@/components/TutorialTip";
+import { LeadActionMenu } from "@/components/LeadActionMenu";
 
 function countByStatus(jobs: Job[], greenMax: number, orangeMax: number) {
   let red = 0, orange = 0, green = 0;
@@ -80,6 +81,14 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
   const firstGreen = jobs.find(j => !j.urgent && j.ageDays <= thresholds.greenMax);
   const firstOrange = jobs.find(j => !j.urgent && j.ageDays > thresholds.greenMax && j.ageDays <= thresholds.orangeMax);
   const firstRed = jobs.find(j => j.urgent || j.ageDays > thresholds.orangeMax);
+  const isLeadStage = stage === "Lead";
+
+  const handleColorClick = (e: React.MouseEvent, job: Job | undefined) => {
+    e.stopPropagation();
+    if (!job || isLeadStage) return; // Lead stage handled by LeadActionMenu
+    const isQ = ["Lead","To Quote","Quote Sent"].includes(job.stage);
+    navigate(isQ ? `/quote/${job.id}` : `/job/${job.id}`);
+  };
 
   return (
     <div
@@ -142,56 +151,68 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
       {/* Color cards with count + first job details */}
       <div className="p-2 flex flex-col gap-1.5">
         {/* Green */}
-        <TutorialTip tip={COLOR_TIPS.green} side="right">
-          <div
-            className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
-            onClick={(e) => { e.stopPropagation(); if (firstGreen) { const isQ = ["Lead","To Quote","Quote Sent"].includes(firstGreen.stage); navigate(isQ ? `/quote/${firstGreen.id}` : `/job/${firstGreen.id}`); } }}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-white/90">{getLabel(stage, "green")}</span>
-              <span className="text-sm font-bold text-white">{counts.green}</span>
+        {(() => {
+          const card = (
+            <div
+              className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+              onClick={(e) => { handleColorClick(e, firstGreen); }}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-white/90">{getLabel(stage, "green")}</span>
+                <span className="text-sm font-bold text-white">{counts.green}</span>
+              </div>
+              {firstGreen ? (
+                <JobPreview job={firstGreen} notifStyle={notifStyle} />
+              ) : counts.green === 0 ? (
+                <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
+              ) : null}
             </div>
-            {firstGreen ? (
-              <JobPreview job={firstGreen} notifStyle={notifStyle} />
-            ) : counts.green === 0 ? (
-              <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
-            ) : null}
-          </div>
-        </TutorialTip>
+          );
+          const wrapped = <TutorialTip tip={COLOR_TIPS.green} side="right">{card}</TutorialTip>;
+          return isLeadStage && firstGreen ? <LeadActionMenu job={firstGreen} side="right">{wrapped}</LeadActionMenu> : wrapped;
+        })()}
         {/* Orange */}
-        <TutorialTip tip={COLOR_TIPS.orange} side="right">
-          <div
-            className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
-            onClick={(e) => { e.stopPropagation(); if (firstOrange) { const isQ = ["Lead","To Quote","Quote Sent"].includes(firstOrange.stage); navigate(isQ ? `/quote/${firstOrange.id}` : `/job/${firstOrange.id}`); } }}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-white/90">{getLabel(stage, "orange")}</span>
-              <span className="text-sm font-bold text-white">{counts.orange}</span>
+        {(() => {
+          const card = (
+            <div
+              className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+              onClick={(e) => { handleColorClick(e, firstOrange); }}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-white/90">{getLabel(stage, "orange")}</span>
+                <span className="text-sm font-bold text-white">{counts.orange}</span>
+              </div>
+              {firstOrange ? (
+                <JobPreview job={firstOrange} notifStyle={notifStyle} />
+              ) : counts.orange === 0 ? (
+                <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
+              ) : null}
             </div>
-            {firstOrange ? (
-              <JobPreview job={firstOrange} notifStyle={notifStyle} />
-            ) : counts.orange === 0 ? (
-              <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
-            ) : null}
-          </div>
-        </TutorialTip>
+          );
+          const wrapped = <TutorialTip tip={COLOR_TIPS.orange} side="right">{card}</TutorialTip>;
+          return isLeadStage && firstOrange ? <LeadActionMenu job={firstOrange} side="right">{wrapped}</LeadActionMenu> : wrapped;
+        })()}
         {/* Red */}
-        <TutorialTip tip={COLOR_TIPS.red} side="right">
-          <div
-            className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
-            onClick={(e) => { e.stopPropagation(); if (firstRed) { const isQ = ["Lead","To Quote","Quote Sent"].includes(firstRed.stage); navigate(isQ ? `/quote/${firstRed.id}` : `/job/${firstRed.id}`); } }}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-white/90">{getLabel(stage, "red")}</span>
-              <span className="text-sm font-bold text-white">{counts.red}</span>
+        {(() => {
+          const card = (
+            <div
+              className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+              onClick={(e) => { handleColorClick(e, firstRed); }}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-white/90">{getLabel(stage, "red")}</span>
+                <span className="text-sm font-bold text-white">{counts.red}</span>
+              </div>
+              {firstRed ? (
+                <JobPreview job={firstRed} notifStyle={notifStyle} />
+              ) : counts.red === 0 ? (
+                <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
+              ) : null}
             </div>
-            {firstRed ? (
-              <JobPreview job={firstRed} notifStyle={notifStyle} />
-            ) : counts.red === 0 ? (
-              <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
-            ) : null}
-          </div>
-        </TutorialTip>
+          );
+          const wrapped = <TutorialTip tip={COLOR_TIPS.red} side="right">{card}</TutorialTip>;
+          return isLeadStage && firstRed ? <LeadActionMenu job={firstRed} side="right">{wrapped}</LeadActionMenu> : wrapped;
+        })()}
       </div>
     </div>
   );
