@@ -1,44 +1,60 @@
 
 
-## Three-Line Item Rows with Buy/Sell/Markup Pricing
+## Restructure Quote into Per-Bundle Sections
 
-### Problem
-Currently each item has two lines: name, then qty × cost price + markup%. The user wants:
-1. Global markup applied by default but **overridable per item** (currently global locks all items read-only)
-2. Both **buy price** and **sell price** fields — editing sell price back-calculates markup%, editing markup% calculates sell price
-3. Three lines per item on mobile to fit everything comfortably
+### Current problem
+All bundles merge their items into three flat arrays (labour, materials, extras). The user wants each bundle/job to be a distinct named section with its own labour, materials, extras breakdown — like a mini-quote per job.
 
-### Changes
+### New data model
+**File: `src/components/job/QuoteTab.tsx`**
 
-**File: `src/components/job/QuoteTab.tsx` — ItemRow component (lines 86-172)**
+Replace `labourItems`, `materialItems`, `extrasItems` with a single array of `QuoteBlock`:
 
-Redesign to three lines:
-- **Line 1**: Item name + delete button
-- **Line 2**: Qty + Buy Price (cost) + Sell Price
-- **Line 3**: Markup % + Line Total
+```text
+QuoteBlock {
+  id: string
+  name: string          // "Install Heat Pump", "Install Switchboard"
+  description: string   // editable scope text per block
+  qty: number           // bundle multiplier (e.g. ×2 heat pumps)
+  labour: LineItem[]
+  materials: LineItem[]
+  extras: LineItem[]
+}
+```
 
-Pricing logic:
-- Editing **buy price** → sell price recalculates using current markup%
-- Editing **sell price** → markup% recalculates as `((sell - buy) / buy) * 100`
-- Editing **markup%** → sell price recalculates as `buy * (1 + markup/100)`
-- Each item stores: `unitPrice` (buy), `sellPrice` (derived or manual), `markup`
+State becomes: `const [blocks, setBlocks] = useState<QuoteBlock[]>([])`
 
-Add `sellPrice` to `LineItem` interface. When sell price is set directly, markup auto-updates. When markup is set, sell price auto-updates.
+### UI layout per block
+Each block renders as a bordered card:
+1. **Block header**: Name (editable) + quantity badge + delete block button
+2. **Description**: Inline editable textarea
+3. **Labour section** (collapsible with items)
+4. **Materials section** (collapsible with items)
+5. **Extras section** (collapsible with items)
+6. **Block subtotal**
 
-**Global markup override behaviour (lines 204-232)**
+### Bottom "Add" area
+After all blocks, show an "Add Another" section with two options:
+- **Add Bundle** — opens bundle picker dialog (existing bundle bar becomes this)
+- **Add Custom Job** — adds an empty block with blank name/description and empty sections
 
-Change so global markup sets the **default** for all items but does NOT lock them read-only. Instead:
-- When global markup is toggled on or value changes, all items get their markup updated to the global value
-- Individual items can then be overridden freely — they just won't track global changes anymore until reset
-- Add a small "reset" indicator on items that differ from global
+### Bundle bar removal
+Remove the horizontal scrolling bundle bar from the top. Move bundle selection into the "Add Another" flow at the bottom (and also available when quote is empty as the initial prompt).
 
-**File: `src/components/job/QuoteTab.tsx` — makeUpdater function (lines 255-258)**
+### Summary card
+Totals aggregate across all blocks. Cost, markup, subtotal, GST, grand total remain the same — just summed across all blocks.
 
-Update the field updater to handle the buy/sell/markup triangle:
-- If `unitPrice` changes → recalc `sellPrice` from current `markup`
-- If `sellPrice` changes → recalc `markup` from `unitPrice` and new `sellPrice`
-- If `markup` changes → recalc `sellPrice` from `unitPrice` and new `markup`
+### Preview update
+**File: `src/components/quote/QuotePreview.tsx`**
+
+Update to receive `blocks: QuoteBlock[]` instead of flat items array. In "detailed" and "sub-section" modes, render per-block sections with block names as headings.
+
+### Initial state
+- If `initialBundle` is provided (from funnel), create one block from it
+- If loading existing job, create one block from the job's time entries and materials
+- Empty new quote shows the "Add Bundle or Custom Job" prompt
 
 ### Files to modify
-- `src/components/job/QuoteTab.tsx` — three-line ItemRow, bidirectional sell/markup calc, global markup as default not lock
+- `src/components/job/QuoteTab.tsx` — new QuoteBlock data model, per-block rendering, "Add Another" bottom section
+- `src/components/quote/QuotePreview.tsx` — accept blocks array, render per-block in preview
 
