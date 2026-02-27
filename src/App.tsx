@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ThresholdProvider } from "@/contexts/ThresholdContext";
+import { NotificationStyleProvider } from "@/contexts/NotificationStyleContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
 import { TutorialProvider } from "@/contexts/TutorialContext";
@@ -61,6 +62,7 @@ const App = () => (
       <TutorialProvider>
       <ToolbarPositionProvider>
       <ThresholdProvider>
+      <NotificationStyleProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -69,6 +71,7 @@ const App = () => (
             <AppLayout />
           </BrowserRouter>
         </TooltipProvider>
+      </NotificationStyleProvider>
       </ThresholdProvider>
       </ToolbarPositionProvider>
       </TutorialProvider>

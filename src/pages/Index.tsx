@@ -5,8 +5,10 @@ import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
 import { ManagerMode } from "@/components/ManagerMode";
-import { ChevronLeft, ChevronRight, LayoutGrid, Columns, Plus } from "lucide-react";
+import { NotificationStyleSettings } from "@/components/NotificationStyleSettings";
+import { ChevronLeft, ChevronRight, LayoutGrid, Columns, Plus, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -37,7 +39,7 @@ const Index = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "center" });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeView, setActiveView] = useState<HomeView>(managerState?.fromManager ? "manager" : "pipeline");
-
+  const [notifSettingsOpen, setNotifSettingsOpen] = useState(false);
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setCurrentSlide(emblaApi.selectedScrollSnap());
@@ -78,7 +80,19 @@ const Index = () => {
           <span className="text-base font-bold text-card-foreground">Manager Mode</span>
         ) : (
           <div className="flex items-center justify-between">
-            <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
+            <div className="flex items-center gap-2">
+              <span className="text-card-foreground font-bold text-base">Pipeline Dashboard</span>
+              <Popover open={notifSettingsOpen} onOpenChange={setNotifSettingsOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                    <Bell className="w-3.5 h-3.5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 border-0 shadow-none" align="start">
+                  <NotificationStyleSettings onClose={() => setNotifSettingsOpen(false)} />
+                </PopoverContent>
+              </Popover>
+            </div>
             {!isMobile && (
               <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5">
                 <Button

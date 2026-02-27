@@ -5,6 +5,7 @@ import { STAGE_LABELS } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
 import { useThresholds } from "@/contexts/ThresholdContext";
 import { ThresholdSettings } from "@/components/ThresholdSettings";
+import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
 
 function countByStatus(jobs: Job[], greenMax: number, orangeMax: number) {
   let red = 0, orange = 0, green = 0;
@@ -29,8 +30,10 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
   const isVertical = layout === "vertical";
   const navigate = useNavigate();
   const { getThresholds, getLabel } = useThresholds();
+  const { style: notifStyle } = useNotificationStyle();
   const thresholds = getThresholds(stage);
   const counts = countByStatus(jobs, thresholds.greenMax, thresholds.orangeMax);
+  const hasUnread = jobs.some(j => j.hasUnread);
   const firstGreen = jobs.find(j => !j.urgent && j.ageDays <= thresholds.greenMax);
   const firstOrange = jobs.find(j => !j.urgent && j.ageDays > thresholds.greenMax && j.ageDays <= thresholds.orangeMax);
   const firstRed = jobs.find(j => j.urgent || j.ageDays > thresholds.orangeMax);
@@ -41,7 +44,8 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
         "flex flex-col rounded-xl overflow-hidden cursor-pointer transition-all duration-200",
         "hover:bg-secondary/80",
         isExpanded && "ring-2 ring-primary/50 shadow-[0_0_20px_hsl(var(--glow-primary)/0.15)]",
-        isVertical ? "min-w-[220px] w-full" : "flex-1 min-w-0"
+        isVertical ? "min-w-[220px] w-full" : "flex-1 min-w-0",
+        hasUnread && notifStyle === "pulse" && "animate-card-pulse"
       )}
       style={{ backgroundColor: "hsl(var(--column-bg))" }}
       onClick={onToggle}
@@ -101,7 +105,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
             <div className="mt-1 text-[11px] text-white/80 leading-tight">
               <div className="font-semibold truncate flex items-center gap-1">
                 {firstGreen.client}
-                {firstGreen.hasUnread && <Mail className="w-3 h-3 text-white animate-wiggle shrink-0" />}
+                {firstGreen.hasUnread && notifStyle === "icon" && <Mail className="w-3 h-3 text-primary animate-wiggle shrink-0" />}
               </div>
               <div className="truncate opacity-75">{firstGreen.jobName}</div>
             </div>
@@ -119,7 +123,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
             <div className="mt-1 text-[11px] text-white/80 leading-tight">
               <div className="font-semibold truncate flex items-center gap-1">
                 {firstOrange.client}
-                {firstOrange.hasUnread && <Mail className="w-3 h-3 text-white animate-wiggle shrink-0" />}
+                {firstOrange.hasUnread && notifStyle === "icon" && <Mail className="w-3 h-3 text-primary animate-wiggle shrink-0" />}
               </div>
               <div className="truncate opacity-75">{firstOrange.jobName}</div>
             </div>
@@ -137,7 +141,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
             <div className="mt-1 text-[11px] text-white/80 leading-tight">
               <div className="font-semibold truncate flex items-center gap-1">
                 {firstRed.client}
-                {firstRed.hasUnread && <Mail className="w-3 h-3 text-white animate-wiggle shrink-0" />}
+                {firstRed.hasUnread && notifStyle === "icon" && <Mail className="w-3 h-3 text-primary animate-wiggle shrink-0" />}
               </div>
               <div className="truncate opacity-75">{firstRed.jobName}</div>
             </div>
