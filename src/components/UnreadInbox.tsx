@@ -28,7 +28,7 @@ export function UnreadInbox({ onClose }: UnreadInboxProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="animate-fade-in bg-card rounded-xl shadow-2xl border border-border w-[340px] max-h-[420px] flex flex-col">
+    <div className="animate-fade-in bg-card rounded-xl shadow-2xl border border-border w-[calc(100vw-2rem)] sm:w-[340px] max-h-[420px] flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h3 className="text-sm font-bold text-card-foreground flex items-center gap-2">

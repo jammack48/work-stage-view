@@ -35,6 +35,8 @@ export const PIPELINE_EXTRAS: ToolbarTab[] = [
 
 export const SCHEDULE_EXTRAS: ToolbarTab[] = [
   BACK_TAB,
+  { id: "pipeline", label: "Pipeline", icon: Home },
+  { id: "customers", label: "Customers", icon: Users },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 

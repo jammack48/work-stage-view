@@ -5,6 +5,7 @@ import { UNREAD_CLIENTS } from "@/data/dummyJobs";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "@/hooks/use-toast";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import { DUMMY_CUSTOMERS } from "@/data/dummyCustomers";
@@ -36,7 +37,7 @@ export default function Customers() {
       >
         <div className="flex items-center justify-between mb-4">
           <span className="text-sm text-muted-foreground">{filtered.length} customers</span>
-          <Button size="sm" className="gap-1.5"><UserPlus className="w-4 h-4" />Add Customer</Button>
+          <Button size="sm" className="gap-1.5" onClick={() => { toast({ title: "Coming soon", description: "New customer form is under development." }); }}><UserPlus className="w-4 h-4" />Add Customer</Button>
         </div>
         <div className="space-y-2">
           {filtered.map((c) => (

@@ -31,6 +31,7 @@ const SchedulePage = () => {
 
   const handleTabChange = (id: string) => {
     if (id === "back") { navigate("/"); return; }
+    if (id === "pipeline") { navigate("/"); return; }
     handleCommonTab(id, navigate);
   };
 

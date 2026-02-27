@@ -298,7 +298,7 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
   const { getThresholds, getLabel } = useThresholds();
   const [activeStage, setActiveStage] = useState<Stage>(initialStage || "Lead");
   const [activePriority, setActivePriority] = useState<PriorityColor>(initialPriority || "red");
-  const [note, setNote] = useState("");
+  const [notes, setNotes] = useState<Record<string, string>>({});
   const [viewMode, setViewMode] = useState<ViewMode>("swipe");
 
   const thresholds = getThresholds(activeStage);
@@ -345,7 +345,8 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
       else navigate(`/job/${job.id}`, { state: managerNavState });
       return;
     }
-    if (actionDef.requiresNote && !note.trim()) {
+    const jobNote = notes[job.id] || "";
+    if (actionDef.requiresNote && !jobNote.trim()) {
       toast({
         title: "Note required",
         description: `Please add a note explaining why you're archiving ${job.client} — ${job.jobName}.`,
@@ -355,15 +356,16 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
     }
     toast({
       title: `${action.charAt(0).toUpperCase() + action.slice(1)}`,
-      description: `${job.client} — ${job.jobName} has been ${action}.${actionDef.requiresNote ? ` Note: ${note}` : ""}`,
+      description: `${job.client} — ${job.jobName} has been ${action}.${actionDef.requiresNote ? ` Note: ${jobNote}` : ""}`,
     });
-    if (actionDef.requiresNote) setNote("");
+    if (actionDef.requiresNote) setNotes(prev => ({ ...prev, [job.id]: "" }));
   };
 
   const handleSaveNote = (job: Job) => {
-    if (!note.trim()) return;
+    const jobNote = notes[job.id] || "";
+    if (!jobNote.trim()) return;
     toast({ title: "Note saved", description: `Note added to ${job.client} — ${job.jobName}` });
-    setNote("");
+    setNotes(prev => ({ ...prev, [job.id]: "" }));
   };
 
   const priorityCounts = PRIORITY_COLORS.map((p) => ({
@@ -489,8 +491,8 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
               job={job}
               activeStage={activeStage}
               activePriority={activePriority}
-              note={note}
-              setNote={setNote}
+              note={notes[job.id] || ""}
+              setNote={(v) => setNotes(prev => ({ ...prev, [job.id]: v }))}
               onAction={handleAction}
               onSaveNote={handleSaveNote}
             />
@@ -507,8 +509,8 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
                     job={job}
                     activeStage={activeStage}
                     activePriority={activePriority}
-                    note={note}
-                    setNote={setNote}
+                    note={notes[job.id] || ""}
+                    setNote={(v) => setNotes(prev => ({ ...prev, [job.id]: v }))}
                     onAction={handleAction}
                     onSaveNote={handleSaveNote}
                   />

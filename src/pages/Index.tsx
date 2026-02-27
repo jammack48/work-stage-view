@@ -159,10 +159,13 @@ const Index = () => {
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={scrollPrev} disabled={currentSlide === 0}>
                 <ChevronLeft className="w-5 h-5" />
               </Button>
-              <div className="flex gap-2">
-                {STAGES.map((_, i) => (
-                  <span key={i} className={cn("w-2.5 h-2.5 rounded-full transition-all", i === currentSlide ? "bg-primary scale-125" : "bg-muted-foreground/30")} />
-                ))}
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs font-semibold text-card-foreground">{STAGES[currentSlide]}</span>
+                <div className="flex gap-1.5">
+                  {STAGES.map((_, i) => (
+                    <span key={i} className={cn("w-2 h-2 rounded-full transition-all", i === currentSlide ? "bg-primary scale-125" : "bg-muted-foreground/30")} />
+                  ))}
+                </div>
               </div>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={scrollNext} disabled={currentSlide === STAGES.length - 1}>
                 <ChevronRight className="w-5 h-5" />

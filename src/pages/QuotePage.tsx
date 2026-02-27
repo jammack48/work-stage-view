@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getJobDetail, getNewJobDetail, type BundleTemplate } from "@/data/dummyJobDetails";
-
+import { toast } from "@/hooks/use-toast";
 import { PageToolbar } from "@/components/PageToolbar";
 import { QuoteOverviewTab } from "@/components/quote/QuoteOverviewTab";
 import { QuoteTab } from "@/components/job/QuoteTab";
@@ -59,6 +59,11 @@ export default function QuotePage() {
 
   const handleLeaveConfirm = (saveDraft: boolean) => {
     setShowLeaveDialog(false);
+    if (saveDraft) {
+      toast({ title: "Draft saved", description: "Your quote draft has been saved." });
+    } else {
+      toast({ title: "Discarded", description: "Quote draft discarded." });
+    }
     if (pendingNavId) {
       setFunnelComplete(true);
       setActiveTab(pendingNavId as QuotePageTab);

@@ -45,9 +45,7 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
         {["New lead received", "Quote accepted", "Job completed", "Invoice overdue", "Team member assigned"].map((item) => (
           <div key={item} className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
             <span className="text-sm text-card-foreground">{item}</span>
-            <div className="w-10 h-5 rounded-full bg-primary/80 relative">
-              <div className="w-4 h-4 rounded-full bg-primary-foreground absolute right-0.5 top-0.5" />
-            </div>
+            <Switch defaultChecked />
           </div>
         ))}
 
