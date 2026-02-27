@@ -1,35 +1,33 @@
 
 
-## Plan: Customer Card Communication Overhaul
+## Plan: Four Fixes
 
-### What's changing
+### 1. Unread Inbox → Customer Messages (not Job/Quote)
+**Problem**: `UnreadInbox` navigates to `/job/:id?tab=messages` or `/quote/:id?tab=messages`. User wants it to go to the **customer's** messaging system.
 
-The Customer Card needs three upgrades:
-1. **Replace generic Communication Summary** with channel-specific stats (SMS icon + count, Email icon + count, last contact per channel)
-2. **Add Messages tab** to Customer Card (reuse the MessagesTab pattern from Job Card) so you can read/reply to emails and SMS directly
-3. **Upgrade History tab** to include communication events (email sent, SMS delivered, reply received) not just notes and job events
+**Fix** in `src/components/UnreadInbox.tsx`:
+- Map each unread job's `client` name to the matching customer ID from `DUMMY_CUSTOMERS`
+- Navigate to `/customer/:customerId?tab=messages` instead of job/quote routes
 
-### Files to modify
+Also update `src/pages/CustomerCard.tsx` to read `?tab=messages` from URL params and initialize `activeTab` from it (same pattern as JobCard).
 
-**`src/config/toolbarTabs.ts`**
-- Add `messages` tab (Mail icon) to `CUSTOMER_CARD_EXTRAS` — position it after Overview
+### 2. Unread Indicators on Customer List
+**Fix** in `src/pages/Customers.tsx`:
+- Import `UNREAD_CLIENTS` from `dummyJobs`
+- For each customer row, if `UNREAD_CLIENTS.has(c.name)`, show a blue glowing dot and animated mail icon next to their name
 
-**`src/pages/CustomerCard.tsx`**
-- Add `"messages"` to `CustTab` type
-- Replace the Communication Summary card in overview: show two side-by-side channel cards (SMS with MessageSquare icon, Email with Mail icon) each showing sent/received/last contact
-- Import and wire `MessagesTab` for the messages tab content
-- Keep overview financial stats (open quotes, outstanding) but restructure layout
+### 3. Sticky Toolbar on All Screens
+**Fix** in `src/components/PageToolbar.tsx`:
+- Desktop vertical sidebar: add `sticky top-0 h-screen overflow-y-auto` to the `<nav>`
+- Desktop horizontal bar: add `sticky top-0 z-40` to the `<nav>`
+- These changes ensure the toolbar stays visible when content scrolls
 
-**`src/components/customer/HistoryTab.tsx`**
-- Add communication event types: `"email-sent"`, `"email-received"`, `"sms-sent"`, `"sms-received"`
-- Generate dummy comms history entries with proper icons and labels like "Email sent: Your quote is ready", "SMS received: Thanks will check tonight"
-- Add channel icons (Mail/MessageSquare) to timeline entries alongside the type badge
+### 4. Pipeline Cards: Header Expands List, Card Navigates to Job
+**Problem**: Clicking anywhere on the stage column toggles expand. User wants: clicking the **header** expands, clicking a **color card** navigates directly to the first job shown on that card.
 
-**`src/data/dummyMessages.ts`**
-- No changes needed — the existing dummy messages data can be reused for both Job and Customer message views
-
-### Overview tab new layout
-- Two channel summary cards side by side: SMS (bubble icon, "8 sent · 3 received · Last: 1 day ago") and Email (mail icon, "6 sent · 2 received · Last: 2 days ago")
-- Below: financial summary row (Open Quotes, Outstanding balance)
-- Below: quick actions (existing)
+**Fix** in `src/components/StageColumn.tsx`:
+- Remove the `onClick={onToggle}` from the outer container div
+- Add `onClick={onToggle}` only to the header div
+- Add `onClick` to each color card (green/orange/red) that navigates to the first job in that bucket (e.g., `navigate(/job/:id)` or `/quote/:id` based on stage), with `e.stopPropagation()`
+- If no jobs in that bucket, clicking does nothing
 
