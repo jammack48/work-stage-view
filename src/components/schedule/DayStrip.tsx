@@ -16,8 +16,8 @@ export function DayStrip({ weekStart, selectedDay, onSelectDay, onPrevWeek, onNe
 
   return (
     <div className="flex items-center gap-1">
-      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0" onClick={onPrevWeek}>
-        <ChevronLeft className="w-4 h-4" />
+      <Button variant="ghost" size="sm" className="h-10 w-10 sm:h-8 sm:w-8 p-0 shrink-0" onClick={onPrevWeek}>
+        <ChevronLeft className="w-5 h-5 sm:w-4 sm:h-4" />
       </Button>
       <div className="flex flex-1 justify-center gap-1">
         {days.map((d, i) => {
@@ -28,7 +28,7 @@ export function DayStrip({ weekStart, selectedDay, onSelectDay, onPrevWeek, onNe
               key={i}
               onClick={() => onSelectDay(i)}
               className={cn(
-                "relative flex flex-col items-center py-2 px-4 sm:px-5 rounded-xl transition-colors min-w-[52px] font-bold border-2 border-transparent",
+                "relative flex flex-col items-center py-2 px-3 sm:px-5 rounded-xl transition-colors min-w-[56px] font-bold border-2 border-transparent",
                 selected && "bg-primary text-primary-foreground ring-2 ring-white/30 shadow-[0_0_20px_hsl(var(--primary)/0.5)] border-white/20",
                 !selected && "hover:bg-accent/50"
               )}
@@ -54,8 +54,8 @@ export function DayStrip({ weekStart, selectedDay, onSelectDay, onPrevWeek, onNe
           );
         })}
       </div>
-      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0" onClick={onNextWeek}>
-        <ChevronRight className="w-4 h-4" />
+      <Button variant="ghost" size="sm" className="h-10 w-10 sm:h-8 sm:w-8 p-0 shrink-0" onClick={onNextWeek}>
+        <ChevronRight className="w-5 h-5 sm:w-4 sm:h-4" />
       </Button>
     </div>
   );

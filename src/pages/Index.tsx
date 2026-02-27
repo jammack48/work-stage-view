@@ -159,9 +159,9 @@ const Index = () => {
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={scrollPrev} disabled={currentSlide === 0}>
                 <ChevronLeft className="w-5 h-5" />
               </Button>
-              <div className="flex gap-1.5">
+              <div className="flex gap-2">
                 {STAGES.map((_, i) => (
-                  <span key={i} className={cn("w-2 h-2 rounded-full transition-all", i === currentSlide ? "bg-primary scale-125" : "bg-muted-foreground/30")} />
+                  <span key={i} className={cn("w-2.5 h-2.5 rounded-full transition-all", i === currentSlide ? "bg-primary scale-125" : "bg-muted-foreground/30")} />
                 ))}
               </div>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={scrollNext} disabled={currentSlide === STAGES.length - 1}>
@@ -171,7 +171,7 @@ const Index = () => {
             <div ref={emblaRef} className="overflow-hidden">
               <div className="flex">
                 {STAGES.map((stage) => (
-                  <div key={stage} className="flex-[0_0_85%] max-w-[320px] min-w-0 px-2 flex flex-col gap-2">
+                  <div key={stage} className="flex-[0_0_90%] min-w-0 px-2 flex flex-col gap-2">
                     <StageColumn stage={stage} jobs={jobsByStage(stage)} isExpanded={expandedStage === stage} onToggle={() => handleToggle(stage)} onNext={scrollNext} layout="horizontal" />
                     {ACTION_BOXES[stage] && (
                       <TutorialTip tip={ACTION_TIPS[stage] || ""} side="bottom">

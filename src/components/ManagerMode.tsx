@@ -256,7 +256,7 @@ function JobCard({ job, activeStage, activePriority, note, setNote, onAction, on
             key={a.label}
             variant="outline"
             size="sm"
-            className="h-11 text-xs gap-1.5 justify-start whitespace-normal text-left leading-tight"
+            className="h-12 text-xs gap-1.5 justify-start whitespace-normal text-left leading-tight"
             onClick={() => onAction(job, a.action, a)}
           >
             <a.icon className="w-4 h-4 shrink-0" />
@@ -408,7 +408,7 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
               key={stage}
               onClick={() => setActiveStage(stage)}
               className={cn(
-                "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
+                "shrink-0 px-4 py-2 rounded-full text-xs font-medium transition-colors border min-h-[36px]",
                 activeStage === stage
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-secondary text-secondary-foreground border-border hover:bg-accent"
@@ -426,7 +426,7 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
               key={p.color}
               onClick={() => setActivePriority(p.color)}
               className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all border w-full",
+                "flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-all border w-full min-h-[44px]",
                 activePriority === p.color
                   ? `${p.bg} ring-2 ${p.ring} border-transparent`
                   : "bg-secondary border-border"

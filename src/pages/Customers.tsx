@@ -43,7 +43,7 @@ export default function Customers() {
             <div
               key={c.id}
               onClick={() => navigate(`/customer/${c.id}`)}
-              className="flex items-center gap-4 p-3 rounded-lg bg-card border border-border hover:bg-accent/50 cursor-pointer transition-colors"
+              className="flex items-center gap-3 sm:gap-4 p-3 sm:p-3 rounded-lg bg-card border border-border hover:bg-accent/50 cursor-pointer transition-colors min-h-[64px]"
             >
               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                 <Users className="w-5 h-5 text-primary" />
@@ -61,9 +61,9 @@ export default function Customers() {
                     </>
                   )}
                 </div>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-3 text-xs text-muted-foreground mt-0.5">
                   <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{c.phone}</span>
-                  {!isMobile && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{c.email}</span>}
+                  <span className="flex items-center gap-1 truncate"><Mail className="w-3 h-3 shrink-0" /><span className="truncate">{c.email}</span></span>
                   {!isMobile && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{c.address}</span>}
                 </div>
               </div>

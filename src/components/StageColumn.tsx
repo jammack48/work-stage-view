@@ -154,7 +154,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
         {(() => {
           const card = (
             <div
-              className="rounded-md bg-[hsl(var(--status-green))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+              className="rounded-md bg-[hsl(var(--status-green))] px-3 py-2 min-h-[72px] sm:h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
               onClick={(e) => { handleColorClick(e, firstGreen); }}
             >
               <div className="flex items-center justify-between">
@@ -175,7 +175,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
         {(() => {
           const card = (
             <div
-              className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+              className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-2 min-h-[72px] sm:h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
               onClick={(e) => { handleColorClick(e, firstOrange); }}
             >
               <div className="flex items-center justify-between">
@@ -196,7 +196,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
         {(() => {
           const card = (
             <div
-              className="rounded-md bg-[hsl(var(--status-red))] px-3 py-1.5 h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+              className="rounded-md bg-[hsl(var(--status-red))] px-3 py-2 min-h-[72px] sm:h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
               onClick={(e) => { handleColorClick(e, firstRed); }}
             >
               <div className="flex items-center justify-between">
