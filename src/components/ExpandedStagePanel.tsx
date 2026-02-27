@@ -1,4 +1,4 @@
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, X, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Job } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
@@ -84,6 +84,7 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
             <div className="flex items-center gap-2 min-w-0">
               <span className="font-semibold text-card-foreground truncate">{job.client}</span>
               {job.urgent && <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0" />}
+              {job.hasUnread && <Mail className="w-3.5 h-3.5 text-destructive shrink-0 animate-wiggle" />}
             </div>
             <span className="hidden sm:inline text-muted-foreground truncate">{job.jobName}</span>
             {!isQuoteStage && (

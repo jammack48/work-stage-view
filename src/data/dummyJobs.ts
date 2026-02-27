@@ -6,7 +6,16 @@ export interface Job {
   ageDays: number;
   urgent: boolean;
   stage: string;
+  hasUnread?: boolean;
 }
+
+/** Clients with unread inbound messages */
+export const UNREAD_CLIENTS = new Set([
+  "Sarah Mitchell",
+  "Mike O'Brien",
+  "Lisa Chen",
+  "Hemi Brown",
+]);
 
 const stages = [
   "Lead",
@@ -70,14 +79,16 @@ stages.forEach((stage, si) => {
   for (let ji = 0; ji < 10; ji++) {
     const clientIdx = (si * 10 + ji) % clients.length;
     const jobIdx = (si * 7 + ji * 3) % jobTypes.length;
+    const clientName = clients[clientIdx];
     allJobs.push({
       id: generateId(si, ji),
-      client: clients[clientIdx],
+      client: clientName,
       jobName: jobTypes[jobIdx],
       value: ((si * 10 + ji) % 25 + 5) * 100,
       ageDays: ageDayPattern[ji],
       urgent: urgentPattern[ji],
       stage,
+      hasUnread: UNREAD_CLIENTS.has(clientName),
     });
   }
 });

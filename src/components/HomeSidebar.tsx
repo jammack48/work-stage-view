@@ -2,11 +2,14 @@ import { Home, Users, DollarSign, FileText, Settings, Columns, LayoutGrid } from
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { jobs } from "@/data/dummyJobs";
 
 export type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings";
 
-const TABS: { id: HomeView; label: string; icon: React.ElementType; path?: string }[] = [
-  { id: "pipeline", label: "Pipeline", icon: Home },
+const UNREAD_COUNT = jobs.filter(j => j.hasUnread).length;
+
+const TABS: { id: HomeView; label: string; icon: React.ElementType; path?: string; badge?: number }[] = [
+  { id: "pipeline", label: "Pipeline", icon: Home, badge: UNREAD_COUNT > 0 ? UNREAD_COUNT : undefined },
   { id: "customers", label: "Customers", icon: Users, path: "/customers" },
   { id: "quotes", label: "Quotes", icon: DollarSign },
   { id: "invoices", label: "Invoices", icon: FileText },
@@ -36,19 +39,26 @@ export function HomeSidebar({ activeView, onViewChange, mobileLayout, onMobileLa
   if (!isMobile) {
     return (
       <nav className="w-[200px] shrink-0 flex flex-col gap-1 py-2">
-        {TABS.map(({ id, label, icon: Icon, path }) => (
+        {TABS.map(({ id, label, icon: Icon, path, badge }) => (
           <button
             key={id}
             onClick={() => handleClick({ id, label, icon: Icon, path })}
             className={cn(
-              "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left",
+              "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left relative",
               "min-h-[48px]",
               activeView === id && !path
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             )}
           >
-            <Icon className="w-5 h-5 shrink-0" />
+            <div className="relative shrink-0">
+              <Icon className="w-5 h-5" />
+              {badge && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center animate-wiggle">
+                  {badge}
+                </span>
+              )}
+            </div>
             {label}
           </button>
         ))}
@@ -66,19 +76,26 @@ export function HomeSidebar({ activeView, onViewChange, mobileLayout, onMobileLa
         >
           <Columns className="w-4 h-4" />
         </button>
-        {TABS.map(({ id, label, icon: Icon, path }) => (
+        {TABS.map(({ id, label, icon: Icon, path, badge }) => (
           <button
             key={id}
             onClick={() => handleClick({ id, label, icon: Icon, path })}
             className={cn(
-              "flex flex-col items-center justify-center w-11 h-11 rounded-lg transition-colors shrink-0",
+              "flex flex-col items-center justify-center w-11 h-11 rounded-lg transition-colors shrink-0 relative",
               activeView === id && !path
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-accent"
             )}
             title={label}
           >
-            <Icon className="w-5 h-5" />
+            <div className="relative">
+              <Icon className="w-5 h-5" />
+              {badge && (
+                <span className="absolute -top-1.5 -right-2 min-w-[14px] h-3.5 px-0.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold flex items-center justify-center">
+                  {badge}
+                </span>
+              )}
+            </div>
           </button>
         ))}
       </nav>
@@ -94,7 +111,7 @@ export function HomeSidebar({ activeView, onViewChange, mobileLayout, onMobileLa
       >
         <LayoutGrid className="w-4 h-4" />
       </button>
-      {TABS.map(({ id, label, icon: Icon, path }) => (
+      {TABS.map(({ id, label, icon: Icon, path, badge }) => (
         <button
           key={id}
           onClick={() => handleClick({ id, label, icon: Icon, path })}
@@ -105,7 +122,14 @@ export function HomeSidebar({ activeView, onViewChange, mobileLayout, onMobileLa
               : "text-muted-foreground hover:bg-accent"
           )}
         >
-          <Icon className="w-5 h-5" />
+          <div className="relative">
+            <Icon className="w-5 h-5" />
+            {badge && (
+              <span className="absolute -top-1.5 -right-2 min-w-[14px] h-3.5 px-0.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold flex items-center justify-center">
+                {badge}
+              </span>
+            )}
+          </div>
           <span className="text-[9px] font-medium leading-none">{label}</span>
         </button>
       ))}

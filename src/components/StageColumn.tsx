@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Job } from "@/data/dummyJobs";
 import { STAGE_LABELS } from "@/data/dummyJobs";
@@ -99,7 +99,10 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
           </div>
           {firstGreen ? (
             <div className="mt-1 text-[11px] text-white/80 leading-tight">
-              <div className="font-semibold truncate">{firstGreen.client}</div>
+              <div className="font-semibold truncate flex items-center gap-1">
+                {firstGreen.client}
+                {firstGreen.hasUnread && <Mail className="w-3 h-3 text-white animate-wiggle shrink-0" />}
+              </div>
               <div className="truncate opacity-75">{firstGreen.jobName}</div>
             </div>
           ) : counts.green === 0 ? (
@@ -114,7 +117,10 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
           </div>
           {firstOrange ? (
             <div className="mt-1 text-[11px] text-white/80 leading-tight">
-              <div className="font-semibold truncate">{firstOrange.client}</div>
+              <div className="font-semibold truncate flex items-center gap-1">
+                {firstOrange.client}
+                {firstOrange.hasUnread && <Mail className="w-3 h-3 text-white animate-wiggle shrink-0" />}
+              </div>
               <div className="truncate opacity-75">{firstOrange.jobName}</div>
             </div>
           ) : counts.orange === 0 ? (
@@ -129,7 +135,10 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
           </div>
           {firstRed ? (
             <div className="mt-1 text-[11px] text-white/80 leading-tight">
-              <div className="font-semibold truncate">{firstRed.client}</div>
+              <div className="font-semibold truncate flex items-center gap-1">
+                {firstRed.client}
+                {firstRed.hasUnread && <Mail className="w-3 h-3 text-white animate-wiggle shrink-0" />}
+              </div>
               <div className="truncate opacity-75">{firstRed.jobName}</div>
             </div>
           ) : counts.red === 0 ? (
