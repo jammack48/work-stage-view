@@ -1,73 +1,35 @@
 
 
-## Analysis: What's Already Built vs What's Needed
+## Plan: Customer Card Communication Overhaul
 
-ChatGPT's list has significant overlap with existing features. Here's the honest assessment:
+### What's changing
 
-| Suggestion | Status | Notes |
-|---|---|---|
-| Sequence Builder UI | **Already built** | `SequencesTab` + `FollowUpSequenceBuilder` — stacked blocks, channel/delay/template, edit/create/delete |
-| Email Template Editor | **Already built** | Subject, body, variables dropdown, active toggle |
-| SMS Template Editor | **Already built** | Character counter, 160-char indicator, variables |
-| Manager Mode | **Already built** | Priority filtering, history timeline, sequence status, quick actions |
-| Messages tab (Job Card) | **Not built** | This is the big new piece |
-| Compose panel | **Not built** | Needed alongside Messages tab |
-| Manager notification counters | **Not built** | "2 Quotes Awaiting Reply" style badges |
-| Customer Comms Summary | **Not built** | Total messages, last contact, last reply |
-| Notification badges (red dots) | **Not built** | Visual urgency cues |
+The Customer Card needs three upgrades:
+1. **Replace generic Communication Summary** with channel-specific stats (SMS icon + count, Email icon + count, last contact per channel)
+2. **Add Messages tab** to Customer Card (reuse the MessagesTab pattern from Job Card) so you can read/reply to emails and SMS directly
+3. **Upgrade History tab** to include communication events (email sent, SMS delivered, reply received) not just notes and job events
 
----
+### Files to modify
 
-## Plan: Build the 5 Missing Pieces
+**`src/config/toolbarTabs.ts`**
+- Add `messages` tab (Mail icon) to `CUSTOMER_CARD_EXTRAS` — position it after Overview
 
-### 1. Messages Tab in Job Card
-- Add a new "Messages" tab to `JOB_EXTRAS` in `toolbarTabs.ts` (Mail icon)
-- Create `src/components/job/MessagesTab.tsx`
-- Left side: conversation thread with dummy messages
-  - SMS shown as grey rounded bubbles (outbound right-aligned, inbound left-aligned)
-  - Email shown as white bordered cards with subject line
-  - Each message gets: channel icon, timestamp, status badge (Sent / Delivered / Replied / Opened)
-- Right side (desktop) / bottom (mobile): compose panel
-- Wire into `JobCard.tsx` tab routing
-- Generate dummy conversation data in `src/data/dummyMessages.ts`
+**`src/pages/CustomerCard.tsx`**
+- Add `"messages"` to `CustTab` type
+- Replace the Communication Summary card in overview: show two side-by-side channel cards (SMS with MessageSquare icon, Email with Mail icon) each showing sent/received/last contact
+- Import and wire `MessagesTab` for the messages tab content
+- Keep overview financial stats (open quotes, outstanding) but restructure layout
 
-### 2. Compose Panel (inside Messages Tab)
-- Email/SMS toggle switch at top
-- Template dropdown (filtered by channel, pulls from `dummyTemplates`)
-- Editable subject field (email only)
-- Editable body textarea
-- "Attach sequence" checkbox with sequence dropdown
-- Send button with subtle animation on click
-- All visual only — button shows toast "Message sent"
+**`src/components/customer/HistoryTab.tsx`**
+- Add communication event types: `"email-sent"`, `"email-received"`, `"sms-sent"`, `"sms-received"`
+- Generate dummy comms history entries with proper icons and labels like "Email sent: Your quote is ready", "SMS received: Thanks will check tonight"
+- Add channel icons (Mail/MessageSquare) to timeline entries alongside the type badge
 
-### 3. Manager Mode Notification Counters
-- Add summary badges at the top of Manager Mode: "2 Quotes Awaiting Reply", "3 Invoices Overdue", "5 Messages Unread"
-- Computed from existing dummy job data (count jobs per stage that are red priority)
-- Tappable — sets the stage filter when clicked
-- Styled as compact coloured pills
+**`src/data/dummyMessages.ts`**
+- No changes needed — the existing dummy messages data can be reused for both Job and Customer message views
 
-### 4. Customer Communication Summary Card
-- Add a new card to the Customer Card overview tab
-- Shows: Total messages sent, Last contact date, Last reply date, Open quotes count, Outstanding balance
-- All dummy data, visually positioned as a CRM-grade summary
-
-### 5. Notification Badges (Red Dots)
-- Add red dot indicators to toolbar tabs that have "unread" items
-- Messages tab: red dot when unread replies exist
-- Sequences tab: red dot when a sequence is paused
-- Small absolute-positioned dot on the toolbar icon
-- Driven by dummy state
-
----
-
-### Files to Create
-- `src/data/dummyMessages.ts` — mock conversation data
-- `src/components/job/MessagesTab.tsx` — conversation thread + compose panel
-
-### Files to Modify
-- `src/config/toolbarTabs.ts` — add Messages tab to JOB_EXTRAS
-- `src/pages/JobCard.tsx` — wire Messages tab
-- `src/components/ManagerMode.tsx` — add notification counter pills
-- `src/pages/CustomerCard.tsx` — add Communication Summary card to overview
-- `src/components/PageToolbar.tsx` — support red dot badges on tabs
+### Overview tab new layout
+- Two channel summary cards side by side: SMS (bubble icon, "8 sent · 3 received · Last: 1 day ago") and Email (mail icon, "6 sent · 2 received · Last: 2 days ago")
+- Below: financial summary row (Open Quotes, Outstanding balance)
+- Below: quick actions (existing)
 
