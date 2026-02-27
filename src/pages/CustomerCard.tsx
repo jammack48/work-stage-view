@@ -5,7 +5,7 @@ import { getCustomer } from "@/data/dummyCustomers";
 import { PageToolbar } from "@/components/PageToolbar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Phone, Mail, MapPin, Plus, Users, StickyNote, UserPlus, MessageSquare } from "lucide-react";
+import { Phone, Mail, MapPin, Plus, Users, StickyNote, UserPlus, MessageSquare, User } from "lucide-react";
 import { MessagesTab } from "@/components/job/MessagesTab";
 import { CUSTOMER_CARD_EXTRAS } from "@/config/toolbarTabs";
 import { HistoryTab } from "@/components/customer/HistoryTab";
@@ -42,36 +42,81 @@ export default function CustomerCard() {
 
   const tabContent: Record<CustTab, React.ReactNode> = {
     overview: (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full">
-        {/* Channel Summary Cards */}
-        <div className="rounded-lg bg-card border border-border p-3 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setActiveTab("messages")}>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 text-primary" />
+      <div className="space-y-3 h-full">
+        {/* Customer Details Card */}
+        <div className="rounded-lg bg-card border border-border p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-card-foreground">
+              <User className="w-4 h-4 text-muted-foreground" /> Customer Details
             </div>
-            <span className="text-sm font-semibold text-card-foreground">SMS</span>
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setActiveTab("contacts")}>
+              <Plus className="w-4 h-4" />
+            </Button>
           </div>
-          <div className="text-xs text-muted-foreground space-y-1">
-            <div className="flex justify-between"><span>Sent</span><span className="font-medium text-card-foreground">8</span></div>
-            <div className="flex justify-between"><span>Received</span><span className="font-medium text-card-foreground">3</span></div>
-            <div className="flex justify-between"><span>Last contact</span><span className="font-medium text-card-foreground">1 day ago</span></div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <User className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <span className="font-medium text-card-foreground">{customer.name}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Phone className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <a href={`tel:${customer.phone}`} className="hover:text-primary transition-colors">{customer.phone}</a>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <a href={`mailto:${customer.email}`} className="hover:text-primary transition-colors truncate">{customer.email}</a>
+            </div>
+            <div className="flex items-start gap-2 text-sm">
+              <MapPin className="w-3.5 h-3.5 mt-0.5 text-muted-foreground shrink-0" />
+              <span>{customer.address}</span>
+            </div>
+            {customer.contacts.length > 1 && (
+              <div className="border-t border-border/50 pt-2 mt-2">
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Additional Contacts</div>
+                {customer.contacts.slice(1).map((c, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground py-0.5">
+                    <Users className="w-3 h-3 shrink-0" />
+                    <span className="text-card-foreground font-medium">{c.name}</span>
+                    <span>· {c.role}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-        <div className="rounded-lg bg-card border border-border p-3 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setActiveTab("messages")}>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-full bg-[hsl(var(--status-orange))]/20 flex items-center justify-center">
-              <Mail className="w-4 h-4 text-[hsl(var(--status-orange))]" />
+
+        {/* Channel Cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-lg bg-card border border-border p-3 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setActiveTab("messages")}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                <MessageSquare className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-sm font-semibold text-card-foreground">SMS</span>
             </div>
-            <span className="text-sm font-semibold text-card-foreground">Email</span>
+            <div className="text-xs text-muted-foreground space-y-1">
+              <div className="flex justify-between"><span>Sent</span><span className="font-medium text-card-foreground">8</span></div>
+              <div className="flex justify-between"><span>Received</span><span className="font-medium text-card-foreground">3</span></div>
+              <div className="flex justify-between"><span>Last</span><span className="font-medium text-card-foreground">1d ago</span></div>
+            </div>
           </div>
-          <div className="text-xs text-muted-foreground space-y-1">
-            <div className="flex justify-between"><span>Sent</span><span className="font-medium text-card-foreground">6</span></div>
-            <div className="flex justify-between"><span>Received</span><span className="font-medium text-card-foreground">2</span></div>
-            <div className="flex justify-between"><span>Last contact</span><span className="font-medium text-card-foreground">2 days ago</span></div>
+          <div className="rounded-lg bg-card border border-border p-3 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setActiveTab("messages")}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-[hsl(var(--status-orange))]/20 flex items-center justify-center">
+                <Mail className="w-4 h-4 text-[hsl(var(--status-orange))]" />
+              </div>
+              <span className="text-sm font-semibold text-card-foreground">Email</span>
+            </div>
+            <div className="text-xs text-muted-foreground space-y-1">
+              <div className="flex justify-between"><span>Sent</span><span className="font-medium text-card-foreground">6</span></div>
+              <div className="flex justify-between"><span>Received</span><span className="font-medium text-card-foreground">2</span></div>
+              <div className="flex justify-between"><span>Last</span><span className="font-medium text-card-foreground">2d ago</span></div>
+            </div>
           </div>
         </div>
+
         {/* Financial Summary */}
-        <div className="rounded-lg bg-card border border-border p-3 md:col-span-2">
+        <div className="rounded-lg bg-card border border-border p-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="text-center">
               <div className="text-lg font-bold text-card-foreground">{openQuotes}</div>
@@ -84,8 +129,11 @@ export default function CustomerCard() {
           </div>
         </div>
 
-        <div className="rounded-lg bg-card border border-border p-3">
-...
+        {/* Quick Actions */}
+        <div className="rounded-lg bg-card border border-border p-3 flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" className="justify-start gap-2" onClick={() => setActiveTab("add-job")}>
+            <Plus className="w-4 h-4" /> New Job
+          </Button>
           <Button size="sm" variant="outline" className="justify-start gap-2" onClick={() => setActiveTab("notes")}>
             <StickyNote className="w-4 h-4" /> Add Note
           </Button>
