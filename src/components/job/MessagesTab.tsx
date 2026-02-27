@@ -41,7 +41,7 @@ function InboxItem({ msg, onClick, isActive }: { msg: Message; onClick: () => vo
         isActive
           ? "bg-accent border-primary/30"
           : isInbound
-            ? "bg-primary/5 border-primary/20 hover:bg-primary/10 ring-1 ring-primary/10"
+            ? "bg-primary/10 border-primary/40 hover:bg-primary/15 shadow-[0_0_12px_hsl(var(--primary)/0.2)] animate-card-pulse"
             : "bg-card border-border hover:bg-accent/50"
       )}
     >
