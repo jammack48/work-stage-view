@@ -32,7 +32,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   const { position } = useToolbarPosition();
   const { tutorialOn } = useTutorial();
 
-  const tutorialBanner = tutorialOn ? <TutorialBanner overrideKey={tutorialKey} /> : null;
+  const tutorialBanner = tutorialOn ? <TutorialBanner overrideKey={tutorialKey} tabKey={activeTab} /> : null;
   const isActive = (id: string) => activeTab === id || currentPage === id;
 
   const headingBar = pageHeading ? (
