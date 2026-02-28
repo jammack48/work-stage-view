@@ -160,7 +160,7 @@ export default function QuotePage() {
             value={scope}
             onChange={(e) => setScope(e.target.value)}
             placeholder="Describe what this quote is for — e.g. 'Replace hot water cylinder and reroute pipework in ground floor bathroom'"
-            className="min-h-[60px] border-0 bg-transparent p-0 focus-visible:ring-0 text-sm resize-none"
+            className="min-h-[100px] border-0 bg-transparent p-0 focus-visible:ring-0 text-base resize-none"
           />
         </div>
         <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} beforeActions={
