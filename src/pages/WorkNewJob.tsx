@@ -396,13 +396,15 @@ export default function WorkNewJob() {
 
   const detailsValid = customer.trim() && address.trim();
 
+  const jobState = { customer, address, description };
+
   const handleConfirm = () => {
     toast({
       title: "Job Created & Scheduled ✅",
       description: `${customer} — ${format(scheduledDate, "EEE d MMM")} at ${formatTime(startHour)}`,
       duration: 3000,
     });
-    navigate("/job/TB-NEW");
+    navigate("/job/TB-NEW", { state: jobState });
   };
 
   const handleStartNow = () => {
@@ -411,7 +413,7 @@ export default function WorkNewJob() {
       description: `${customer} — starting now`,
       duration: 3000,
     });
-    navigate("/job/TB-NEW");
+    navigate("/job/TB-NEW", { state: jobState });
   };
 
   return (

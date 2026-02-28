@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { id: "home", icon: Home, label: "Schedule", path: "/" },
   { id: "add", icon: Plus, label: "New Job", path: "/new-job" },
-  { id: "timesheet", icon: Clock, label: "Timesheet", path: null },
+  { id: "timesheet", icon: Clock, label: "Timesheet", path: "/coming-soon" },
 ];
 
 export function WorkBottomNav() {

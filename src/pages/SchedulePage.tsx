@@ -55,6 +55,12 @@ const SchedulePage = () => {
           onSelectDay={setSelectedDay}
           onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
           onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
+          onJumpToToday={() => {
+            const today = new Date();
+            setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
+            const diff = Math.min(4, Math.max(0, today.getDay() - 1));
+            setSelectedDay(diff);
+          }}
         />
         <StaffFilterBar selectedStaff={selectedStaff} onSelectionChange={setSelectedStaff} />
 

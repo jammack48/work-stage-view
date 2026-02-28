@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getJobDetail } from "@/data/dummyJobDetails";
 import { PageToolbar } from "@/components/PageToolbar";
 import { WorkOverviewTab } from "@/components/job/WorkOverviewTab";
@@ -60,10 +60,12 @@ function WorkMaterialsTab({ materials }: { materials: MaterialItem[] }) {
 export default function WorkJobCard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const locState = location.state as { customer?: string; address?: string; description?: string } | null;
   const [activeTab, setActiveTab] = useState<WorkJobTab>("overview");
   const [completionOpen, setCompletionOpen] = useState(false);
 
-  const job = getJobDetail(id || "");
+  const job = getJobDetail(id || "", locState || undefined);
 
   if (!job) {
     return (

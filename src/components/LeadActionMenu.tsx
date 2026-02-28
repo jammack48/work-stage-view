@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CalendarPlus, FileText, Archive, XCircle, Clock, Phone, Mail, MoreHorizontal } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Job } from "@/data/dummyJobs";
 
@@ -37,22 +37,22 @@ export function LeadActionMenu({ job, children, align = "start", side = "bottom"
         break;
       case "schedule":
         navigate(`/schedule`);
-        toast.success(`Schedule site visit for ${job.client}`);
+        toast({ title: `Schedule site visit for ${job.client}` });
         break;
       case "call":
-        toast.info(`Calling ${job.client}...`);
+        toast({ title: `Calling ${job.client}...` });
         break;
       case "email":
-        toast.info(`Opening email to ${job.client}...`);
+        toast({ title: `Opening email to ${job.client}...` });
         break;
       case "snooze":
-        toast.success(`Will remind you about ${job.client} in 3 days`);
+        toast({ title: `Will remind you about ${job.client} in 3 days` });
         break;
       case "archive":
-        toast.success(`${job.client} archived`);
+        toast({ title: `${job.client} archived` });
         break;
       case "dead":
-        toast.success(`${job.client} marked as dead lead`);
+        toast({ title: `${job.client} marked as dead lead` });
         break;
     }
   };

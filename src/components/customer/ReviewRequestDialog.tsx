@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { dummyTemplates } from "@/data/dummyTemplates";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 interface ReviewRequestDialogProps {
   customerName: string;
@@ -26,11 +26,11 @@ export function ReviewRequestDialog({ customerName }: ReviewRequestDialogProps) 
     if (sendEmail) channels.push("Email");
 
     if (channels.length === 0) {
-      toast.error("Select at least one channel");
+      toast({ title: "Select at least one channel", variant: "destructive" });
       return;
     }
 
-    toast.success(`Review request sent to ${customerName} via ${channels.join(" & ")}`);
+    toast({ title: `Review request sent to ${customerName} via ${channels.join(" & ")}` });
     setOpen(false);
     setSendSms(false);
     setSendEmail(false);
