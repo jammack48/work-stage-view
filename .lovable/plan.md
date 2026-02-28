@@ -1,54 +1,25 @@
 
 
-# Phase 1 — Critical Bug Fixes
+## Issues identified
 
-## 1. Wire customer data from New Job flow to job card
-- Store customer name, address, and description in a shared context or pass via React Router `state` when navigating to `/job/TB-NEW`
-- Update `JobCard.tsx` / `WorkJobCard.tsx` to read `location.state` and override the hardcoded "Dave Thompson" values
-- Update `getJobDetail("TB-NEW")` to accept optional overrides
+1. **Toolbar disappears on scroll (mobile vertical/left)**: The mobile vertical nav at line 161-194 in `PageToolbar.tsx` uses `sticky top-0 self-start max-h-screen` but the parent flex container lacks `min-h-screen`, so the sticky element loses its anchor when content scrolls past the container height.
 
-## 2. Fix schedule job navigation in Work mode
-- Map demo schedule job IDs (`J-001`, `J-002`, etc.) to entries in `dummyJobDetails` so tapping a scheduled job doesn't show "Job not found"
-- Add fallback job detail entries for all `DEMO_JOBS` IDs
+2. **Quote description box too small**: In `QuotePage.tsx` line 163, the Textarea has `min-h-[60px]` and `text-sm` — too cramped for reading/writing scope descriptions on mobile.
 
-## 3. Fix double bottom bar overlap in Work mode
-- In `ToolbarPositionContext` or `PageToolbar`, force toolbar position to `"top"` when Work mode is active, preventing overlap with `WorkBottomNav`
+3. **Quote preview dialog cuts off on mobile**: In `QuotePreview.tsx` line 105, `max-w-lg` constrains the dialog width, and the preview document area has small padding, causing content to clip on narrow screens.
 
-## 4. Unify toast library
-- Replace all `sonner` toast calls (found in `LeadActionMenu.tsx`) with `@/hooks/use-toast`
-- Remove `sonner` Toaster component if no longer needed
+## Fixes
 
-## 5. Fix React ref warnings
-- Wrap `AppLayout` and `ModePicker` with `React.forwardRef` or remove ref passing from parent components
+### 1. Fix mobile toolbar sticky behavior (`src/components/PageToolbar.tsx`)
+- Change parent container (line 161) from `min-h-0` to `min-h-screen`
+- Change nav (line 163-166) from `sticky top-0 self-start max-h-screen` to `fixed top-0 bottom-0` with proper z-index, so it stays visible regardless of scroll
+- Add matching left padding to the main content area so it doesn't overlap
 
-## 6. Wire Timesheet button to Coming Soon page
-- Update `WorkBottomNav` so the Timesheet button navigates to `/coming-soon` instead of doing nothing
+### 2. Enlarge quote description box (`src/pages/QuotePage.tsx`)
+- Change Textarea `min-h-[60px]` to `min-h-[100px]`
+- Change `text-sm` to `text-base` for better readability on mobile
 
----
-
-# Phase 2 — UX Polish
-
-## 7. Add leave-confirmation to New Job flow
-- Prompt user when navigating away from a partially-filled new job form (steps 2/3 with data entered)
-
-## 8. Add "Today" quick-jump to DayStrip
-- Add a small "Today" button that resets week and selected day to current date
-
-## 9. Add toolbar tab overflow menu on mobile
-- When tabs exceed screen width, group extras behind a "More" dropdown
-
----
-
-# Files to modify
-- `src/data/dummyJobDetails.ts` — add fallback entries for schedule job IDs
-- `src/pages/WorkNewJob.tsx` — pass customer data via navigation state
-- `src/pages/JobCard.tsx` — read location state for TB-NEW overrides
-- `src/components/job/WorkJobCard.tsx` — same override support
-- `src/contexts/ToolbarPositionContext.tsx` — force top in Work mode
-- `src/components/PageToolbar.tsx` — respect Work mode override
-- `src/components/LeadActionMenu.tsx` — switch from sonner to use-toast
-- `src/components/WorkBottomNav.tsx` — wire Timesheet button
-- `src/App.tsx` — fix ref forwarding on AppLayout/ModePicker
-- `src/components/ModePicker.tsx` — add forwardRef
-- `src/components/schedule/DayStrip.tsx` — add Today button
+### 3. Fix quote preview dialog width (`src/components/quote/QuotePreview.tsx`)
+- Change `max-w-lg` to `max-w-lg w-[95vw]` so it uses near-full width on mobile
+- Add `px-3` to the preview document area for breathing room on small screens
 
