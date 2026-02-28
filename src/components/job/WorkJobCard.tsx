@@ -2,16 +2,18 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getJobDetail } from "@/data/dummyJobDetails";
 import { PageToolbar } from "@/components/PageToolbar";
-import { OverviewTab } from "@/components/job/OverviewTab";
+import { WorkOverviewTab } from "@/components/job/WorkOverviewTab";
 import { ScopeTab } from "@/components/job/ScopeTab";
 import { TimeTab } from "@/components/job/TimeTab";
 import { NotesTab } from "@/components/job/NotesTab";
 import { PhotosTab } from "@/components/job/PhotosTab";
 import { FormsTab } from "@/components/job/FormsTab";
+import { JobCompletionFlow } from "@/components/job/JobCompletionFlow";
 import { cn } from "@/lib/utils";
 import { WORK_JOB_EXTRAS } from "@/config/toolbarTabs";
-import { Plus } from "lucide-react";
+import { Plus, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { MaterialItem } from "@/data/dummyJobDetails";
@@ -60,6 +62,8 @@ export default function WorkJobCard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<WorkJobTab>("overview");
+  const [completionOpen, setCompletionOpen] = useState(false);
+  const [jobStatus, setJobStatus] = useState<"not-started" | "on-site" | "complete">("not-started");
 
   const job = getJobDetail(id || "");
 
@@ -72,7 +76,7 @@ export default function WorkJobCard() {
   }
 
   const tabContent: Record<WorkJobTab, React.ReactNode> = {
-    overview: <OverviewTab job={job} />,
+    overview: <WorkOverviewTab job={job} />,
     scope: <ScopeTab job={job} />,
     time: <TimeTab timeEntries={job.timeEntries} />,
     materials: <WorkMaterialsTab materials={job.materials} />,
@@ -81,29 +85,61 @@ export default function WorkJobCard() {
     forms: <FormsTab />,
   };
 
+  const statusLabel = jobStatus === "on-site" ? "On Site" : jobStatus === "complete" ? "Complete" : "Not Started";
+  const statusColor = jobStatus === "on-site"
+    ? "bg-[hsl(var(--status-orange))] text-white"
+    : jobStatus === "complete"
+      ? "bg-green-500 text-white"
+      : "bg-muted text-muted-foreground";
+
   const jobHeading = (
     <div className="flex items-center gap-2 flex-wrap">
       <h2 className="text-base font-bold text-card-foreground">{job.jobName}</h2>
-      <span className={cn(
-        "text-xs font-semibold px-2 py-0.5 rounded-full",
-        job.stage.includes("Progress") ? "bg-[hsl(var(--status-orange))] text-white" : "bg-muted text-muted-foreground"
-      )}>
-        {job.stage}
-      </span>
+      <Badge className={cn("text-xs border-0", statusColor)}>{statusLabel}</Badge>
     </div>
   );
 
   return (
-    <PageToolbar
-      tabs={WORK_JOB_EXTRAS}
-      activeTab={activeTab}
-      onTabChange={(tabId) => {
-        if (tabId === "back") { navigate("/"); return; }
-        setActiveTab(tabId as WorkJobTab);
-      }}
-      pageHeading={jobHeading}
-    >
-      {tabContent[activeTab]}
-    </PageToolbar>
+    <>
+      <PageToolbar
+        tabs={WORK_JOB_EXTRAS}
+        activeTab={activeTab}
+        onTabChange={(tabId) => {
+          if (tabId === "back") { navigate("/"); return; }
+          setActiveTab(tabId as WorkJobTab);
+        }}
+        pageHeading={jobHeading}
+      >
+        {/* Status toggle + Complete button */}
+        <div className="flex gap-2 mb-3">
+          {jobStatus === "not-started" && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 gap-1.5"
+              onClick={() => setJobStatus("on-site")}
+            >
+              Start Job
+            </Button>
+          )}
+          {jobStatus === "on-site" && (
+            <Button
+              size="sm"
+              className="flex-1 gap-1.5"
+              onClick={() => setCompletionOpen(true)}
+            >
+              <CheckCircle2 className="w-4 h-4" /> Complete Job
+            </Button>
+          )}
+        </div>
+        {tabContent[activeTab]}
+      </PageToolbar>
+
+      <JobCompletionFlow
+        open={completionOpen}
+        onOpenChange={setCompletionOpen}
+        job={job}
+      />
+    </>
   );
 }
