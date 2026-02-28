@@ -102,7 +102,7 @@ export function QuotePreview({
       <DialogTrigger asChild>
         <Button variant="outline" size="lg" className="h-12 gap-2"><Eye className="w-4 h-4" /> Preview</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-lg w-[95vw] max-h-[85vh] overflow-y-auto">
         <DialogHeader><DialogTitle>Quote Preview</DialogTitle></DialogHeader>
 
         {/* Presets */}
@@ -130,7 +130,7 @@ export function QuotePreview({
         </div>
 
         {/* Preview document */}
-        <div className="border border-border rounded-lg p-4 bg-card space-y-3 text-sm">
+        <div className="border border-border rounded-lg p-4 px-3 sm:px-4 bg-card space-y-3 text-sm">
           <div className="text-center space-y-0.5">
             <p className="font-bold text-base">{businessName}</p>
             <p className="text-xs text-muted-foreground">Quote</p>

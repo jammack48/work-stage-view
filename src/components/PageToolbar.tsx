@@ -158,11 +158,11 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   // Mobile vertical (left / right)
   if (isVertical) {
     return (
-      <div className="flex flex-row min-h-0" style={position === "right" ? { flexDirection: "row-reverse" } : undefined}>
+      <div className="flex flex-row min-h-screen" style={position === "right" ? { flexDirection: "row-reverse" } : undefined}>
         <nav
           className={cn(
-            "w-16 shrink-0 flex flex-col items-center gap-1 py-2 bg-card overflow-y-auto sticky top-0 self-start max-h-screen",
-            position === "left" ? "rounded-r-xl border-r border-border" : "rounded-l-xl border-l border-border"
+            "w-16 shrink-0 flex flex-col items-center gap-1 py-2 bg-card overflow-y-auto fixed top-0 bottom-0 z-40",
+            position === "left" ? "left-0 rounded-r-xl border-r border-border" : "right-0 rounded-l-xl border-l border-border"
           )}
         >
           {tabs.map(({ id, label, icon: Icon }) => (
@@ -185,7 +185,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
             </button>
           ))}
         </nav>
-        <main className="flex-1 min-w-0">
+        <main className={cn("flex-1 min-w-0", position === "left" ? "ml-16" : "mr-16")}>
           {headingBar}
           {tutorialBanner}
           <div className="p-4">{children}</div>
