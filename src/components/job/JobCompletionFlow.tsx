@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield, RotateCcw, FileImage, Truck, ShoppingCart, ClipboardList } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -34,7 +34,13 @@ interface PartUsed extends MaterialItem {
   used: boolean;
   source: "van-stock" | "supplier";
   supplierName?: string;
-  receiptPhoto?: boolean;
+  receiptPhoto?: string; // data URL of captured photo
+}
+
+interface CapturedPhoto {
+  id: string;
+  type: "before" | "after";
+  dataUrl: string;
 }
 
 export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlowProps) {
@@ -51,10 +57,37 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
   );
   const [extraPartName, setExtraPartName] = useState("");
   const [extraPartQty, setExtraPartQty] = useState("1");
-  const [photoCount, setPhotoCount] = useState(0);
+  const [jobPhotos, setJobPhotos] = useState<CapturedPhoto[]>([]);
   const [complianceRequired, setComplianceRequired] = useState(false);
   const [cocNumber, setCocNumber] = useState("");
   const [poConfirmed, setPoConfirmed] = useState(false);
+  const beforeInputRef = useRef<HTMLInputElement>(null);
+  const afterInputRef = useRef<HTMLInputElement>(null);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
+  const [receiptTargetIdx, setReceiptTargetIdx] = useState<number | null>(null);
+
+  const handlePhotoCapture = (type: "before" | "after") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setJobPhotos(prev => [...prev, { id: `${type}-${Date.now()}`, type, dataUrl: reader.result as string }]);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleReceiptCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || receiptTargetIdx === null) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setParts(prev => prev.map((pp, ii) => ii === receiptTargetIdx ? { ...pp, receiptPhoto: reader.result as string } : pp));
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+    setReceiptTargetIdx(null);
+  };
 
   const vanStockUsed = parts.filter((p) => p.used && p.source === "van-stock");
   const supplierItems = parts.filter((p) => p.used && p.source === "supplier");
@@ -207,7 +240,10 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                         {p.source === "supplier" && (
                           <button
                             type="button"
-                            onClick={() => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, receiptPhoto: !pp.receiptPhoto } : pp))}
+                            onClick={() => {
+                              setReceiptTargetIdx(i);
+                              receiptInputRef.current?.click();
+                            }}
                             className={cn(
                               "flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-full border-2 border-dashed transition-all",
                               p.receiptPhoto
@@ -218,6 +254,9 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                             <Camera className="w-3.5 h-3.5" />
                             {p.receiptPhoto ? "Receipt Added ✓" : "Attach Receipt"}
                           </button>
+                        )}
+                        {p.source === "supplier" && p.receiptPhoto && (
+                          <img src={p.receiptPhoto} alt="Receipt" className="w-10 h-10 rounded object-cover border border-border" />
                         )}
                       </div>
                     )}
@@ -317,22 +356,34 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
             <div className="space-y-3">
               <Label>Job photos</Label>
               <div className="grid grid-cols-2 gap-2">
-                <Card className="border-dashed">
+                <Card className="border-dashed cursor-pointer" onClick={() => beforeInputRef.current?.click()}>
                   <CardContent className="p-6 flex flex-col items-center justify-center text-center">
                     <Camera className="w-8 h-8 text-muted-foreground mb-2" />
                     <p className="text-xs text-muted-foreground">Before photos</p>
-                    <Button size="sm" variant="outline" className="mt-2" onClick={() => setPhotoCount((c) => c + 1)}>Add Photo</Button>
+                    <p className="text-xs font-medium text-primary mt-1">Tap to capture</p>
                   </CardContent>
                 </Card>
-                <Card className="border-dashed">
+                <Card className="border-dashed cursor-pointer" onClick={() => afterInputRef.current?.click()}>
                   <CardContent className="p-6 flex flex-col items-center justify-center text-center">
                     <Camera className="w-8 h-8 text-muted-foreground mb-2" />
                     <p className="text-xs text-muted-foreground">After photos</p>
-                    <Button size="sm" variant="outline" className="mt-2" onClick={() => setPhotoCount((c) => c + 1)}>Add Photo</Button>
+                    <p className="text-xs font-medium text-primary mt-1">Tap to capture</p>
                   </CardContent>
                 </Card>
               </div>
-              {photoCount > 0 && <p className="text-xs text-muted-foreground">{photoCount} photo(s) added</p>}
+              {jobPhotos.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">{jobPhotos.length} photo(s) added</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {jobPhotos.map((photo) => (
+                      <div key={photo.id} className="relative">
+                        <img src={photo.dataUrl} alt={photo.type} className="w-16 h-16 rounded-lg object-cover border border-border" />
+                        <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[8px] px-1 rounded-full uppercase">{photo.type[0]}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -373,6 +424,11 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
             </Button>
           )}
         </div>
+
+        {/* Hidden camera inputs */}
+        <input ref={beforeInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoCapture("before")} />
+        <input ref={afterInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoCapture("after")} />
+        <input ref={receiptInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleReceiptCapture} />
       </DialogContent>
     </Dialog>
   );
