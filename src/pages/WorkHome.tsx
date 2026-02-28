@@ -53,89 +53,99 @@ export default function WorkHome() {
   }, [dayJobs]);
 
   return (
-    <div className="px-3 sm:px-6 py-4 max-w-5xl mx-auto space-y-3 pb-24">
-      {/* Greeting + view toggle */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-foreground">G'day, {CURRENT_STAFF} 👋</h2>
-          <p className="text-sm text-muted-foreground">
-            {viewMode === "day"
-              ? `${format(selectedDate, "EEEE, d MMMM")}${isToday(selectedDate) ? " — Today" : ""}`
-              : `${format(weekStart, "d MMM")} – ${format(weekEnd, "d MMM")}`}
-          </p>
+    <div className={cn(
+      "max-w-5xl mx-auto flex flex-col",
+      isMobile ? "h-[calc(100dvh-48px-56px)]" : "px-6 py-4 space-y-3 pb-24"
+    )}>
+      {/* Fixed controls section */}
+      <div className={cn("shrink-0 space-y-3", isMobile ? "px-3 pt-4" : "")}>
+        {/* Greeting + view toggle */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-foreground">G'day, {CURRENT_STAFF} 👋</h2>
+            <p className="text-sm text-muted-foreground">
+              {viewMode === "day"
+                ? `${format(selectedDate, "EEEE, d MMMM")}${isToday(selectedDate) ? " — Today" : ""}`
+                : `${format(weekStart, "d MMM")} – ${format(weekEnd, "d MMM")}`}
+            </p>
+          </div>
+          <div className="flex gap-1 bg-muted rounded-lg p-0.5">
+            <button
+              onClick={() => setViewMode("day")}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
+                viewMode === "day" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+              )}
+            >
+              <LayoutList className="w-3.5 h-3.5" /> Day
+            </button>
+            <button
+              onClick={() => setViewMode("week")}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
+                viewMode === "week" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+              )}
+            >
+              <CalendarDays className="w-3.5 h-3.5" /> Week
+            </button>
+          </div>
         </div>
-        <div className="flex gap-1 bg-muted rounded-lg p-0.5">
-          <button
-            onClick={() => setViewMode("day")}
-            className={cn(
-              "flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
-              viewMode === "day" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-            )}
-          >
-            <LayoutList className="w-3.5 h-3.5" /> Day
-          </button>
-          <button
-            onClick={() => setViewMode("week")}
-            className={cn(
-              "flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
-              viewMode === "week" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-            )}
-          >
-            <CalendarDays className="w-3.5 h-3.5" /> Week
-          </button>
-        </div>
+
+        {/* Day strip */}
+        <DayStrip
+          weekStart={weekStart}
+          selectedDay={selectedDay}
+          onSelectDay={setSelectedDay}
+          onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
+          onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
+          onJumpToToday={() => {
+            const today = new Date();
+            setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
+            const diff = Math.min(4, Math.max(0, today.getDay() - 1));
+            setSelectedDay(diff);
+          }}
+        />
+
+        {/* Materials pickup list (day view only) */}
+        {viewMode === "day" && materialsNeeded.length > 0 && (
+          <Collapsible open={materialsOpen} onOpenChange={setMaterialsOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" className="w-full justify-between h-auto py-2.5 px-3">
+                <div className="flex items-center gap-2">
+                  <Package className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-semibold">Pickup List ({materialsNeeded.length} items)</span>
+                </div>
+                {materialsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <Card className="mt-1.5 border-dashed">
+                <CardContent className="p-3">
+                  <div className="space-y-1.5">
+                    {materialsNeeded.map((m) => (
+                      <div key={m.name} className="flex items-center justify-between text-sm">
+                        <span className="text-card-foreground">{m.name}</span>
+                        <span className="text-muted-foreground font-mono text-xs">{m.qty} {m.unit}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
       </div>
 
-      {/* Day strip */}
-      <DayStrip
-        weekStart={weekStart}
-        selectedDay={selectedDay}
-        onSelectDay={setSelectedDay}
-        onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
-        onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
-        onJumpToToday={() => {
-          const today = new Date();
-          setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
-          const diff = Math.min(4, Math.max(0, today.getDay() - 1));
-          setSelectedDay(diff);
-        }}
-      />
-
-      {/* Materials pickup list (day view only) */}
-      {viewMode === "day" && materialsNeeded.length > 0 && (
-        <Collapsible open={materialsOpen} onOpenChange={setMaterialsOpen}>
-          <CollapsibleTrigger asChild>
-            <Button variant="outline" className="w-full justify-between h-auto py-2.5 px-3">
-              <div className="flex items-center gap-2">
-                <Package className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold">Pickup List ({materialsNeeded.length} items)</span>
-              </div>
-              {materialsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <Card className="mt-1.5 border-dashed">
-              <CardContent className="p-3">
-                <div className="space-y-1.5">
-                  {materialsNeeded.map((m) => (
-                    <div key={m.name} className="flex items-center justify-between text-sm">
-                      <span className="text-card-foreground">{m.name}</span>
-                      <span className="text-muted-foreground font-mono text-xs">{m.qty} {m.unit}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </CollapsibleContent>
-        </Collapsible>
-      )}
-
-      {/* Time grid — same as manager schedule but filtered to my jobs */}
-      {viewMode === "day" ? (
-        <TimeGridMobile jobs={myJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} />
-      ) : (
-        <TimeGridDesktop weekStart={weekStart} jobs={myJobs} selectedDay={selectedDay} />
-      )}
+      {/* Scrollable time grid */}
+      <div className={cn(
+        isMobile ? "flex-1 overflow-y-auto px-3 pb-4 mt-3" : ""
+      )}>
+        {viewMode === "day" ? (
+          <TimeGridMobile jobs={myJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} />
+        ) : (
+          <TimeGridDesktop weekStart={weekStart} jobs={myJobs} selectedDay={selectedDay} />
+        )}
+      </div>
     </div>
   );
 }

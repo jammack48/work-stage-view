@@ -48,28 +48,47 @@ const SchedulePage = () => {
         </div>
       }
     >
-      <div className="space-y-3">
-        <DayStrip
-          weekStart={weekStart}
-          selectedDay={selectedDay}
-          onSelectDay={setSelectedDay}
-          onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
-          onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
-          onJumpToToday={() => {
-            const today = new Date();
-            setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
-            const diff = Math.min(4, Math.max(0, today.getDay() - 1));
-            setSelectedDay(diff);
-          }}
-        />
-        <StaffFilterBar selectedStaff={selectedStaff} onSelectionChange={setSelectedStaff} />
-
-        {isMobile ? (
-          <TimeGridMobile jobs={filteredJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} />
-        ) : (
+      {isMobile ? (
+        <div className="flex flex-col" style={{ height: 'calc(100dvh - 48px - 44px - 52px)' }}>
+          <div className="shrink-0 space-y-3">
+            <DayStrip
+              weekStart={weekStart}
+              selectedDay={selectedDay}
+              onSelectDay={setSelectedDay}
+              onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
+              onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
+              onJumpToToday={() => {
+                const today = new Date();
+                setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
+                const diff = Math.min(4, Math.max(0, today.getDay() - 1));
+                setSelectedDay(diff);
+              }}
+            />
+            <StaffFilterBar selectedStaff={selectedStaff} onSelectionChange={setSelectedStaff} />
+          </div>
+          <div className="flex-1 overflow-y-auto mt-3">
+            <TimeGridMobile jobs={filteredJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} />
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <DayStrip
+            weekStart={weekStart}
+            selectedDay={selectedDay}
+            onSelectDay={setSelectedDay}
+            onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
+            onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
+            onJumpToToday={() => {
+              const today = new Date();
+              setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
+              const diff = Math.min(4, Math.max(0, today.getDay() - 1));
+              setSelectedDay(diff);
+            }}
+          />
+          <StaffFilterBar selectedStaff={selectedStaff} onSelectionChange={setSelectedStaff} />
           <TimeGridDesktop weekStart={weekStart} jobs={filteredJobs} selectedDay={selectedDay} />
-        )}
-      </div>
+        </div>
+      )}
     </PageToolbar>
   );
 };
