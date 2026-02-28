@@ -6,7 +6,6 @@ import { useTutorial } from "@/contexts/TutorialContext";
 import { sidebarTooltips } from "@/data/tutorialContent";
 import { TutorialBanner } from "@/components/TutorialBanner";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { PanelLeft, PanelRight, PanelTop, PanelBottom } from "lucide-react";
 
 interface TabDef {
   id: string;
@@ -29,31 +28,13 @@ interface PageToolbarProps {
   tutorialKey?: string;
 }
 
-const positionIcons = { left: PanelLeft, right: PanelRight, top: PanelTop, bottom: PanelBottom } as const;
-
 export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading, currentPage, tutorialKey }: PageToolbarProps) {
   const isMobile = useIsMobile();
-  const { position: rawPosition, cyclePosition } = useToolbarPosition();
+  const { position: rawPosition } = useToolbarPosition();
   const { isWorkMode } = useAppMode();
   // Force top position in Work mode to avoid overlap with WorkBottomNav
   const position = isWorkMode && rawPosition === "bottom" ? "top" : rawPosition;
   const { tutorialOn } = useTutorial();
-
-  const PositionIcon = positionIcons[position];
-  const cycleBtn = (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          onClick={cyclePosition}
-          className="flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-          aria-label={`Toolbar position: ${position}`}
-        >
-          <PositionIcon className="w-4 h-4" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent><p className="text-xs">Move toolbar ({position})</p></TooltipContent>
-    </Tooltip>
-  );
 
   const tutorialBanner = tutorialOn ? <TutorialBanner overrideKey={tutorialKey} tabKey={activeTab} /> : null;
   const isActive = (id: string) => activeTab === id || currentPage === id;
@@ -79,7 +60,6 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
           "w-[200px] shrink-0 flex flex-col gap-1 py-2 bg-card sticky top-0 h-screen overflow-y-auto",
           position === "left" ? "rounded-r-xl border-r border-border" : "rounded-l-xl border-l border-border"
         )}>
-          <div className="px-2 py-1">{cycleBtn}</div>
           
           {tabs.map(({ id, label, icon: Icon }) => {
             const tip = tutorialOn ? sidebarTooltips[id] : undefined;
@@ -127,7 +107,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   if (!isMobile && isHorizontal) {
     const bar = (
       <nav className="flex items-center gap-1 px-2 py-1.5 border-b border-border overflow-x-auto sticky top-[48px] z-40 bg-card">
-        {cycleBtn}
+        
         {tabs.map(({ id, label, icon: Icon }) => {
           const tip = tutorialOn ? sidebarTooltips[id] : undefined;
           const btn = (
@@ -188,7 +168,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
             position === "left" ? "left-0 rounded-r-xl border-r border-border" : "right-0 rounded-l-xl border-l border-border"
           )}
         >
-          {cycleBtn}
+          
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -226,7 +206,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
         position === "bottom" ? "fixed left-0 right-0 bottom-0 z-40 border-t border-border safe-area-pb pb-[env(safe-area-inset-bottom)]" : "sticky top-[48px] z-40 border-b border-border"
       )}
     >
-      {cycleBtn}
+      
       {tabs.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
