@@ -165,12 +165,13 @@ function ScheduleGrid({
   startHour, setStartHour,
   durationSlots, setDurationSlots,
   weekStart, selectedDay, setSelectedDay,
-  onPrevWeek, onNextWeek,
+  onPrevWeek, onNextWeek, onStartJob,
 }: {
   startHour: number; setStartHour: (v: number) => void;
   durationSlots: number; setDurationSlots: (v: number) => void;
   weekStart: Date; selectedDay: number; setSelectedDay: (v: number) => void;
   onPrevWeek: () => void; onNextWeek: () => void;
+  onStartJob: () => void;
 }) {
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
   const totalHeight = hours.length * GRID_HOUR_HEIGHT;
@@ -230,15 +231,19 @@ function ScheduleGrid({
     window.addEventListener('mouseup', handleEnd);
   }, [durationSlots, startHour, setDurationSlots]);
 
-  // Drag entire block to move start time
+  // Track if drag happened to distinguish tap vs drag
+  const didDragRef = useRef(false);
+
   const handleBlockDragStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     if (!gridRef.current) return;
     e.stopPropagation();
+    didDragRef.current = false;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const rect = gridRef.current.getBoundingClientRect();
     const offsetInBlock = clientY - rect.top - newJobTop;
 
     const handleMove = (ev: TouchEvent | MouseEvent) => {
+      didDragRef.current = true;
       if (!gridRef.current) return;
       const cy = 'touches' in ev ? ev.touches[0].clientY : ev.clientY;
       const rect = gridRef.current.getBoundingClientRect();
@@ -336,11 +341,11 @@ function ScheduleGrid({
               );
             })}
 
-            {/* New job block (draggable) */}
+            {/* New job block (draggable + tappable) */}
             <div
               className="absolute left-1 right-1 rounded-lg bg-primary/20 border-2 border-primary shadow-md cursor-grab active:cursor-grabbing z-10"
               style={{ top: newJobTop + 1, height: newJobHeight - 2 }}
-              onClick={e => e.stopPropagation()}
+              onClick={e => { e.stopPropagation(); if (!didDragRef.current) onStartJob(); }}
               onTouchStart={handleBlockDragStart}
               onMouseDown={handleBlockDragStart}
             >
@@ -349,6 +354,7 @@ function ScheduleGrid({
                 <span className="text-[10px] text-primary/70">
                   {formatTime(startHour)} – {formatTime(startHour + durationHours)}
                 </span>
+                <span className="text-[10px] text-primary/60 block mt-0.5">Tap to start →</span>
               </div>
               {/* Bottom drag handle */}
               <div
@@ -455,6 +461,7 @@ export default function WorkNewJob() {
             weekStart={weekStart} selectedDay={selectedDay} setSelectedDay={setSelectedDay}
             onPrevWeek={() => setWeekStart(d => addDays(d, -7))}
             onNextWeek={() => setWeekStart(d => addDays(d, 7))}
+            onStartJob={handleConfirm}
           />
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1 h-12 gap-2" onClick={() => setStep(3)}>
