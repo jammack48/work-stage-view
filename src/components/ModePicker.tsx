@@ -1,8 +1,10 @@
 import { Shield, Wrench } from "lucide-react";
 import { useAppMode } from "@/contexts/AppModeContext";
+import { useTutorial } from "@/contexts/TutorialContext";
 
 export function ModePicker() {
   const { setMode } = useAppMode();
+  const { setTutorialOn } = useTutorial();
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
@@ -31,7 +33,7 @@ export function ModePicker() {
 
         {/* Work */}
         <button
-          onClick={() => setMode("work")}
+          onClick={() => { setTutorialOn(true); setMode("work"); }}
           className="group rounded-xl border-2 border-border bg-card p-6 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
         >
           <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center mb-4 group-hover:bg-primary/25 transition-colors">
