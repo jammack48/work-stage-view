@@ -1,11 +1,13 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Wrench, Users, Settings as SettingsIcon, GraduationCap, Shield, ArrowLeftRight } from "lucide-react";
+import { Wrench, Settings as SettingsIcon, GraduationCap, Shield, ArrowLeftRight, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ThemePicker } from "@/components/ThemePicker";
 import { useTutorial } from "@/contexts/TutorialContext";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useToolbarPosition } from "@/contexts/ToolbarPositionContext";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 export function AppHeader() {
   const navigate = useNavigate();
@@ -13,6 +15,7 @@ export function AppHeader() {
   const { tutorialOn, setTutorialOn } = useTutorial();
   const { isWorkMode, setMode, clearMode } = useAppMode();
   const isMobile = useIsMobile();
+  const { position, cyclePosition } = useToolbarPosition();
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -44,27 +47,30 @@ export function AppHeader() {
           {!isMobile && <span className="text-xs font-medium">{isWorkMode ? "Manage" : "Work"}</span>}
         </Button>
 
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={cyclePosition}
+              className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent"
+            >
+              <LayoutGrid className="w-5 h-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent><p className="text-xs">Layout: {position}</p></TooltipContent>
+        </Tooltip>
+
         {!isWorkMode && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/customers")}
-              className={cn("h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent", isActive("/customer") && "bg-accent")}
-              title="Customers"
-            >
-              <Users className="w-5 h-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/settings")}
-              className={cn("h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent", isActive("/settings") && "bg-accent")}
-              title="Settings"
-            >
-              <SettingsIcon className="w-5 h-5" />
-            </Button>
-          </>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/settings")}
+            className={cn("h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent", isActive("/settings") && "bg-accent")}
+            title="Settings"
+          >
+            <SettingsIcon className="w-5 h-5" />
+          </Button>
         )}
         <Button
           variant="ghost"
