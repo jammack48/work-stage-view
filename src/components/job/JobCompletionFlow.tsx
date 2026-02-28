@@ -20,12 +20,12 @@ interface JobCompletionFlowProps {
 }
 
 const STEPS = [
+  { id: "return", label: "Coming Back?", icon: RotateCcw },
   { id: "jobsheet", label: "Job Sheet", icon: FileText },
   { id: "time", label: "Time", icon: Clock },
-  { id: "parts", label: "Parts", icon: Package },
+  { id: "parts", label: "Parts Used", icon: Package },
   { id: "photos", label: "Photos", icon: Camera },
   { id: "compliance", label: "Compliance", icon: Shield },
-  { id: "return", label: "Return Visit", icon: RotateCcw },
 ];
 
 interface PartUsed extends MaterialItem {
@@ -120,6 +120,26 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
         {/* Step content */}
         <div className="space-y-4 min-h-[200px]">
           {step === 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>Do you need to come back?</Label>
+                <Switch checked={returnNeeded} onCheckedChange={setReturnNeeded} />
+              </div>
+              {returnNeeded && (
+                <div className="space-y-2">
+                  <Label>What's needed?</Label>
+                  <Textarea
+                    value={returnNote}
+                    onChange={(e) => setReturnNote(e.target.value)}
+                    placeholder="e.g. Waiting on parts, need to finish wiring..."
+                    rows={3}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === 1 && (
             <div className="space-y-2">
               <Label>What was done on this job?</Label>
               <Textarea
@@ -131,7 +151,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
             </div>
           )}
 
-          {step === 1 && (
+          {step === 2 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Budgeted</span>
@@ -154,20 +174,31 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
             </div>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <div className="space-y-3">
-              <Label>Parts used</Label>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
+              <p className="text-sm text-muted-foreground">Quoted items are pre-selected. Untick anything not used, or add extras.</p>
+              <div className="space-y-2 max-h-56 overflow-y-auto">
                 {parts.map((p, i) => (
-                  <div key={p.id} className="flex items-center gap-2">
+                  <div key={p.id} className={cn(
+                    "flex items-center gap-2 p-2 rounded-lg transition-colors",
+                    p.used ? "bg-accent/30" : "bg-muted/30 opacity-60"
+                  )}>
                     <Checkbox
                       checked={p.used}
                       onCheckedChange={(checked) =>
                         setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, used: !!checked } : pp))
                       }
                     />
-                    <span className="text-sm flex-1">{p.name}</span>
-                    <span className="text-xs text-muted-foreground">{p.quantity} {p.unit}</span>
+                    <span className={cn("text-sm flex-1", !p.used && "line-through")}>{p.name}</span>
+                    <Input
+                      type="number"
+                      className="w-16 h-7 text-xs text-right"
+                      value={p.quantity}
+                      onChange={(e) =>
+                        setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, quantity: Number(e.target.value) || 0 } : pp))
+                      }
+                    />
+                    <span className="text-xs text-muted-foreground w-8">{p.unit}</span>
                     <button
                       onClick={() =>
                         setParts((prev) =>
@@ -175,18 +206,18 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                         )
                       }
                       className={cn(
-                        "text-[10px] font-medium px-2 py-0.5 rounded-full",
-                        p.source === "stock" ? "bg-green-500/15 text-green-600" : "bg-blue-500/15 text-blue-600"
+                        "text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0",
+                        p.source === "stock" ? "bg-primary/15 text-primary" : "bg-accent text-accent-foreground"
                       )}
                     >
-                      {p.source === "stock" ? "Stock" : "PO"}
+                      {p.source === "stock" ? "Van Stock" : "PO Needed"}
                     </button>
                   </div>
                 ))}
               </div>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Add extra part..."
+                  placeholder="Add extra item..."
                   value={extraPart}
                   onChange={(e) => setExtraPart(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAddExtra()}
@@ -196,7 +227,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
             </div>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <div className="space-y-3">
               <Label>Job photos</Label>
               <div className="grid grid-cols-2 gap-2">
@@ -225,7 +256,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
             </div>
           )}
 
-          {step === 4 && (
+          {step === 5 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label>Compliance required?</Label>
@@ -247,26 +278,6 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                       <Checkbox /> <span className="text-sm">Certificate issued</span>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {step === 5 && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>Need to come back?</Label>
-                <Switch checked={returnNeeded} onCheckedChange={setReturnNeeded} />
-              </div>
-              {returnNeeded && (
-                <div className="space-y-2">
-                  <Label>What's needed?</Label>
-                  <Textarea
-                    value={returnNote}
-                    onChange={(e) => setReturnNote(e.target.value)}
-                    placeholder="e.g. Waiting on parts, need to finish wiring..."
-                    rows={3}
-                  />
                 </div>
               )}
             </div>
