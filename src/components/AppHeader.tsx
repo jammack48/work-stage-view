@@ -64,23 +64,23 @@ export function AppHeader() {
             >
               <SettingsIcon className="w-5 h-5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTutorialOn(!tutorialOn)}
-              className={cn(
-                "h-9 rounded-lg gap-1.5",
-                tutorialOn
-                  ? "bg-blue-500 text-white hover:bg-blue-600"
-                  : "text-muted-foreground hover:bg-accent"
-              )}
-              title="Toggle tutorial mode"
-            >
-              <GraduationCap className="w-5 h-5" />
-              {!isMobile && <span className="text-xs font-medium">Tutorial</span>}
-            </Button>
           </>
         )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setTutorialOn(!tutorialOn)}
+          className={cn(
+            "h-9 rounded-lg gap-1.5",
+            tutorialOn
+              ? "bg-blue-500 text-white hover:bg-blue-600"
+              : "text-muted-foreground hover:bg-accent"
+          )}
+          title="Toggle tutorial mode"
+        >
+          <GraduationCap className="w-5 h-5" />
+          {!isMobile && <span className="text-xs font-medium">Tutorial</span>}
+        </Button>
         <ThemePicker />
       </div>
     </header>
