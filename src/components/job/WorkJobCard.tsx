@@ -12,6 +12,7 @@ import { JobCompletionFlow } from "@/components/job/JobCompletionFlow";
 import { cn } from "@/lib/utils";
 import { WORK_JOB_EXTRAS } from "@/config/toolbarTabs";
 import { Plus, CheckCircle2 } from "lucide-react";
+import { useJobPrefix } from "@/contexts/JobPrefixContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,11 +62,13 @@ export default function WorkJobCard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { prefix } = useJobPrefix();
   const locState = location.state as { customer?: string; address?: string; description?: string } | null;
   const [activeTab, setActiveTab] = useState<WorkJobTab>("overview");
   const [completionOpen, setCompletionOpen] = useState(false);
 
   const job = getJobDetail(id || "", locState || undefined);
+  const displayId = job ? job.id.replace(/^[A-Z]+-/, `${prefix}-`) : "";
 
   if (!job) {
     return (
@@ -87,6 +90,7 @@ export default function WorkJobCard() {
 
   const jobHeading = (
     <div className="flex items-center gap-2 flex-wrap">
+      <span className="font-mono text-xs text-muted-foreground">{displayId}</span>
       <h2 className="text-base font-bold text-card-foreground">{job.jobName}</h2>
       <Badge variant="secondary" className="text-xs">{job.stage}</Badge>
     </div>

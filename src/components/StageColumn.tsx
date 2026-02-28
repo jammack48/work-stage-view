@@ -8,6 +8,7 @@ import { ThresholdSettings } from "@/components/ThresholdSettings";
 import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
 import { TutorialTip } from "@/components/TutorialTip";
 import { LeadActionMenu } from "@/components/LeadActionMenu";
+import { useJobPrefix } from "@/contexts/JobPrefixContext";
 
 function countByStatus(jobs: Job[], greenMax: number, orangeMax: number) {
   let red = 0, orange = 0, green = 0;
@@ -31,6 +32,8 @@ function UnreadDot() {
 
 /** Job preview row inside a color band */
 function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse" }) {
+  const { prefix } = useJobPrefix();
+  const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
   return (
     <div className={cn(
       "mt-1 text-[11px] text-white/80 leading-tight rounded px-1 -mx-1 transition-all",
@@ -41,7 +44,7 @@ function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse
         {job.hasUnread && notifStyle === "icon" && <UnreadDot />}
         {job.hasUnread && <Mail className="w-3 h-3 text-primary animate-wiggle shrink-0" />}
       </div>
-      <div className="truncate opacity-75">{job.jobName}</div>
+      <div className="truncate opacity-75">{displayId} · {job.jobName}</div>
     </div>
   );
 }
