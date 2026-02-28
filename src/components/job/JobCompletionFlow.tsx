@@ -115,14 +115,23 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
   }
 
   function handleSubmit() {
-    const poSent = vanStockUsed.length > 0 && poConfirmed;
     toast({
       title: returnNeeded ? "Return Visit Flagged" : "Job Completed ✅",
       description: returnNeeded
         ? `${job.jobName} marked as needing a return visit.`
-        : `${job.jobName} marked as complete.${poSent ? ` Restock PO (${vanStockUsed.length} items) sent for approval.` : ""}`,
+        : `${job.jobName} marked as complete.`,
       duration: 3000,
     });
+
+    if (vanStockUsed.length > 0 && poConfirmed) {
+      setTimeout(() => {
+        toast({
+          title: "Restock PO Sent 📋",
+          description: `${vanStockUsed.length} item(s) sent to supervisor for approval.`,
+          duration: 4000,
+        });
+      }, 500);
+    }
 
     onOpenChange(false);
     navigate("/");
@@ -332,15 +341,15 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/30">
-                <Checkbox
-                  checked={poConfirmed}
-                  onCheckedChange={(checked) => setPoConfirmed(!!checked)}
-                />
-                <Label className="text-sm cursor-pointer">
-                  Confirm and send PO for manager approval
-                </Label>
-              </div>
+              <Button
+                className="w-full h-12 gap-2"
+                onClick={() => {
+                  setPoConfirmed(true);
+                  setStep((s) => s + 1);
+                }}
+              >
+                <ClipboardList className="w-4 h-4" /> Send PO to Supervisor
+              </Button>
             </div>
           )}
 

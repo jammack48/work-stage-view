@@ -18,6 +18,7 @@ import Index from "./pages/Index";
 import JobCard from "./pages/JobCard";
 import WorkHome from "./pages/WorkHome";
 import WorkJobCard from "./components/job/WorkJobCard";
+import WorkNewJob from "./pages/WorkNewJob";
 import Customers from "./pages/Customers";
 import CustomerCard from "./pages/CustomerCard";
 import SettingsPage from "./pages/SettingsPage";
@@ -46,6 +47,7 @@ function AppLayout() {
               <Route path="/" element={<WorkHome />} />
               <Route path="/hub" element={<WorkHome />} />
               <Route path="/job/:id" element={<WorkJobCard />} />
+              <Route path="/new-job" element={<WorkNewJob />} />
               <Route path="*" element={<WorkHome />} />
             </>
           ) : (
