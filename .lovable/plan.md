@@ -1,36 +1,27 @@
 
 
-## Fix Week View + Supplier Receipt Photos + Pipeline Review
+## Plan: Enhanced Work Mode New Job Flow
 
-### Issues Found
+### Step 1 — Customer Selection (replace plain text input)
+- Add a searchable customer picker that filters `DUMMY_CUSTOMERS` as user types
+- Show matching customers in a dropdown list below the input
+- When a customer is selected, auto-populate the address field with their address
+- Add a "+ New Customer" button/option at top of dropdown that switches to manual entry mode (name + address both editable)
+- Address field remains editable even when auto-populated (for different site)
 
-1. **Week view broken**: When `viewMode === "week"` on mobile, code falls through to `TimeGridMobile` which only shows a single day — no week grid rendered.
-2. **Supplier receipt photo**: Currently just a toggle button text change. Need actual photo upload placeholder with visual feedback.
-3. **Pipeline walkthrough**: The "Complete Job" button label should say "Finished Job" per user's earlier request. The completion flow step order and naming is mostly good but the "Coming Back?" step should come after work documentation (job sheet, time, parts) since you don't know if you're coming back until you've reviewed what was done.
+### Step 2 — Visual Schedule Picker (replace dropdowns)
+- Replace date picker + time/duration dropdowns with an inline time grid
+- Show the selected date's schedule using the existing `TimeGridMobile`-style layout with hour lines (7am–5pm)
+- Add a `DayStrip` at top to pick the date
+- Render a draggable "new job" block on the grid, initially placed at 8am spanning 1 hour
+- User taps a time slot to set start time, then drags the bottom edge of the block to extend duration (snaps to 30min increments)
+- Existing jobs for that day shown in the background (greyed out) so staff can see availability
+- Show the computed start time and duration below the grid as confirmation text
 
-### Changes
+### Step 3 — Confirm (mostly same, minor updates)
+- Summary card unchanged
+- "Start Job" navigates to `/job/TB-NEW`
 
-**1. Fix week view (`src/pages/WorkHome.tsx`)**
-- Week view should always use `TimeGridDesktop` regardless of mobile/desktop — it's the only component that renders a 5-column week grid
-- Remove the `isMobile` conditional inside week view branch
-
-**2. Supplier receipt photos (`src/components/job/JobCompletionFlow.tsx`)**
-- Replace the tiny "Receipt" toggle button with a proper photo card: dashed border box with camera icon, shows "Receipt Added ✓" with green styling when toggled
-- Add a count/visual indicator for attached receipts in the supplier section
-- Add a dedicated "Attach Paperwork" button per supplier item that's more prominent and thumb-friendly
-
-**3. Reorder completion steps (`src/components/job/JobCompletionFlow.tsx`)**
-- Move "Coming Back?" from step 1 to after parts/PO — logical order: jobsheet → time → parts → po-review → return → photos → compliance
-- Rename button from "Complete Job" to "Finished Job" to match user language
-
-**4. Minor pipeline fixes**
-- The `WorkJobCard` "Complete Job" button text → "Finished Job"
-
-### Files
-
-| File | Change |
-|------|--------|
-| `src/pages/WorkHome.tsx` | Fix week view to always use TimeGridDesktop |
-| `src/components/job/JobCompletionFlow.tsx` | Reorder steps, improve supplier receipt UI |
-| `src/components/job/WorkJobCard.tsx` | Rename button to "Finished Job" |
+### Files to modify
+- `src/pages/WorkNewJob.tsx` — full rewrite with customer picker + visual schedule grid
 
