@@ -399,6 +399,15 @@ export default function WorkNewJob() {
     navigate("/job/TB-NEW");
   };
 
+  const handleStartNow = () => {
+    toast({
+      title: "Job Started ✅",
+      description: `${customer} — starting now`,
+      duration: 3000,
+    });
+    navigate("/job/TB-NEW");
+  };
+
   return (
     <div className="px-3 sm:px-6 py-4 max-w-lg mx-auto pb-24">
       {/* Header */}
@@ -425,9 +434,14 @@ export default function WorkNewJob() {
             description={description} setDescription={setDescription}
             isNewCustomer={isNewCustomer} setIsNewCustomer={setIsNewCustomer}
           />
-          <Button className="w-full h-12 gap-2" disabled={!detailsValid} onClick={() => setStep(2)}>
-            Next <ArrowRight className="w-4 h-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1 h-12 gap-2" disabled={!detailsValid} onClick={handleStartNow}>
+              <Check className="w-4 h-4" /> Start Now
+            </Button>
+            <Button className="flex-1 h-12 gap-2" disabled={!detailsValid} onClick={() => setStep(2)}>
+              Schedule <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       )}
 
@@ -442,9 +456,14 @@ export default function WorkNewJob() {
             onPrevWeek={() => setWeekStart(d => addDays(d, -7))}
             onNextWeek={() => setWeekStart(d => addDays(d, 7))}
           />
-          <Button className="w-full h-12 gap-2" onClick={() => setStep(3)}>
-            Next <ArrowRight className="w-4 h-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1 h-12 gap-2" onClick={() => setStep(3)}>
+              Review <ArrowRight className="w-4 h-4" />
+            </Button>
+            <Button className="flex-1 h-12 gap-2" onClick={handleConfirm}>
+              <Check className="w-4 h-4" /> Start Job
+            </Button>
+          </div>
         </div>
       )}
 
