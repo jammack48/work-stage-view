@@ -40,7 +40,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   const isActive = (id: string) => activeTab === id || currentPage === id;
 
   const headingBar = pageHeading ? (
-    <div className="px-4 sm:px-6 py-2 border-b border-border bg-background">
+    <div className="px-4 sm:px-6 py-2 border-b border-border bg-background sticky top-0 z-30">
       {pageHeading}
     </div>
   ) : null;
