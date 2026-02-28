@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ScheduleJob, STAFF_COLORS, formatTime } from "./scheduleData";
+import { useJobPrefix } from "@/contexts/JobPrefixContext";
 
 interface ScheduleJobCardProps {
   job: ScheduleJob;
@@ -17,6 +18,8 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
 
 export function ScheduleJobCard({ job, style, compact }: ScheduleJobCardProps) {
   const navigate = useNavigate();
+  const { prefix } = useJobPrefix();
+  const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
 
   return (
     <button
@@ -47,7 +50,7 @@ export function ScheduleJobCard({ job, style, compact }: ScheduleJobCardProps) {
         )}
       </div>
       {!compact && (
-        <div className="text-[10px] text-muted-foreground truncate mt-0.5">{job.address}</div>
+        <div className="text-[10px] text-muted-foreground truncate mt-0.5">{displayId} · {job.address}</div>
       )}
       <div className={cn("text-muted-foreground font-medium", compact ? "text-[9px]" : "text-[10px]")}>
         <span style={{ color: STAFF_COLORS[job.assignedTo] }}>{job.assignedTo}</span>

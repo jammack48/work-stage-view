@@ -6,6 +6,7 @@ import { useThresholds } from "@/contexts/ThresholdContext";
 import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
 import { TutorialTip } from "@/components/TutorialTip";
 import { LeadActionMenu } from "@/components/LeadActionMenu";
+import { useJobPrefix } from "@/contexts/JobPrefixContext";
 
 interface ExpandedStagePanelProps {
   stage: string;
@@ -33,6 +34,7 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
   const navigate = useNavigate();
   const { getThresholds } = useThresholds();
   const { style: notifStyle } = useNotificationStyle();
+  const { prefix } = useJobPrefix();
   const thresholds = getThresholds(stage);
   const sorted = sortByStatus(jobs, thresholds.greenMax, thresholds.orangeMax);
   const isLeadStage = stage === "Lead";
@@ -114,7 +116,7 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
                 </span>
               )}
               <span className="text-right text-muted-foreground whitespace-nowrap text-xs sm:text-sm">{job.ageDays}d</span>
-              <span className="hidden sm:inline text-right font-mono text-muted-foreground text-xs">{job.id}</span>
+              <span className="hidden sm:inline text-right font-mono text-muted-foreground text-xs">{job.id.replace(/^[A-Z]+-/, `${prefix}-`)}</span>
             </div>
           );
 
