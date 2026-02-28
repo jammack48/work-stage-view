@@ -128,11 +128,7 @@ export default function WorkHome() {
       {viewMode === "day" ? (
         <TimeGridMobile jobs={myJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} />
       ) : (
-        isMobile ? (
-          <TimeGridMobile jobs={myJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} />
-        ) : (
-          <TimeGridDesktop weekStart={weekStart} jobs={myJobs} selectedDay={selectedDay} />
-        )
+        <TimeGridDesktop weekStart={weekStart} jobs={myJobs} selectedDay={selectedDay} />
       )}
     </div>
   );
