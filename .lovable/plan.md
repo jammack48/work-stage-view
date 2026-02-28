@@ -1,75 +1,60 @@
 
 
-## Add Work Mode (Staff/Field Worker View)
+## Enhance Work Mode — Fergus-Style Schedule + Job Completion Workflow
 
-### Concept
-On app load, show a mode picker: **Manage** (current full app for the boss) vs **Work** (stripped-down field worker view for staff). Persisted in localStorage so they don't choose every time.
+### Current State
+Work mode exists but is basic: a simple Today/My Jobs toggle, and job cards that reuse the manage-mode OverviewTab (which shows **Value** — a financial leak). No guided completion flow, no materials-needed morning summary, no bottom nav bar.
 
-### Work Mode — What Staff Need
+### Changes
 
-Based on Fergus/Tradify patterns and the trades workflow:
+**1. Redesign WorkHome schedule (Fergus-style)**
+- **`src/pages/WorkHome.tsx`** — Full rewrite:
+  - Add a 7-day strip (Mon–Sun) like the Fergus screenshot, with selectable days and week navigation arrows
+  - Show staff name/avatar at top (currently hardcoded "Dave")
+  - Job cards as a vertical list: status badge (colour-coded), time range, job name, client, address + map pin button
+  - Add a **"Materials Needed Today"** expandable section at the top — aggregates materials from all today's jobs so staff can see what to pick up before leaving
+  - Add a **bottom navigation bar** (fixed): Home, Calendar (→ /schedule), Create Job, Timesheet (→ placeholder)
+  - "My Jobs" view: show only active jobs assigned to staff
 
-```text
-┌─────────────────────────────────┐
-│  Work Mode Home                 │
-│                                 │
-│  Today's Schedule (primary)     │
-│  ┌─────────────────────────┐    │
-│  │ 8:00  Heat Pump Install │    │
-│  │ 10:30 Switchboard       │    │
-│  │ 1:00  Rewire - 42 Smith │    │
-│  └─────────────────────────┘    │
-│                                 │
-│  My Jobs (list of assigned)     │
-│  ┌─────────────────────────┐    │
-│  │ Heat Pump Install - $X  │    │ ← no $ shown
-│  │ Switchboard Upgrade     │    │
-│  └─────────────────────────┘    │
-│                                 │
-│  Bottom toolbar:                │
-│  [Schedule] [Jobs] [+ Job]      │
-└─────────────────────────────────┘
-```
+**2. Create Work-specific Overview tab (no financials)**
+- **`src/components/job/WorkOverviewTab.tsx`** — New file. Same layout as OverviewTab but:
+  - Remove `Value` row entirely
+  - Remove `$` amounts
+  - Keep: job name, stage, customer contact, address/maps link, staff, schedule dates
+  - Add prominent "Navigate" button (Google Maps link) and "Call Customer" button
 
-### Work Mode Job Card — Limited Tabs
-When a staff member opens a job, they see a restricted set of tabs:
-- **Overview** — job name, address, customer contact, staff, schedule (no value/pricing)
-- **Scope** — the approved quote description and materials list but **no prices** (qty + item name only)
-- **Time** — start/stop timer, log hours
-- **Materials** — items used on site, can add more (no buy/sell prices, just item + qty)
-- **Notes** — add notes
-- **Photos** — take/upload photos
-- **Forms** — safety checklists etc.
+**3. Add Job Completion Stepper**
+- **`src/components/job/JobCompletionFlow.tsx`** — New file. A multi-step completion dialog/flow triggered by a "Complete Job" button on the WorkJobCard:
+  - **Step 1 — Job Sheet**: Pre-populated description from scope/quote. Staff can edit what they actually did.
+  - **Step 2 — Time**: Show budgeted hours vs actual. Staff enters actual time if not already logged.
+  - **Step 3 — Parts Used**: List materials from scope as "expected". Staff ticks off what they used, can add extras. Toggle: "Stock on hand" vs "Purchase order needed". For PO items, option to note supplier/PO number.
+  - **Step 4 — Photos**: Quick photo upload section (before/after).
+  - **Step 5 — Compliance** (electrical): COC testing fields, certificate number. Skip if not applicable.
+  - **Step 6 — Return Visit?**: Yes/No toggle. If yes, add note about what's needed and preferred date.
+  - Final: Submit → marks job as "Complete" (or "Return Required"), navigates back to home.
 
-Tabs NOT shown to staff: Quote, Invoice, Sequences, Messages, History, Spend.
+**4. Update WorkJobCard with completion button + work overview**
+- **`src/components/job/WorkJobCard.tsx`** — Modify:
+  - Replace `<OverviewTab>` with new `<WorkOverviewTab>` (no prices)
+  - Add a prominent "Complete Job" FAB/button that launches the completion flow
+  - Add "Start Job" / "On Site" status toggle at top
 
-### New Files
-- **`src/contexts/AppModeContext.tsx`** — React context storing `"manage" | "work"`, persisted to localStorage. Provides `mode`, `setMode`, `isWorkMode`.
-- **`src/components/ModePicker.tsx`** — Full-screen picker shown when no mode is set. Two large cards: "I'm the Boss" (Manage) and "I'm on the Tools" (Work). Also accessible from AppHeader to switch.
-- **`src/pages/WorkHome.tsx`** — Work mode home page. Shows today's schedule (reuses existing schedule components filtered to "My Jobs") and a simple job list.
-- **`src/components/job/WorkJobCard.tsx`** — Stripped-down job card for Work mode with limited tabs and no pricing.
-- **`src/components/job/ScopeTab.tsx`** — New tab showing approved quote scope text and materials list without any pricing columns.
+**5. Bottom nav bar for Work mode**
+- **`src/components/WorkBottomNav.tsx`** — New file. Fixed bottom bar with: Home, Calendar, + Create Job, Timesheet, Menu icons (similar to Fergus screenshot)
+- **`src/App.tsx`** — Render `<WorkBottomNav />` when `isWorkMode`
 
-### Modified Files
-- **`src/App.tsx`** — Wrap in `AppModeProvider`. If mode not set, show `ModePicker`. If work mode, route `/` to `WorkHome` instead of `Index`. Route `/job/:id` to `WorkJobCard` in work mode.
-- **`src/components/AppHeader.tsx`** — Add a small mode indicator/switch button (e.g., a Wrench/Shield toggle) so user can switch between modes.
-- **`src/config/toolbarTabs.ts`** — Add `WORK_JOB_EXTRAS` (Back, Overview, Scope, Time, Materials, Notes, Photos, Forms) and `WORK_HOME_TABS` (Schedule, Jobs, + Job).
-
-### Key Design Decisions
-- **No prices anywhere in Work mode** — materials show item + qty only, no unit price, no totals. Quote scope shows description and materials list only.
-- **Can add items** — staff can add materials they used (item name + qty) and time entries. These feed back into the job for the manager to price later.
-- **Schedule is primary** — Work mode home opens straight to today's schedule, not a pipeline.
-- **Mode persisted** — stored in localStorage, changeable from header. No auth required (this is a UI-only prototype).
+**6. Update toolbar tabs**
+- **`src/config/toolbarTabs.ts`** — Remove `WORK_HOME_TABS` (replaced by bottom nav). Add `complete` tab to `WORK_JOB_EXTRAS`.
 
 ### Files Summary
+
 | File | Action |
 |------|--------|
-| `src/contexts/AppModeContext.tsx` | Create — mode context + provider |
-| `src/components/ModePicker.tsx` | Create — mode selection screen |
-| `src/pages/WorkHome.tsx` | Create — staff home (schedule + job list) |
-| `src/components/job/ScopeTab.tsx` | Create — quote scope without prices |
-| `src/components/job/WorkJobCard.tsx` | Create — limited job card for staff |
-| `src/config/toolbarTabs.ts` | Modify — add work mode tab sets |
-| `src/App.tsx` | Modify — mode routing |
-| `src/components/AppHeader.tsx` | Modify — mode switch button |
+| `src/pages/WorkHome.tsx` | Rewrite — Fergus-style day strip, job list, materials summary |
+| `src/components/job/WorkOverviewTab.tsx` | Create — overview without financials |
+| `src/components/job/JobCompletionFlow.tsx` | Create — multi-step completion stepper |
+| `src/components/job/WorkJobCard.tsx` | Modify — use WorkOverviewTab, add Complete button |
+| `src/components/WorkBottomNav.tsx` | Create — fixed bottom navigation |
+| `src/App.tsx` | Modify — add WorkBottomNav in work mode |
+| `src/config/toolbarTabs.ts` | Modify — update work tabs |
 
