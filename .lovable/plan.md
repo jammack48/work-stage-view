@@ -1,34 +1,30 @@
 
 
-## Issues from screenshots
+## Issues
 
-1. **Duplicate description**: QuotePage renders a scope `Textarea` at line 158-165, AND each QuoteBlock inside `QuoteTab` has its own description `Textarea` at line 390-395. The page-level scope box repeats the same text as the block description, creating redundancy.
+1. **Toolbar covers heading on mobile**: The fixed mobile vertical nav starts at `top-0`, overlapping the AppHeader. It needs `top-[var(--header-height)]` or a fixed offset (the header is ~48px).
 
-2. **Labour items show person names + job descriptions** (e.g. "Jake Turner — Strip out old"): The `createBlockFromJob()` at line 158 formats labour as `${t.staff} — ${t.description}`. For tradies, labour should be role-based (e.g. "Electrician", "Apprentice") with hours and rate, not individual names.
+2. **Description textarea looks invisible**: The description textarea uses `bg-transparent border-0` — no visual cue that it's an input field. Needs a subtle background like `bg-muted/50` with a light border.
 
-3. **Item rows take too much vertical space**: Each item shows Name, Qty/Buy/Sell row, and Markup row — 3 full lines per item. On mobile this means only 1-2 items visible at a time.
+3. **Custom quote creates blank blocks**: When a user writes a custom description (no bundle selected), `initialBundle` is `undefined` and `getNewJobDetail` returns empty `timeEntries` and `materials`. In `QuoteTab` line 183-187, `initialBlocks` resolves to `[]` because both conditions fail. The funnel description is lost. Fix: pass `funnelData?.description` as a new prop and create a starter block with that description.
 
 ## Plan
 
-### 1. Remove duplicate scope description from QuotePage (`src/pages/QuotePage.tsx`)
-- Remove the `Textarea` wrapper div at lines 157-165 in the `line-items` tab content
-- The block-level description in `QuoteTab` is sufficient — each block already has a name (heading) and description field
+### 1. Push mobile toolbar below AppHeader (`src/components/PageToolbar.tsx`)
+- Line 164: Change `fixed top-0 bottom-0` to `fixed top-[48px] bottom-0` on the mobile vertical nav so it sits below the header
+- This matches the AppHeader height (~48px)
 
-### 2. Make block header clearer (`src/components/job/QuoteTab.tsx`)
-- Change block name `Input` to use `text-base font-bold` instead of `text-sm font-semibold` so it reads as a clear section heading
-- Increase block description textarea to `text-sm` (from `text-xs`) and `min-h-[60px]` for readability
+### 2. Style description textarea visibly (`src/components/job/QuoteTab.tsx`)
+- Line 421: Change `bg-transparent` to `bg-muted/40 rounded-lg px-3 py-2 border border-border/50`
+- Keep the auto-expand behavior
 
-### 3. Fix labour item naming (`src/components/job/QuoteTab.tsx`)
-- Change `createBlockFromJob()` at line 158 to use role-based names: format as `${t.staff.split(' ')[0]} (${role})` or just the role from `staffPool`
-- Better: change to `Electrician`, `Apprentice` etc. by looking up from `staffPool` data
+### 3. Fix custom quote creating empty blocks (`src/components/job/QuoteTab.tsx`)
+- Add optional `initialDescription?: string` prop to `QuoteTabProps`
+- In `initialBlocks` logic (line 183-187): when no bundle and no time/materials, create one empty block pre-filled with `initialDescription` as the description
+- In `QuotePage.tsx` line 152: pass `initialDescription={funnelData?.description}` to `QuoteTab`
 
-### 4. Compact item rows for mobile (`src/components/job/QuoteTab.tsx`)
-- Combine the Qty/Buy and Sell/Markup into a single 2-row layout instead of 3 rows
-- Move the line total inline with the name row (right-aligned)
-- Put Qty, Buy, Sell, Markup all on one row with smaller inputs
-- Hide the "Sell" field by default (it's auto-calculated from Buy + Markup) — show only Name, Qty × Rate, Markup%, Total
-
-### Files to modify
-- `src/pages/QuotePage.tsx` — remove duplicate scope textarea from line-items tab
-- `src/components/job/QuoteTab.tsx` — bigger block headings, fix labour names to roles, compact item rows
+### Files
+- `src/components/PageToolbar.tsx` — toolbar offset
+- `src/components/job/QuoteTab.tsx` — description styling + initialDescription prop
+- `src/pages/QuotePage.tsx` — pass description through
 
