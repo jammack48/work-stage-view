@@ -1,27 +1,54 @@
 
 
-## Plan: Enhanced Work Mode New Job Flow
+# Phase 1 — Critical Bug Fixes
 
-### Step 1 — Customer Selection (replace plain text input)
-- Add a searchable customer picker that filters `DUMMY_CUSTOMERS` as user types
-- Show matching customers in a dropdown list below the input
-- When a customer is selected, auto-populate the address field with their address
-- Add a "+ New Customer" button/option at top of dropdown that switches to manual entry mode (name + address both editable)
-- Address field remains editable even when auto-populated (for different site)
+## 1. Wire customer data from New Job flow to job card
+- Store customer name, address, and description in a shared context or pass via React Router `state` when navigating to `/job/TB-NEW`
+- Update `JobCard.tsx` / `WorkJobCard.tsx` to read `location.state` and override the hardcoded "Dave Thompson" values
+- Update `getJobDetail("TB-NEW")` to accept optional overrides
 
-### Step 2 — Visual Schedule Picker (replace dropdowns)
-- Replace date picker + time/duration dropdowns with an inline time grid
-- Show the selected date's schedule using the existing `TimeGridMobile`-style layout with hour lines (7am–5pm)
-- Add a `DayStrip` at top to pick the date
-- Render a draggable "new job" block on the grid, initially placed at 8am spanning 1 hour
-- User taps a time slot to set start time, then drags the bottom edge of the block to extend duration (snaps to 30min increments)
-- Existing jobs for that day shown in the background (greyed out) so staff can see availability
-- Show the computed start time and duration below the grid as confirmation text
+## 2. Fix schedule job navigation in Work mode
+- Map demo schedule job IDs (`J-001`, `J-002`, etc.) to entries in `dummyJobDetails` so tapping a scheduled job doesn't show "Job not found"
+- Add fallback job detail entries for all `DEMO_JOBS` IDs
 
-### Step 3 — Confirm (mostly same, minor updates)
-- Summary card unchanged
-- "Start Job" navigates to `/job/TB-NEW`
+## 3. Fix double bottom bar overlap in Work mode
+- In `ToolbarPositionContext` or `PageToolbar`, force toolbar position to `"top"` when Work mode is active, preventing overlap with `WorkBottomNav`
 
-### Files to modify
-- `src/pages/WorkNewJob.tsx` — full rewrite with customer picker + visual schedule grid
+## 4. Unify toast library
+- Replace all `sonner` toast calls (found in `LeadActionMenu.tsx`) with `@/hooks/use-toast`
+- Remove `sonner` Toaster component if no longer needed
+
+## 5. Fix React ref warnings
+- Wrap `AppLayout` and `ModePicker` with `React.forwardRef` or remove ref passing from parent components
+
+## 6. Wire Timesheet button to Coming Soon page
+- Update `WorkBottomNav` so the Timesheet button navigates to `/coming-soon` instead of doing nothing
+
+---
+
+# Phase 2 — UX Polish
+
+## 7. Add leave-confirmation to New Job flow
+- Prompt user when navigating away from a partially-filled new job form (steps 2/3 with data entered)
+
+## 8. Add "Today" quick-jump to DayStrip
+- Add a small "Today" button that resets week and selected day to current date
+
+## 9. Add toolbar tab overflow menu on mobile
+- When tabs exceed screen width, group extras behind a "More" dropdown
+
+---
+
+# Files to modify
+- `src/data/dummyJobDetails.ts` — add fallback entries for schedule job IDs
+- `src/pages/WorkNewJob.tsx` — pass customer data via navigation state
+- `src/pages/JobCard.tsx` — read location state for TB-NEW overrides
+- `src/components/job/WorkJobCard.tsx` — same override support
+- `src/contexts/ToolbarPositionContext.tsx` — force top in Work mode
+- `src/components/PageToolbar.tsx` — respect Work mode override
+- `src/components/LeadActionMenu.tsx` — switch from sonner to use-toast
+- `src/components/WorkBottomNav.tsx` — wire Timesheet button
+- `src/App.tsx` — fix ref forwarding on AppLayout/ModePicker
+- `src/components/ModePicker.tsx` — add forwardRef
+- `src/components/schedule/DayStrip.tsx` — add Today button
 
