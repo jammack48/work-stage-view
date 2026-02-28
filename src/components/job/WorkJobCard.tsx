@@ -100,6 +100,7 @@ export default function WorkJobCard() {
           setActiveTab(tabId as WorkJobTab);
         }}
         pageHeading={jobHeading}
+        tutorialKey="work-job"
       >
         {/* Action buttons */}
         <div className="flex gap-2 mb-3">

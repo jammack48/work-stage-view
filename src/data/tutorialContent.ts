@@ -71,10 +71,44 @@ export const tutorialPages: Record<string, TutorialEntry> = {
     body: "Contracts, plans, permits, specs — anything this customer has sent you or you've uploaded. All in one spot instead of buried in your email or lost on the ute seat.",
   },
 
-  // ── Job Card (page-level fallback) ──
+  // ── Job Card — Manager (page-level fallback) ──
   job: {
     title: "Job File",
     body: "Everything about this job in one spot. Use the tabs to check the quote, log materials, add photos, track time. Tap any tab to jump straight there.",
+  },
+
+  // ── Work Job Card — Staff (page-level fallback) ──
+  "work-job": {
+    title: "Your Job Card",
+    body: "Everything you need for this job on site. Check the scope to see what needs doing, log your time, add materials you've used, snap photos, and fill out any forms. When you're done, hit 'Finished Job' to walk through the completion checklist — it'll sort out your paperwork in 2 minutes.",
+  },
+  "work-job:overview": {
+    title: "Job Overview",
+    body: "The key details for this job — customer, address, what stage it's at. Check this before you head to site so you know what you're walking into. Tap the address to open maps.",
+  },
+  "work-job:scope": {
+    title: "Scope of Work",
+    body: "What the boss quoted and what the customer expects. Read this before you start so there's no surprises. If something doesn't match what's on site, flag it in the notes tab.",
+  },
+  "work-job:time": {
+    title: "Log Your Time",
+    body: "Track hours on this job. Start when you arrive, stop when you leave. This feeds into job costing so the boss knows if jobs are profitable — and it keeps your timesheets accurate without the paper hassle.",
+  },
+  "work-job:materials": {
+    title: "Materials Used",
+    body: "Log everything you use on this job. Van stock gets flagged for automatic restocking. Supplier pickups — snap the receipt so there's a record. No more lost dockets or forgotten charges.",
+  },
+  "work-job:notes": {
+    title: "Job Notes",
+    body: "Write down anything useful — site access codes, what the customer said, issues you've found. Your future self (or the next tradie on site) will thank you. Notes stay attached to the job forever.",
+  },
+  "work-job:photos": {
+    title: "Job Photos",
+    body: "Snap before and after photos. These protect everyone — if a customer says 'that scratch was never there', you've got proof. Also handy for the boss to see progress without driving to site.",
+  },
+  "work-job:forms": {
+    title: "Job Forms",
+    body: "Digital checklists and sign-offs. Safety assessments, compliance forms, customer sign-off — fill them out on site. No more forgetting paperwork in the ute or losing forms between jobs.",
   },
   "job:overview": {
     title: "Job Overview",
@@ -238,6 +272,8 @@ export const sidebarTooltips: Record<string, string> = {
   services: "Service-related templates",
   reviews: "Review request templates",
   messages: "Messages with this customer",
+  scope: "What's been quoted for this job",
+  "finished-job": "Walk through the completion checklist",
 };
 
 /** Map pathname to tutorial key */
