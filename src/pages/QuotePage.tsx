@@ -149,7 +149,7 @@ export default function QuotePage() {
     overview: <QuoteOverviewTab job={job} scope={job.description || ""} onScopeChange={() => {}} />,
     "line-items": (
       <div className="space-y-4">
-        <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} beforeActions={
+        <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} initialDescription={funnelData?.description || undefined} beforeActions={
           <SequenceSelector category="quotes" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
         } />
       </div>

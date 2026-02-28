@@ -40,6 +40,7 @@ export interface QuoteBlock {
 interface QuoteTabProps {
   job: JobDetail;
   initialBundle?: import("@/data/dummyJobDetails").BundleTemplate;
+  initialDescription?: string;
   beforeActions?: React.ReactNode;
 }
 
@@ -125,7 +126,7 @@ function BlockSection({ label, items, section, isOpen, onToggle, onUpdate, onDel
 }
 
 /* ── Main QuoteTab ──────────────────────────────────────── */
-export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
+export function QuoteTab({ job, initialBundle, initialDescription, beforeActions }: QuoteTabProps) {
   const mkItem = (name: string, qty: number, unitPrice: number): LineItem => ({
     id: genId(), name, qty, unitPrice, sellPrice: unitPrice, markup: 0,
   });
@@ -184,7 +185,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
     ? [createBlockFromBundle(initialBundle)]
     : (job.timeEntries.length > 0 || job.materials.length > 0)
       ? [createBlockFromJob()]
-      : [];
+      : [{ id: blockId(), name: initialDescription ? "Custom Job" : "", description: initialDescription || "", qty: 1, labour: [], materials: [], extras: [] }];
 
   const [blocks, setBlocks] = useState<QuoteBlock[]>(initialBlocks);
   const [notes, setNotes] = useState("");
@@ -418,7 +419,7 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
                       }
                     }}
                     placeholder="Describe scope of this job…"
-                    className="min-h-[80px] border-0 bg-transparent px-0 focus-visible:ring-0 text-sm resize-none overflow-hidden"
+                    className="min-h-[80px] bg-muted/40 rounded-lg px-3 py-2 border border-border/50 focus-visible:ring-1 focus-visible:ring-ring text-sm resize-none overflow-hidden"
                   />
                 </div>
                 <div className="flex items-center gap-1 shrink-0 mt-1">

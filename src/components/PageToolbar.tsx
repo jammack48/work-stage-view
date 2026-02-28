@@ -161,7 +161,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
       <div className="flex flex-row min-h-screen" style={position === "right" ? { flexDirection: "row-reverse" } : undefined}>
         <nav
           className={cn(
-            "w-16 shrink-0 flex flex-col items-center gap-1 py-2 bg-card overflow-y-auto fixed top-0 bottom-0 z-40",
+            "w-16 shrink-0 flex flex-col items-center gap-1 py-2 bg-card overflow-y-auto fixed top-[48px] bottom-0 z-40",
             position === "left" ? "left-0 rounded-r-xl border-r border-border" : "right-0 rounded-l-xl border-l border-border"
           )}
         >
