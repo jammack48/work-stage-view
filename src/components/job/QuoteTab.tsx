@@ -405,9 +405,20 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
                   />
                   <Textarea
                     value={block.description}
-                    onChange={(e) => updateBlockField(block.id, "description", e.target.value)}
+                    onChange={(e) => {
+                      updateBlockField(block.id, "description", e.target.value);
+                      // Auto-resize
+                      e.target.style.height = "auto";
+                      e.target.style.height = e.target.scrollHeight + "px";
+                    }}
+                    ref={(el) => {
+                      if (el) {
+                        el.style.height = "auto";
+                        el.style.height = el.scrollHeight + "px";
+                      }
+                    }}
                     placeholder="Describe scope of this job…"
-                    className="min-h-[60px] border-0 bg-transparent px-0 focus-visible:ring-0 text-sm resize-none"
+                    className="min-h-[80px] border-0 bg-transparent px-0 focus-visible:ring-0 text-sm resize-none overflow-hidden"
                   />
                 </div>
                 <div className="flex items-center gap-1 shrink-0 mt-1">
