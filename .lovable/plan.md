@@ -1,60 +1,36 @@
 
 
-## Enhance Work Mode — Fergus-Style Schedule + Job Completion Workflow
+## Fix Week View + Supplier Receipt Photos + Pipeline Review
 
-### Current State
-Work mode exists but is basic: a simple Today/My Jobs toggle, and job cards that reuse the manage-mode OverviewTab (which shows **Value** — a financial leak). No guided completion flow, no materials-needed morning summary, no bottom nav bar.
+### Issues Found
+
+1. **Week view broken**: When `viewMode === "week"` on mobile, code falls through to `TimeGridMobile` which only shows a single day — no week grid rendered.
+2. **Supplier receipt photo**: Currently just a toggle button text change. Need actual photo upload placeholder with visual feedback.
+3. **Pipeline walkthrough**: The "Complete Job" button label should say "Finished Job" per user's earlier request. The completion flow step order and naming is mostly good but the "Coming Back?" step should come after work documentation (job sheet, time, parts) since you don't know if you're coming back until you've reviewed what was done.
 
 ### Changes
 
-**1. Redesign WorkHome schedule (Fergus-style)**
-- **`src/pages/WorkHome.tsx`** — Full rewrite:
-  - Add a 7-day strip (Mon–Sun) like the Fergus screenshot, with selectable days and week navigation arrows
-  - Show staff name/avatar at top (currently hardcoded "Dave")
-  - Job cards as a vertical list: status badge (colour-coded), time range, job name, client, address + map pin button
-  - Add a **"Materials Needed Today"** expandable section at the top — aggregates materials from all today's jobs so staff can see what to pick up before leaving
-  - Add a **bottom navigation bar** (fixed): Home, Calendar (→ /schedule), Create Job, Timesheet (→ placeholder)
-  - "My Jobs" view: show only active jobs assigned to staff
+**1. Fix week view (`src/pages/WorkHome.tsx`)**
+- Week view should always use `TimeGridDesktop` regardless of mobile/desktop — it's the only component that renders a 5-column week grid
+- Remove the `isMobile` conditional inside week view branch
 
-**2. Create Work-specific Overview tab (no financials)**
-- **`src/components/job/WorkOverviewTab.tsx`** — New file. Same layout as OverviewTab but:
-  - Remove `Value` row entirely
-  - Remove `$` amounts
-  - Keep: job name, stage, customer contact, address/maps link, staff, schedule dates
-  - Add prominent "Navigate" button (Google Maps link) and "Call Customer" button
+**2. Supplier receipt photos (`src/components/job/JobCompletionFlow.tsx`)**
+- Replace the tiny "Receipt" toggle button with a proper photo card: dashed border box with camera icon, shows "Receipt Added ✓" with green styling when toggled
+- Add a count/visual indicator for attached receipts in the supplier section
+- Add a dedicated "Attach Paperwork" button per supplier item that's more prominent and thumb-friendly
 
-**3. Add Job Completion Stepper**
-- **`src/components/job/JobCompletionFlow.tsx`** — New file. A multi-step completion dialog/flow triggered by a "Complete Job" button on the WorkJobCard:
-  - **Step 1 — Job Sheet**: Pre-populated description from scope/quote. Staff can edit what they actually did.
-  - **Step 2 — Time**: Show budgeted hours vs actual. Staff enters actual time if not already logged.
-  - **Step 3 — Parts Used**: List materials from scope as "expected". Staff ticks off what they used, can add extras. Toggle: "Stock on hand" vs "Purchase order needed". For PO items, option to note supplier/PO number.
-  - **Step 4 — Photos**: Quick photo upload section (before/after).
-  - **Step 5 — Compliance** (electrical): COC testing fields, certificate number. Skip if not applicable.
-  - **Step 6 — Return Visit?**: Yes/No toggle. If yes, add note about what's needed and preferred date.
-  - Final: Submit → marks job as "Complete" (or "Return Required"), navigates back to home.
+**3. Reorder completion steps (`src/components/job/JobCompletionFlow.tsx`)**
+- Move "Coming Back?" from step 1 to after parts/PO — logical order: jobsheet → time → parts → po-review → return → photos → compliance
+- Rename button from "Complete Job" to "Finished Job" to match user language
 
-**4. Update WorkJobCard with completion button + work overview**
-- **`src/components/job/WorkJobCard.tsx`** — Modify:
-  - Replace `<OverviewTab>` with new `<WorkOverviewTab>` (no prices)
-  - Add a prominent "Complete Job" FAB/button that launches the completion flow
-  - Add "Start Job" / "On Site" status toggle at top
+**4. Minor pipeline fixes**
+- The `WorkJobCard` "Complete Job" button text → "Finished Job"
 
-**5. Bottom nav bar for Work mode**
-- **`src/components/WorkBottomNav.tsx`** — New file. Fixed bottom bar with: Home, Calendar, + Create Job, Timesheet, Menu icons (similar to Fergus screenshot)
-- **`src/App.tsx`** — Render `<WorkBottomNav />` when `isWorkMode`
+### Files
 
-**6. Update toolbar tabs**
-- **`src/config/toolbarTabs.ts`** — Remove `WORK_HOME_TABS` (replaced by bottom nav). Add `complete` tab to `WORK_JOB_EXTRAS`.
-
-### Files Summary
-
-| File | Action |
+| File | Change |
 |------|--------|
-| `src/pages/WorkHome.tsx` | Rewrite — Fergus-style day strip, job list, materials summary |
-| `src/components/job/WorkOverviewTab.tsx` | Create — overview without financials |
-| `src/components/job/JobCompletionFlow.tsx` | Create — multi-step completion stepper |
-| `src/components/job/WorkJobCard.tsx` | Modify — use WorkOverviewTab, add Complete button |
-| `src/components/WorkBottomNav.tsx` | Create — fixed bottom navigation |
-| `src/App.tsx` | Modify — add WorkBottomNav in work mode |
-| `src/config/toolbarTabs.ts` | Modify — update work tabs |
+| `src/pages/WorkHome.tsx` | Fix week view to always use TimeGridDesktop |
+| `src/components/job/JobCompletionFlow.tsx` | Reorder steps, improve supplier receipt UI |
+| `src/components/job/WorkJobCard.tsx` | Rename button to "Finished Job" |
 
