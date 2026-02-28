@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield, RotateCcw, FileImage, Truck, ShoppingCart, ClipboardList, Mic, MicOff } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield, RotateCcw, FileImage, Truck, ShoppingCart, ClipboardList, Mic, MicOff, Maximize2, Minimize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,6 +50,15 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
   const [returnNeeded, setReturnNeeded] = useState(false);
   const [returnNote, setReturnNote] = useState("");
   const [jobSheet, setJobSheet] = useState(job.description || `Completed ${job.jobName} at ${job.address}.`);
+  const [jobSheetExpanded, setJobSheetExpanded] = useState(false);
+  const jobSheetRef = useRef<HTMLTextAreaElement>(null);
+  const autoResizeJobSheet = useCallback(() => {
+    const el = jobSheetRef.current;
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = el.scrollHeight + "px";
+    }
+  }, []);
   const budgetedHours = job.timeEntries.reduce((s, t) => s + t.hours, 0);
   const [actualHours, setActualHours] = useState(budgetedHours.toString());
   const [parts, setParts] = useState<PartUsed[]>(() =>
@@ -267,7 +276,29 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                   {isListening ? "Stop" : "Dictate"}
                 </Button>
               </div>
-              <Textarea className="bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400 min-h-[120px]" value={jobSheet} onChange={(e) => setJobSheet(e.target.value)} placeholder="Describe the work completed..." />
+              <Textarea
+                ref={jobSheetRef}
+                className={cn(
+                  "bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400 min-h-[120px] resize-none overflow-hidden transition-all",
+                  !jobSheetExpanded && "max-h-[300px] overflow-y-auto"
+                )}
+                value={jobSheet}
+                onChange={(e) => setJobSheet(e.target.value)}
+                onInput={autoResizeJobSheet}
+                placeholder="Describe the work completed..."
+              />
+              {jobSheet && jobSheet.length > 100 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 h-7 text-xs text-muted-foreground self-end"
+                  onClick={() => setJobSheetExpanded(!jobSheetExpanded)}
+                >
+                  {jobSheetExpanded ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
+                  {jobSheetExpanded ? "Collapse" : "Expand"}
+                </Button>
+              )}
             </div>
           )}
 
