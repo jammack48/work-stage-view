@@ -206,7 +206,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
               {returnNeeded && (
                 <div className="space-y-2">
                   <Label>What's needed?</Label>
-                  <Textarea className="bg-white/80 dark:bg-white/20 border-border/50 text-foreground" value={returnNote} onChange={(e) => setReturnNote(e.target.value)} placeholder="e.g. Waiting on parts, need to finish wiring..." rows={3} />
+                  <Textarea className="bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400" value={returnNote} onChange={(e) => setReturnNote(e.target.value)} placeholder="e.g. Waiting on parts, need to finish wiring..." rows={3} />
                 </div>
               )}
             </div>
@@ -267,7 +267,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                   {isListening ? "Stop" : "Dictate"}
                 </Button>
               </div>
-              <Textarea className="bg-white/80 dark:bg-white/20 border-border/50 text-foreground min-h-[120px]" value={jobSheet} onChange={(e) => setJobSheet(e.target.value)} placeholder="Describe the work completed..." />
+              <Textarea className="bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400 min-h-[120px]" value={jobSheet} onChange={(e) => setJobSheet(e.target.value)} placeholder="Describe the work completed..." />
             </div>
           )}
 
@@ -280,7 +280,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
               </div>
               <div className="space-y-1.5">
                 <Label>Actual hours</Label>
-                <Input className="bg-white/80 dark:bg-white/20 border-border/50 text-foreground" type="number" step="0.5" value={actualHours} onChange={(e) => setActualHours(e.target.value)} />
+                <Input className="bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400" type="number" step="0.5" value={actualHours} onChange={(e) => setActualHours(e.target.value)} />
               </div>
               {Number(actualHours) > budgetedHours && (
                 <p className="text-xs text-[hsl(var(--status-orange))]">⚠ {(Number(actualHours) - budgetedHours).toFixed(1)} hrs over budget</p>
@@ -346,7 +346,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                       </div>
                     )}
                     {p.used && p.source === "supplier" && (
-                      <Input className="h-7 text-xs ml-6 w-auto bg-white/80 dark:bg-white/20 border-border/50 text-foreground" placeholder="Supplier name..." value={p.supplierName || ""} onChange={(e) => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, supplierName: e.target.value } : pp))} />
+                      <Input className="h-7 text-xs ml-6 w-auto bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400" placeholder="Supplier name..." value={p.supplierName || ""} onChange={(e) => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, supplierName: e.target.value } : pp))} />
                     )}
                   </div>
                 ))}
@@ -482,7 +482,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
               {complianceRequired && (
                 <div className="space-y-2">
                   <Label>COC / Certificate Number</Label>
-                  <Input className="bg-white/80 dark:bg-white/20 border-border/50 text-foreground" value={cocNumber} onChange={(e) => setCocNumber(e.target.value)} placeholder="e.g. COC-2025-001" />
+                  <Input className="bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400" value={cocNumber} onChange={(e) => setCocNumber(e.target.value)} placeholder="e.g. COC-2025-001" />
                   <div className="space-y-1">
                     <div className="flex items-center gap-2"><Checkbox /> <span className="text-sm">Testing completed</span></div>
                     <div className="flex items-center gap-2"><Checkbox /> <span className="text-sm">Certificate issued</span></div>
