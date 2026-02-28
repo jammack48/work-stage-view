@@ -12,6 +12,7 @@ import { TutorialProvider } from "@/contexts/TutorialContext";
 import { AppModeProvider, useAppMode } from "@/contexts/AppModeContext";
 import { AppHeader } from "@/components/AppHeader";
 import { ModePicker } from "@/components/ModePicker";
+import { WorkBottomNav } from "@/components/WorkBottomNav";
 import Hub from "./pages/Hub";
 import Index from "./pages/Index";
 import JobCard from "./pages/JobCard";
@@ -28,7 +29,6 @@ import EmailTemplatesPage from "./pages/EmailTemplatesPage";
 import SmsTemplatesPage from "./pages/SmsTemplatesPage";
 import InvoicePage from "./pages/InvoicePage";
 import NotFound from "./pages/NotFound";
-
 const queryClient = new QueryClient();
 
 function AppLayout() {
@@ -39,7 +39,7 @@ function AppLayout() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <div>
+      <div className={isWorkMode ? "pb-16" : ""}>
         <Routes>
           {isWorkMode ? (
             <>
@@ -70,6 +70,7 @@ function AppLayout() {
           )}
         </Routes>
       </div>
+      {isWorkMode && <WorkBottomNav />}
     </div>
   );
 }
