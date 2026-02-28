@@ -191,20 +191,23 @@ const addresses = [
   "31 Rimu Lane, Remuera, Auckland 1050",
 ];
 
-export function getJobDetail(jobId: string): JobDetail | null {
+// Schedule demo IDs → generate a valid JobDetail from schedule data
+import { DEMO_JOBS } from "@/components/schedule/scheduleData";
+
+export function getJobDetail(jobId: string, overrides?: { client?: string; address?: string; description?: string }): JobDetail | null {
   if (jobId === "TB-NEW") {
     return {
       id: "TB-NEW",
       jobName: "New Job",
-      client: "Dave Thompson",
+      client: overrides?.client || "New Customer",
       clientPhone: "021 555 1234",
-      clientEmail: "dave@example.com",
-      address: "12 Queen St, Auckland",
+      clientEmail: "",
+      address: overrides?.address || "",
       value: 0,
       stage: "In Progress",
       ageDays: 0,
       urgent: false,
-      description: "Charge-up job — add parts and labour as you go.",
+      description: overrides?.description || "Charge-up job — add parts and labour as you go.",
       startDate: new Date().toLocaleDateString("en-NZ", { weekday: "short", day: "numeric", month: "short", year: "numeric" }),
       dueDate: "",
       staff: [staffPool[0]],
@@ -215,6 +218,37 @@ export function getJobDetail(jobId: string): JobDetail | null {
       invoiceStatus: "Draft",
       labourTotal: 0,
       extrasTotal: 0,
+    };
+  }
+
+  // Check schedule demo jobs
+  const schedJob = DEMO_JOBS.find((j) => j.id === jobId);
+  if (schedJob) {
+    const idx = DEMO_JOBS.indexOf(schedJob);
+    const staffCount = (idx % 3) + 1;
+    const matCount = (idx % 4) + 2;
+    return {
+      id: schedJob.id,
+      jobName: schedJob.jobName,
+      client: schedJob.client,
+      clientPhone: `021 ${400 + idx} ${2000 + idx}`,
+      clientEmail: `${schedJob.client.split(" ")[0].toLowerCase()}@email.co.nz`,
+      address: schedJob.address,
+      value: 1500 + idx * 300,
+      stage: schedJob.status,
+      ageDays: idx + 1,
+      urgent: idx % 4 === 0,
+      description: `${schedJob.jobName} at ${schedJob.address}. Standard residential job.`,
+      startDate: "Mon 10 Feb 2025",
+      dueDate: "Fri 21 Feb 2025",
+      staff: staffPool.slice(0, staffCount),
+      materials: materialsPool.slice(0, matCount),
+      notes: notesPool.slice(0, (idx % 3) + 1),
+      photos: photosPool.slice(0, (idx % 3) + 2),
+      timeEntries: timePool.slice(0, (idx % 3) + 1),
+      invoiceStatus: idx % 3 === 0 ? "Paid" : idx % 3 === 1 ? "Sent" : "Draft",
+      labourTotal: timePool.slice(0, (idx % 3) + 1).reduce((s, t) => s + t.hours * 85, 0),
+      extrasTotal: (idx % 5) * 75,
     };
   }
 

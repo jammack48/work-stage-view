@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { Mail, MessageSquare, Send, Zap, ArrowLeft, Reply, Clock } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -181,7 +181,7 @@ function ComposePanel({ defaultChannel, onClose }: { defaultChannel?: "email" | 
     setSending(true);
     setTimeout(() => {
       setSending(false);
-      toast.success(`${channel === "email" ? "Email" : "SMS"} sent successfully`);
+      toast({ title: `${channel === "email" ? "Email" : "SMS"} sent successfully` });
       setBody("");
       setSubject("");
       setTemplateId("");

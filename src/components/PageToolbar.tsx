@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToolbarPosition } from "@/contexts/ToolbarPositionContext";
+import { useAppMode } from "@/contexts/AppModeContext";
 import { useTutorial } from "@/contexts/TutorialContext";
 import { sidebarTooltips } from "@/data/tutorialContent";
 import { TutorialBanner } from "@/components/TutorialBanner";
@@ -29,7 +30,10 @@ interface PageToolbarProps {
 
 export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading, currentPage, tutorialKey }: PageToolbarProps) {
   const isMobile = useIsMobile();
-  const { position } = useToolbarPosition();
+  const { position: rawPosition } = useToolbarPosition();
+  const { isWorkMode } = useAppMode();
+  // Force top position in Work mode to avoid overlap with WorkBottomNav
+  const position = isWorkMode && rawPosition === "bottom" ? "top" : rawPosition;
   const { tutorialOn } = useTutorial();
 
   const tutorialBanner = tutorialOn ? <TutorialBanner overrideKey={tutorialKey} tabKey={activeTab} /> : null;
