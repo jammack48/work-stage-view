@@ -1,28 +1,21 @@
 
 
-## Two changes to JobCompletionFlow
+## Changes to JobCompletionFlow
 
-### 1. Lighten all textareas/inputs in the completion dialog
+### 1. Lighten all textarea/input backgrounds for dark mode visibility
 
-The textarea on the Job Sheet step (and others like return note) uses default styling which is too dark in the earthy theme. Change all `Textarea` instances in `JobCompletionFlow.tsx` to use `bg-background border-border` class for a clearly lighter, distinct field. Same for `Input` fields in the flow.
+Change all `Textarea` and `Input` fields from `bg-background border-border` to a much lighter style: `bg-white/80 dark:bg-white/20 border-border text-foreground`. This gives a noticeably lighter box in dark mode while keeping dark text readable. The textarea should also auto-expand (no fixed height scroll issue).
 
-### 2. Add quick-select common phrases on Job Sheet step
+### 2. Add voice dictation button
 
-Add a list of checkbox-style quick phrases above the textarea on the "jobsheet" step. When tapped, the phrase appends to the job sheet text. Common tradie phrases:
-
-- Arrived on site
-- Spoke with customer
-- Diagnosed fault
-- Tested and commissioned
-- Cleaned up site
-- Left materials on site
-- Isolated power/water
-- Work completed as quoted
-
-Each phrase is a tappable chip/badge. Tapping toggles it on (appends text) or off (removes text).
+Add a microphone button next to the "What was done on this job?" label on the Job Sheet step. Uses the browser's built-in `SpeechRecognition` API (Web Speech API) — no external dependencies needed. Tapping starts listening, transcribed text appends to the job sheet textarea. A pulsing mic icon indicates active recording.
 
 **File:** `src/components/job/JobCompletionFlow.tsx`
 
-- Lines 184-188: Replace jobsheet step content with quick-phrase chips + lighter textarea
-- Add `className="bg-background border-border"` to all Textarea/Input instances in the file (lines 177, 187, 200, 266, 402)
+- Import `Mic`, `MicOff` from lucide-react
+- Add `isListening` state and a `toggleDictation` function using `window.SpeechRecognition || window.webkitSpeechRecognition`
+- On result, append transcript to `jobSheet`
+- Place mic button inline with the "What was done on this job?" label
+- Update all textarea/input className to use lighter backgrounds: `bg-white/80 dark:bg-white/20 border-border/50 text-foreground dark:text-white`
+- Make the job sheet textarea use `min-h-[120px]` instead of fixed `rows={6}` for better auto-sizing
 
