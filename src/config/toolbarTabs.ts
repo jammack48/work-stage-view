@@ -132,6 +132,23 @@ export const SMS_EXTRAS: ToolbarTab[] = [
   { id: "reviews", label: "Reviews", icon: Star },
 ];
 
+export const WORK_HOME_TABS: ToolbarTab[] = [
+  { id: "schedule", label: "Schedule", icon: CalendarDays },
+  { id: "jobs", label: "Jobs", icon: Briefcase },
+  { id: "add-job", label: "New Job", icon: Plus },
+];
+
+export const WORK_JOB_EXTRAS: ToolbarTab[] = [
+  BACK_TAB,
+  { id: "overview", label: "Overview", icon: ClipboardList },
+  { id: "scope", label: "Scope", icon: FileCheck },
+  { id: "time", label: "Time", icon: Clock },
+  { id: "materials", label: "Materials", icon: Package },
+  { id: "notes", label: "Notes", icon: StickyNote },
+  { id: "photos", label: "Photos", icon: Camera },
+  { id: "forms", label: "Forms", icon: ClipboardCheck },
+];
+
 /** Build tabs for the Home/Pipeline page (prepends common tabs) */
 export function buildTabs(...extras: ToolbarTab[]): ToolbarTab[] {
   return [...COMMON_TABS, ...extras];

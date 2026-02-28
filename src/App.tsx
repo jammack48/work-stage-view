@@ -9,10 +9,14 @@ import { NotificationStyleProvider } from "@/contexts/NotificationStyleContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
 import { TutorialProvider } from "@/contexts/TutorialContext";
+import { AppModeProvider, useAppMode } from "@/contexts/AppModeContext";
 import { AppHeader } from "@/components/AppHeader";
+import { ModePicker } from "@/components/ModePicker";
 import Hub from "./pages/Hub";
 import Index from "./pages/Index";
 import JobCard from "./pages/JobCard";
+import WorkHome from "./pages/WorkHome";
+import WorkJobCard from "./components/job/WorkJobCard";
 import Customers from "./pages/Customers";
 import CustomerCard from "./pages/CustomerCard";
 import SettingsPage from "./pages/SettingsPage";
@@ -28,28 +32,42 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppLayout() {
-  const location = useLocation();
+  const { mode, isWorkMode } = useAppMode();
+
+  if (!mode) return <ModePicker />;
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
       <div>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/hub" element={<Hub />} />
-          <Route path="/pipeline" element={<Index />} />
-          <Route path="/job/:id" element={<JobCard />} />
-          <Route path="/quote/:id" element={<QuotePage />} />
-          <Route path="/invoice/:id" element={<InvoicePage />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/customer/:id" element={<CustomerCard />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/bundles" element={<BundlesPage />} />
-          <Route path="/schedule" element={<SchedulePage />} />
-          <Route path="/email-templates" element={<EmailTemplatesPage />} />
-          <Route path="/sms-templates" element={<SmsTemplatesPage />} />
-          <Route path="/coming-soon" element={<ComingSoon />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          {isWorkMode ? (
+            <>
+              <Route path="/" element={<WorkHome />} />
+              <Route path="/hub" element={<WorkHome />} />
+              <Route path="/job/:id" element={<WorkJobCard />} />
+              <Route path="/schedule" element={<SchedulePage />} />
+              <Route path="*" element={<WorkHome />} />
+            </>
+          ) : (
+            <>
+              <Route path="/" element={<Index />} />
+              <Route path="/hub" element={<Hub />} />
+              <Route path="/pipeline" element={<Index />} />
+              <Route path="/job/:id" element={<JobCard />} />
+              <Route path="/quote/:id" element={<QuotePage />} />
+              <Route path="/invoice/:id" element={<InvoicePage />} />
+              <Route path="/customers" element={<Customers />} />
+              <Route path="/customer/:id" element={<CustomerCard />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/bundles" element={<BundlesPage />} />
+              <Route path="/schedule" element={<SchedulePage />} />
+              <Route path="/email-templates" element={<EmailTemplatesPage />} />
+              <Route path="/sms-templates" element={<SmsTemplatesPage />} />
+              <Route path="/coming-soon" element={<ComingSoon />} />
+              <Route path="*" element={<NotFound />} />
+            </>
+          )}
         </Routes>
       </div>
     </div>
@@ -59,6 +77,7 @@ function AppLayout() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      <AppModeProvider>
       <TutorialProvider>
       <ToolbarPositionProvider>
       <ThresholdProvider>
@@ -75,6 +94,7 @@ const App = () => (
       </ThresholdProvider>
       </ToolbarPositionProvider>
       </TutorialProvider>
+      </AppModeProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
