@@ -11,7 +11,7 @@ import { FormsTab } from "@/components/job/FormsTab";
 import { JobCompletionFlow } from "@/components/job/JobCompletionFlow";
 import { cn } from "@/lib/utils";
 import { WORK_JOB_EXTRAS } from "@/config/toolbarTabs";
-import { Plus, CheckCircle2, Play } from "lucide-react";
+import { Plus, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,7 +62,6 @@ export default function WorkJobCard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<WorkJobTab>("overview");
   const [completionOpen, setCompletionOpen] = useState(false);
-  const [jobStatus, setJobStatus] = useState<"not-started" | "on-site" | "complete">("not-started");
 
   const job = getJobDetail(id || "");
 
@@ -84,17 +83,10 @@ export default function WorkJobCard() {
     forms: <FormsTab />,
   };
 
-  const statusLabel = jobStatus === "on-site" ? "On Site" : jobStatus === "complete" ? "Complete" : "Not Started";
-  const statusColor = jobStatus === "on-site"
-    ? "bg-[hsl(var(--status-orange))] text-white"
-    : jobStatus === "complete"
-      ? "bg-green-500 text-white"
-      : "bg-muted text-muted-foreground";
-
   const jobHeading = (
     <div className="flex items-center gap-2 flex-wrap">
       <h2 className="text-base font-bold text-card-foreground">{job.jobName}</h2>
-      <Badge className={cn("text-xs border-0", statusColor)}>{statusLabel}</Badge>
+      <Badge variant="secondary" className="text-xs">{job.stage}</Badge>
     </div>
   );
 
@@ -111,20 +103,13 @@ export default function WorkJobCard() {
       >
         {/* Action buttons */}
         <div className="flex gap-2 mb-3">
-          {jobStatus === "not-started" && (
-            <Button size="sm" className="flex-1 gap-1.5" onClick={() => setJobStatus("on-site")}>
-              <Play className="w-4 h-4" /> Start Job
-            </Button>
-          )}
-          {jobStatus === "on-site" && (
-            <Button
-              size="lg"
-              className="flex-1 gap-2 h-12 text-base font-bold bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/25"
-              onClick={() => setCompletionOpen(true)}
-            >
-              <CheckCircle2 className="w-5 h-5" /> Finished Job
-            </Button>
-          )}
+          <Button
+            size="lg"
+            className="flex-1 gap-2 h-12 text-base font-bold"
+            onClick={() => setCompletionOpen(true)}
+          >
+            <CheckCircle2 className="w-5 h-5" /> Complete Job
+          </Button>
         </div>
         {tabContent[activeTab]}
       </PageToolbar>

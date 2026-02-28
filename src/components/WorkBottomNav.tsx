@@ -1,10 +1,9 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, CalendarDays, Plus, Clock } from "lucide-react";
+import { Home, Plus, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { id: "home", icon: Home, label: "Home", path: "/" },
-  { id: "schedule", icon: CalendarDays, label: "Schedule", path: "/schedule" },
   { id: "add", icon: Plus, label: "New Job", path: null },
   { id: "timesheet", icon: Clock, label: "Timesheet", path: null },
 ];
