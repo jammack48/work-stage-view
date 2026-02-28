@@ -1,34 +1,20 @@
-import { useState } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, CalendarIcon, Clock, MapPin, User, FileText, Check } from "lucide-react";
-import { format } from "date-fns";
+import { ArrowLeft, ArrowRight, MapPin, User, FileText, Check, Plus, Search } from "lucide-react";
+import { format, addDays, startOfWeek, isToday } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { DUMMY_CUSTOMERS } from "@/data/dummyCustomers";
+import { DEMO_JOBS, WORK_START, WORK_END, HOUR_HEIGHT_MOBILE, formatTime } from "@/components/schedule/scheduleData";
+import { DayStrip } from "@/components/schedule/DayStrip";
 
-const TIME_OPTIONS = [
-  "07:00","07:30","08:00","08:30","09:00","09:30","10:00","10:30",
-  "11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30",
-  "15:00","15:30","16:00","16:30","17:00",
-];
-
-const DURATION_OPTIONS = [
-  { value: "1h", label: "1 hour" },
-  { value: "2h", label: "2 hours" },
-  { value: "3h", label: "3 hours" },
-  { value: "4h", label: "4 hours" },
-  { value: "half", label: "Half day" },
-  { value: "full", label: "Full day" },
-];
-
+/* ─── Step Indicator ─── */
 function StepDots({ current }: { current: number }) {
-  const labels = ["Details", "Schedule", "Confirm"];
+  const labels = ["Customer", "Schedule", "Confirm"];
   return (
     <div className="flex items-center gap-2">
       {[1, 2, 3].map((n) => (
@@ -44,24 +30,370 @@ function StepDots({ current }: { current: number }) {
   );
 }
 
+/* ─── Customer Picker ─── */
+function CustomerPicker({
+  customer, setCustomer,
+  address, setAddress,
+  description, setDescription,
+  isNewCustomer, setIsNewCustomer,
+}: {
+  customer: string; setCustomer: (v: string) => void;
+  address: string; setAddress: (v: string) => void;
+  description: string; setDescription: (v: string) => void;
+  isNewCustomer: boolean; setIsNewCustomer: (v: boolean) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return DUMMY_CUSTOMERS.slice(0, 5);
+    const q = search.toLowerCase();
+    return DUMMY_CUSTOMERS.filter(c =>
+      c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q)
+    ).slice(0, 5);
+  }, [search]);
+
+  const selectCustomer = (c: typeof DUMMY_CUSTOMERS[0]) => {
+    setCustomer(c.name);
+    setAddress(c.address);
+    setSearch(c.name);
+    setShowDropdown(false);
+    setIsNewCustomer(false);
+  };
+
+  const switchToNew = () => {
+    setIsNewCustomer(true);
+    setCustomer(search);
+    setAddress("");
+    setShowDropdown(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Customer</Label>
+        {isNewCustomer ? (
+          <div className="space-y-2">
+            <Input
+              value={customer}
+              onChange={e => setCustomer(e.target.value)}
+              placeholder="Customer name"
+              className="h-12"
+              autoFocus
+            />
+            <button
+              onClick={() => { setIsNewCustomer(false); setSearch(""); }}
+              className="text-xs text-primary hover:underline"
+            >
+              ← Search existing customers
+            </button>
+          </div>
+        ) : (
+          <div className="relative">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={e => { setSearch(e.target.value); setShowDropdown(true); }}
+                onFocus={() => setShowDropdown(true)}
+                placeholder="Search customers…"
+                className="h-12 pl-9"
+                autoFocus
+              />
+            </div>
+            {showDropdown && (
+              <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-lg border border-border bg-popover shadow-lg overflow-hidden">
+                <button
+                  onClick={switchToNew}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-primary hover:bg-accent transition-colors border-b border-border"
+                >
+                  <Plus className="w-4 h-4" /> New Customer
+                </button>
+                {filtered.map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => selectCustomer(c)}
+                    className="w-full flex flex-col items-start px-3 py-2.5 hover:bg-accent transition-colors text-left"
+                  >
+                    <span className="text-sm font-medium text-foreground">{c.name}</span>
+                    <span className="text-xs text-muted-foreground">{c.address}</span>
+                  </button>
+                ))}
+                {filtered.length === 0 && (
+                  <div className="px-3 py-3 text-sm text-muted-foreground text-center">
+                    No matches — tap "New Customer" above
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Site Address</Label>
+        <Input
+          value={address}
+          onChange={e => setAddress(e.target.value)}
+          placeholder="e.g. 42 Queen Street, Auckland"
+          className="h-12"
+        />
+        {!isNewCustomer && customer && (
+          <p className="text-xs text-muted-foreground">Auto-filled from customer. Change if different site.</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Description (optional)</Label>
+        <Textarea
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          placeholder="What's the job? e.g. Replace hot water cylinder"
+          className="min-h-[80px]"
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ─── Visual Schedule Grid ─── */
+const GRID_HOUR_HEIGHT = 52;
+const MIN_SLOTS = 2; // 1 hour minimum (2 × 30min)
+const MAX_SLOTS = 20; // 10 hours max
+
+function ScheduleGrid({
+  startHour, setStartHour,
+  durationSlots, setDurationSlots,
+  weekStart, selectedDay, setSelectedDay,
+  onPrevWeek, onNextWeek,
+}: {
+  startHour: number; setStartHour: (v: number) => void;
+  durationSlots: number; setDurationSlots: (v: number) => void;
+  weekStart: Date; selectedDay: number; setSelectedDay: (v: number) => void;
+  onPrevWeek: () => void; onNextWeek: () => void;
+}) {
+  const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
+  const totalHeight = hours.length * GRID_HOUR_HEIGHT;
+  const dragRef = useRef<{ startY: number; startSlots: number } | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // Existing jobs for selected day (greyed out background)
+  const dayJobs = useMemo(() =>
+    DEMO_JOBS.filter(j => j.dayOffset === selectedDay),
+    [selectedDay]
+  );
+
+  const newJobTop = (startHour - WORK_START) * GRID_HOUR_HEIGHT;
+  const newJobHeight = (durationSlots / 2) * GRID_HOUR_HEIGHT;
+  const durationHours = durationSlots / 2;
+
+  // Tap on grid to set start time
+  const handleGridClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!gridRef.current) return;
+    const rect = gridRef.current.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const hourFloat = WORK_START + y / GRID_HOUR_HEIGHT;
+    const snapped = Math.round(hourFloat * 2) / 2; // snap to 30min
+    const clamped = Math.max(WORK_START, Math.min(snapped, WORK_END - durationHours));
+    setStartHour(clamped);
+  }, [durationHours, setStartHour]);
+
+  // Drag bottom handle to resize
+  const handleDragStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    dragRef.current = { startY: clientY, startSlots: durationSlots };
+
+    const handleMove = (ev: TouchEvent | MouseEvent) => {
+      if (!dragRef.current) return;
+      const cy = 'touches' in ev ? ev.touches[0].clientY : ev.clientY;
+      const dy = cy - dragRef.current.startY;
+      const slotDelta = Math.round(dy / (GRID_HOUR_HEIGHT / 2));
+      const newSlots = Math.max(MIN_SLOTS, Math.min(MAX_SLOTS, dragRef.current.startSlots + slotDelta));
+      // Clamp so it doesn't go past end of day
+      const maxSlots = (WORK_END - startHour) * 2;
+      setDurationSlots(Math.min(newSlots, maxSlots));
+    };
+
+    const handleEnd = () => {
+      dragRef.current = null;
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('touchend', handleEnd);
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleEnd);
+    };
+
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleEnd);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+  }, [durationSlots, startHour, setDurationSlots]);
+
+  // Drag entire block to move start time
+  const handleBlockDragStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    if (!gridRef.current) return;
+    e.stopPropagation();
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const rect = gridRef.current.getBoundingClientRect();
+    const offsetInBlock = clientY - rect.top - newJobTop;
+
+    const handleMove = (ev: TouchEvent | MouseEvent) => {
+      if (!gridRef.current) return;
+      const cy = 'touches' in ev ? ev.touches[0].clientY : ev.clientY;
+      const rect = gridRef.current.getBoundingClientRect();
+      const y = cy - rect.top - offsetInBlock;
+      const hourFloat = WORK_START + y / GRID_HOUR_HEIGHT;
+      const snapped = Math.round(hourFloat * 2) / 2;
+      const clamped = Math.max(WORK_START, Math.min(snapped, WORK_END - durationHours));
+      setStartHour(clamped);
+    };
+
+    const handleEnd = () => {
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('touchend', handleEnd);
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleEnd);
+    };
+
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleEnd);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+  }, [newJobTop, durationHours, setStartHour]);
+
+  return (
+    <div className="space-y-3">
+      <DayStrip
+        weekStart={weekStart}
+        selectedDay={selectedDay}
+        onSelectDay={setSelectedDay}
+        onPrevWeek={onPrevWeek}
+        onNextWeek={onNextWeek}
+      />
+
+      {/* Time info */}
+      <div className="flex items-center justify-between px-1">
+        <span className="text-sm font-medium text-foreground">
+          {formatTime(startHour)} – {formatTime(startHour + durationHours)}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {durationHours}h · Drag to adjust
+        </span>
+      </div>
+
+      {/* Grid */}
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div
+          className="grid grid-cols-[40px_1fr] overflow-y-auto max-h-[400px]"
+          style={{ height: totalHeight }}
+        >
+          {/* Time labels */}
+          <div className="relative bg-muted/30">
+            {hours.map((h, i) => (
+              <div
+                key={h}
+                className="absolute right-1 text-[10px] text-muted-foreground font-medium"
+                style={{ top: i * GRID_HOUR_HEIGHT - 6 }}
+              >
+                {formatTime(h)}
+              </div>
+            ))}
+          </div>
+
+          {/* Day column */}
+          <div
+            ref={gridRef}
+            className="relative border-l border-border cursor-pointer"
+            onClick={handleGridClick}
+          >
+            {/* Hour lines */}
+            {hours.map((_, i) => (
+              <div
+                key={i}
+                className="absolute left-0 right-0 border-t border-border/40"
+                style={{ top: i * GRID_HOUR_HEIGHT }}
+              />
+            ))}
+
+            {/* Existing jobs (greyed out) */}
+            {dayJobs.map(job => {
+              const top = (job.startHour - WORK_START) * GRID_HOUR_HEIGHT;
+              const height = job.durationHours * GRID_HOUR_HEIGHT;
+              return (
+                <div
+                  key={job.id}
+                  className="absolute left-1 right-1 rounded-md bg-muted/60 border border-border/50 px-2 py-1 pointer-events-none"
+                  style={{ top: top + 1, height: height - 2 }}
+                >
+                  <span className="text-[10px] text-muted-foreground font-medium truncate block">
+                    {job.jobName}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground/70 truncate block">
+                    {job.client}
+                  </span>
+                </div>
+              );
+            })}
+
+            {/* New job block (draggable) */}
+            <div
+              className="absolute left-1 right-1 rounded-lg bg-primary/20 border-2 border-primary shadow-md cursor-grab active:cursor-grabbing z-10"
+              style={{ top: newJobTop + 1, height: newJobHeight - 2 }}
+              onClick={e => e.stopPropagation()}
+              onTouchStart={handleBlockDragStart}
+              onMouseDown={handleBlockDragStart}
+            >
+              <div className="px-2 py-1">
+                <span className="text-xs font-semibold text-primary block">New Job</span>
+                <span className="text-[10px] text-primary/70">
+                  {formatTime(startHour)} – {formatTime(startHour + durationHours)}
+                </span>
+              </div>
+              {/* Bottom drag handle */}
+              <div
+                className="absolute bottom-0 left-0 right-0 h-4 flex items-center justify-center cursor-s-resize"
+                onTouchStart={handleDragStart}
+                onMouseDown={handleDragStart}
+              >
+                <div className="w-10 h-1 rounded-full bg-primary/50" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Main Component ─── */
 export default function WorkNewJob() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
 
+  // Step 1
   const [customer, setCustomer] = useState("");
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
+  const [isNewCustomer, setIsNewCustomer] = useState(false);
 
-  const [date, setDate] = useState<Date>(new Date());
-  const [startTime, setStartTime] = useState("08:00");
-  const [duration, setDuration] = useState("2h");
+  // Step 2
+  const now = new Date();
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(now, { weekStartsOn: 1 }));
+  const todayOffset = Math.min(4, Math.max(0, now.getDay() - 1));
+  const [selectedDay, setSelectedDay] = useState(todayOffset);
+  const [startHour, setStartHour] = useState(8);
+  const [durationSlots, setDurationSlots] = useState(2); // 2 slots = 1 hour
+
+  const durationHours = durationSlots / 2;
+  const scheduledDate = addDays(weekStart, selectedDay);
 
   const detailsValid = customer.trim() && address.trim();
 
   const handleConfirm = () => {
     toast({
       title: "Job Created & Scheduled ✅",
-      description: `${customer} — ${format(date, "EEE d MMM")} at ${startTime}`,
+      description: `${customer} — ${format(scheduledDate, "EEE d MMM")} at ${formatTime(startHour)}`,
       duration: 3000,
     });
     navigate("/job/TB-NEW");
@@ -83,26 +415,16 @@ export default function WorkNewJob() {
         <StepDots current={step} />
       </div>
 
-      {/* Step 1: Details */}
+      {/* Step 1: Customer */}
       {step === 1 && (
         <div className="space-y-5">
-          <h2 className="text-base font-semibold text-card-foreground">Job Details</h2>
-
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Customer Name</Label>
-            <Input value={customer} onChange={e => setCustomer(e.target.value)} placeholder="e.g. Sarah Johnson" className="h-12" autoFocus />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Site Address</Label>
-            <Input value={address} onChange={e => setAddress(e.target.value)} placeholder="e.g. 42 Queen Street, Auckland" className="h-12" />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Description (optional)</Label>
-            <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What's the job? e.g. Replace hot water cylinder" className="min-h-[80px]" />
-          </div>
-
+          <h2 className="text-base font-semibold text-card-foreground">Who's the job for?</h2>
+          <CustomerPicker
+            customer={customer} setCustomer={setCustomer}
+            address={address} setAddress={setAddress}
+            description={description} setDescription={setDescription}
+            isNewCustomer={isNewCustomer} setIsNewCustomer={setIsNewCustomer}
+          />
           <Button className="w-full h-12 gap-2" disabled={!detailsValid} onClick={() => setStep(2)}>
             Next <ArrowRight className="w-4 h-4" />
           </Button>
@@ -113,43 +435,13 @@ export default function WorkNewJob() {
       {step === 2 && (
         <div className="space-y-5">
           <h2 className="text-base font-semibold text-card-foreground">When?</h2>
-
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1.5"><CalendarIcon className="w-3.5 h-3.5" /> Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full h-12 justify-start text-left font-normal">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {format(date, "EEEE, d MMMM yyyy")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={date} onSelect={d => d && setDate(d)} initialFocus className={cn("p-3 pointer-events-auto")} />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Start Time</Label>
-              <Select value={startTime} onValueChange={setStartTime}>
-                <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {TIME_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Duration</Label>
-              <Select value={duration} onValueChange={setDuration}>
-                <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {DURATION_OPTIONS.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
+          <ScheduleGrid
+            startHour={startHour} setStartHour={setStartHour}
+            durationSlots={durationSlots} setDurationSlots={setDurationSlots}
+            weekStart={weekStart} selectedDay={selectedDay} setSelectedDay={setSelectedDay}
+            onPrevWeek={() => setWeekStart(d => addDays(d, -7))}
+            onNextWeek={() => setWeekStart(d => addDays(d, 7))}
+          />
           <Button className="w-full h-12 gap-2" onClick={() => setStep(3)}>
             Next <ArrowRight className="w-4 h-4" />
           </Button>
@@ -164,7 +456,10 @@ export default function WorkNewJob() {
           <div className="rounded-xl border border-border bg-card p-4 space-y-3">
             <div className="flex items-start gap-3">
               <User className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-              <div><div className="text-sm font-medium text-card-foreground">{customer}</div><div className="text-xs text-muted-foreground">{address}</div></div>
+              <div>
+                <div className="text-sm font-medium text-card-foreground">{customer}</div>
+                <div className="text-xs text-muted-foreground">{address}</div>
+              </div>
             </div>
             {description && (
               <div className="flex items-start gap-3">
@@ -173,9 +468,9 @@ export default function WorkNewJob() {
               </div>
             )}
             <div className="flex items-start gap-3">
-              <CalendarIcon className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+              <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
               <div className="text-sm text-card-foreground">
-                {format(date, "EEEE, d MMMM")} · {startTime} · {DURATION_OPTIONS.find(d => d.value === duration)?.label}
+                {format(scheduledDate, "EEEE, d MMMM")} · {formatTime(startHour)} – {formatTime(startHour + durationHours)} ({durationHours}h)
               </div>
             </div>
           </div>
