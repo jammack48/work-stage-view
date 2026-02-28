@@ -11,7 +11,7 @@ import { FormsTab } from "@/components/job/FormsTab";
 import { JobCompletionFlow } from "@/components/job/JobCompletionFlow";
 import { cn } from "@/lib/utils";
 import { WORK_JOB_EXTRAS } from "@/config/toolbarTabs";
-import { Plus, CheckCircle2 } from "lucide-react";
+import { Plus, CheckCircle2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +20,6 @@ import type { MaterialItem } from "@/data/dummyJobDetails";
 
 type WorkJobTab = "overview" | "scope" | "time" | "materials" | "notes" | "photos" | "forms";
 
-/** Materials tab without prices — only item + qty */
 function WorkMaterialsTab({ materials }: { materials: MaterialItem[] }) {
   return (
     <Card>
@@ -110,25 +109,20 @@ export default function WorkJobCard() {
         }}
         pageHeading={jobHeading}
       >
-        {/* Status toggle + Complete button */}
+        {/* Action buttons */}
         <div className="flex gap-2 mb-3">
           {jobStatus === "not-started" && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="flex-1 gap-1.5"
-              onClick={() => setJobStatus("on-site")}
-            >
-              Start Job
+            <Button size="sm" className="flex-1 gap-1.5" onClick={() => setJobStatus("on-site")}>
+              <Play className="w-4 h-4" /> Start Job
             </Button>
           )}
           {jobStatus === "on-site" && (
             <Button
-              size="sm"
-              className="flex-1 gap-1.5"
+              size="lg"
+              className="flex-1 gap-2 h-12 text-base font-bold bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/25"
               onClick={() => setCompletionOpen(true)}
             >
-              <CheckCircle2 className="w-4 h-4" /> Complete Job
+              <CheckCircle2 className="w-5 h-5" /> Finished Job
             </Button>
           )}
         </div>
