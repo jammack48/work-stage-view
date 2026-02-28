@@ -6,7 +6,6 @@ import { PageToolbar } from "@/components/PageToolbar";
 import { QuoteOverviewTab } from "@/components/quote/QuoteOverviewTab";
 import { QuoteTab } from "@/components/job/QuoteTab";
 import { QuoteFunnel, StepIndicator, type FunnelResult } from "@/components/quote/QuoteFunnel";
-import { Textarea } from "@/components/ui/textarea";
 import { NotesTab } from "@/components/job/NotesTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequenceSelector } from "@/components/quote/SequenceSelector";
@@ -37,7 +36,6 @@ export default function QuotePage() {
   const managerState = (location.state as any);
   const initialCustomer = managerState?.customer || null;
   const [activeTab, setActiveTab] = useState<QuotePageTab>("line-items");
-  const [scope, setScope] = useState("");
   const [status, setStatus] = useState<QuoteStatus>("Draft");
   const [funnelComplete, setFunnelComplete] = useState(false);
   const [funnelData, setFunnelData] = useState<FunnelResult | null>(null);
@@ -95,7 +93,6 @@ export default function QuotePage() {
             onComplete={(data) => {
             setFunnelData(data);
               // Only pre-fill scope for custom descriptions, not bundle defaults
-              setScope(data.bundle ? "" : data.description);
               setFunnelComplete(true);
             }}
             onStepChange={setFunnelStep}
@@ -142,9 +139,6 @@ export default function QuotePage() {
     );
   }
 
-  if (scope === "" && job.description && !isNew) {
-    setScope(job.description);
-  }
 
   const cycleStatus = () => {
     const next: Record<QuoteStatus, QuoteStatus> = { Draft: "Sent", Sent: "Approved", Approved: "Draft" };
@@ -152,17 +146,9 @@ export default function QuotePage() {
   };
 
   const tabContent: Record<QuotePageTab, React.ReactNode> = {
-    overview: <QuoteOverviewTab job={job} scope={scope} onScopeChange={setScope} />,
+    overview: <QuoteOverviewTab job={job} scope={job.description || ""} onScopeChange={() => {}} />,
     "line-items": (
       <div className="space-y-4">
-        <div className="rounded-lg border border-border bg-card p-3">
-          <Textarea
-            value={scope}
-            onChange={(e) => setScope(e.target.value)}
-            placeholder="Describe what this quote is for — e.g. 'Replace hot water cylinder and reroute pipework in ground floor bathroom'"
-            className="min-h-[100px] border-0 bg-transparent p-0 focus-visible:ring-0 text-base resize-none"
-          />
-        </div>
         <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} beforeActions={
           <SequenceSelector category="quotes" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
         } />
