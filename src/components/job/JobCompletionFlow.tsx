@@ -115,21 +115,14 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
   }
 
   function handleSubmit() {
+    const poSent = vanStockUsed.length > 0 && poConfirmed;
     toast({
       title: returnNeeded ? "Return Visit Flagged" : "Job Completed ✅",
       description: returnNeeded
         ? `${job.jobName} marked as needing a return visit.`
-        : `${job.jobName} marked as complete.`,
+        : `${job.jobName} marked as complete.${poSent ? ` Restock PO (${vanStockUsed.length} items) sent for approval.` : ""}`,
+      duration: 3000,
     });
-
-    if (vanStockUsed.length > 0 && poConfirmed) {
-      setTimeout(() => {
-        toast({
-          title: "📋 PO Sent for Approval",
-          description: `Restock PO with ${vanStockUsed.length} items sent to manager for approval.`,
-        });
-      }, 1000);
-    }
 
     onOpenChange(false);
     navigate("/");
