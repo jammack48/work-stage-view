@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield, RotateCcw, FileImage, Truck, ShoppingCart, ClipboardList } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield, RotateCcw, FileImage, Truck, ShoppingCart, ClipboardList, Mic, MicOff } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -62,10 +62,41 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
   const [cocNumber, setCocNumber] = useState("");
   const [poConfirmed, setPoConfirmed] = useState(false);
   const [selectedPhrases, setSelectedPhrases] = useState<string[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const beforeInputRef = useRef<HTMLInputElement>(null);
   const afterInputRef = useRef<HTMLInputElement>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
   const [receiptTargetIdx, setReceiptTargetIdx] = useState<number | null>(null);
+
+  const toggleDictation = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast({ title: "Not supported", description: "Voice dictation isn't available in this browser.", duration: 3000 });
+      return;
+    }
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = "en-AU";
+    recognition.onresult = (event: any) => {
+      let transcript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) transcript += event.results[i][0].transcript;
+      }
+      if (transcript) setJobSheet((prev) => (prev ? `${prev} ${transcript.trim()}` : transcript.trim()));
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  };
 
   const handlePhotoCapture = (type: "before" | "after") => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -175,7 +206,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
               {returnNeeded && (
                 <div className="space-y-2">
                   <Label>What's needed?</Label>
-                  <Textarea className="bg-background border-border" value={returnNote} onChange={(e) => setReturnNote(e.target.value)} placeholder="e.g. Waiting on parts, need to finish wiring..." rows={3} />
+                  <Textarea className="bg-white/80 dark:bg-white/20 border-border/50 text-foreground" value={returnNote} onChange={(e) => setReturnNote(e.target.value)} placeholder="e.g. Waiting on parts, need to finish wiring..." rows={3} />
                 </div>
               )}
             </div>
@@ -223,8 +254,20 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                   );
                 })}
               </div>
-              <Label>What was done on this job?</Label>
-              <Textarea className="bg-background border-border" value={jobSheet} onChange={(e) => setJobSheet(e.target.value)} rows={6} placeholder="Describe the work completed..." />
+              <div className="flex items-center justify-between">
+                <Label>What was done on this job?</Label>
+                <Button
+                  type="button"
+                  variant={isListening ? "default" : "outline"}
+                  size="sm"
+                  onClick={toggleDictation}
+                  className={cn("gap-1.5 h-8", isListening && "animate-pulse")}
+                >
+                  {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                  {isListening ? "Stop" : "Dictate"}
+                </Button>
+              </div>
+              <Textarea className="bg-white/80 dark:bg-white/20 border-border/50 text-foreground min-h-[120px]" value={jobSheet} onChange={(e) => setJobSheet(e.target.value)} placeholder="Describe the work completed..." />
             </div>
           )}
 
@@ -237,7 +280,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
               </div>
               <div className="space-y-1.5">
                 <Label>Actual hours</Label>
-                <Input className="bg-background border-border" type="number" step="0.5" value={actualHours} onChange={(e) => setActualHours(e.target.value)} />
+                <Input className="bg-white/80 dark:bg-white/20 border-border/50 text-foreground" type="number" step="0.5" value={actualHours} onChange={(e) => setActualHours(e.target.value)} />
               </div>
               {Number(actualHours) > budgetedHours && (
                 <p className="text-xs text-[hsl(var(--status-orange))]">⚠ {(Number(actualHours) - budgetedHours).toFixed(1)} hrs over budget</p>
@@ -303,7 +346,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                       </div>
                     )}
                     {p.used && p.source === "supplier" && (
-                      <Input className="h-7 text-xs ml-6 w-auto bg-background border-border" placeholder="Supplier name..." value={p.supplierName || ""} onChange={(e) => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, supplierName: e.target.value } : pp))} />
+                      <Input className="h-7 text-xs ml-6 w-auto bg-white/80 dark:bg-white/20 border-border/50 text-foreground" placeholder="Supplier name..." value={p.supplierName || ""} onChange={(e) => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, supplierName: e.target.value } : pp))} />
                     )}
                   </div>
                 ))}
@@ -439,7 +482,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
               {complianceRequired && (
                 <div className="space-y-2">
                   <Label>COC / Certificate Number</Label>
-                  <Input className="bg-background border-border" value={cocNumber} onChange={(e) => setCocNumber(e.target.value)} placeholder="e.g. COC-2025-001" />
+                  <Input className="bg-white/80 dark:bg-white/20 border-border/50 text-foreground" value={cocNumber} onChange={(e) => setCocNumber(e.target.value)} placeholder="e.g. COC-2025-001" />
                   <div className="space-y-1">
                     <div className="flex items-center gap-2"><Checkbox /> <span className="text-sm">Testing completed</span></div>
                     <div className="flex items-center gap-2"><Checkbox /> <span className="text-sm">Certificate issued</span></div>
