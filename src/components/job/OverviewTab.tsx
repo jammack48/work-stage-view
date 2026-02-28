@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import type { JobDetail } from "@/data/dummyJobDetails";
 import { DUMMY_CUSTOMERS } from "@/data/dummyCustomers";
+import { useJobPrefix } from "@/contexts/JobPrefixContext";
 
 interface OverviewTabProps {
   job: JobDetail;
@@ -21,6 +22,8 @@ function getStageSummary(stage: string): string {
 
 export function OverviewTab({ job }: OverviewTabProps) {
   const navigate = useNavigate();
+  const { prefix } = useJobPrefix();
+  const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full">
@@ -43,7 +46,7 @@ export function OverviewTab({ job }: OverviewTabProps) {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">ID</span>
-              <span className="font-mono text-xs">{job.id}</span>
+              <span className="font-mono text-xs">{displayId}</span>
             </div>
           </div>
           {(job.urgent || job.ageDays > 7) && (

@@ -64,6 +64,10 @@ function randomBetween(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+export function formatJobId(prefix: string, num: number) {
+  return `${prefix}-${String(num).padStart(4, "0")}`;
+}
+
 function generateId(stageIdx: number, jobIdx: number) {
   return `TB-${String(stageIdx + 1).padStart(2, "0")}${String(jobIdx + 1).padStart(2, "0")}`;
 }

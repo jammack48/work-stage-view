@@ -9,12 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SETTINGS_EXTRAS } from "@/config/toolbarTabs";
 import { dummyTemplates } from "@/data/dummyTemplates";
 import { NotificationStyleSettings } from "@/components/NotificationStyleSettings";
+import { useJobPrefix } from "@/contexts/JobPrefixContext";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations" | "documents";
 
 
 
 function SettingsContent({ tab }: { tab: SettingsTab }) {
+  const { prefix, nextNumber, setPrefix, setNextNumber, formatJobId } = useJobPrefix();
+
   const sections: Record<SettingsTab, React.ReactNode> = {
     business: (
       <div className="space-y-4">
@@ -33,6 +36,33 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
               <div className="text-sm font-medium text-card-foreground mt-0.5">{value}</div>
             </div>
           ))}
+        </div>
+
+        <h3 className="text-sm font-semibold text-card-foreground pt-4">Job Numbering</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+            <div className="text-xs text-muted-foreground">Prefix</div>
+            <Input
+              value={prefix}
+              onChange={(e) => setPrefix(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 5))}
+              className="text-sm font-mono w-24"
+              maxLength={5}
+            />
+          </div>
+          <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+            <div className="text-xs text-muted-foreground">Next Number</div>
+            <Input
+              type="number"
+              value={nextNumber}
+              onChange={(e) => setNextNumber(Math.max(1, parseInt(e.target.value) || 1))}
+              className="text-sm font-mono w-24"
+              min={1}
+            />
+          </div>
+        </div>
+        <div className="p-3 rounded-lg bg-muted border border-border">
+          <div className="text-xs text-muted-foreground">Preview</div>
+          <div className="text-sm font-mono font-bold text-card-foreground mt-1">{formatJobId(nextNumber)}</div>
         </div>
       </div>
     ),

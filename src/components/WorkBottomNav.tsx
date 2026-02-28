@@ -1,11 +1,12 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Plus, Clock } from "lucide-react";
+import { Home, Plus, Clock, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { id: "home", icon: Home, label: "Schedule", path: "/" },
   { id: "add", icon: Plus, label: "New Job", path: "/new-job" },
-  { id: "timesheet", icon: Clock, label: "Timesheet", path: "/coming-soon" },
+  { id: "hub", icon: FolderOpen, label: "Hub", path: "/work-hub" },
+  { id: "timesheet", icon: Clock, label: "Timesheet", path: "/timesheet" },
 ];
 
 export function WorkBottomNav() {

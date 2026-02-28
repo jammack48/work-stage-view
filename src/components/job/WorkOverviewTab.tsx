@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { JobDetail } from "@/data/dummyJobDetails";
+import { useJobPrefix } from "@/contexts/JobPrefixContext";
 
 interface WorkOverviewTabProps {
   job: JobDetail;
@@ -19,6 +20,8 @@ function getStageSummary(stage: string): string {
 }
 
 export function WorkOverviewTab({ job }: WorkOverviewTabProps) {
+  const { prefix } = useJobPrefix();
+  const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
   const mapsUrl = job.address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.address)}`
     : null;
@@ -39,7 +42,7 @@ export function WorkOverviewTab({ job }: WorkOverviewTabProps) {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">ID</span>
-              <span className="font-mono text-xs">{job.id}</span>
+              <span className="font-mono text-xs">{displayId}</span>
             </div>
           </div>
           {(job.urgent || job.ageDays > 7) && (
