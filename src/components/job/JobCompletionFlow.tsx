@@ -21,11 +21,11 @@ interface JobCompletionFlowProps {
 }
 
 const STEPS = [
-  { id: "return", label: "Coming Back?", icon: RotateCcw },
   { id: "jobsheet", label: "Job Sheet", icon: FileText },
   { id: "time", label: "Time", icon: Clock },
   { id: "parts", label: "Parts Used", icon: Package },
   { id: "po-review", label: "Restock PO", icon: ClipboardList },
+  { id: "return", label: "Coming Back?", icon: RotateCcw },
   { id: "photos", label: "Photos", icon: Camera },
   { id: "compliance", label: "Compliance", icon: Shield },
 ];
@@ -205,10 +205,19 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                           <ShoppingCart className="w-3 h-3" /> Supplier
                         </button>
                         {p.source === "supplier" && (
-                          <Button variant="ghost" size="sm" className={cn("h-6 px-2 text-[10px] gap-1", p.receiptPhoto && "text-primary")} onClick={() => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, receiptPhoto: !pp.receiptPhoto } : pp))}>
-                            <FileImage className="w-3 h-3" />
-                            {p.receiptPhoto ? "Receipt ✓" : "📷 Receipt"}
-                          </Button>
+                          <button
+                            type="button"
+                            onClick={() => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, receiptPhoto: !pp.receiptPhoto } : pp))}
+                            className={cn(
+                              "flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-full border-2 border-dashed transition-all",
+                              p.receiptPhoto
+                                ? "border-primary/40 bg-primary/10 text-primary"
+                                : "border-muted-foreground/30 text-muted-foreground hover:border-primary/30 hover:bg-accent"
+                            )}
+                          >
+                            <Camera className="w-3.5 h-3.5" />
+                            {p.receiptPhoto ? "Receipt Added ✓" : "Attach Receipt"}
+                          </button>
                         )}
                       </div>
                     )}
@@ -360,7 +369,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
           ) : (
             <Button size="sm" onClick={handleSubmit} className="gap-1.5">
               <Check className="w-4 h-4" />
-              {returnNeeded ? "Flag Return" : "Complete Job"}
+              {returnNeeded ? "Flag Return" : "Finished Job"}
             </Button>
           )}
         </div>

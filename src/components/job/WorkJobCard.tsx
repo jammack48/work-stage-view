@@ -108,7 +108,7 @@ export default function WorkJobCard() {
             className="flex-1 gap-2 h-12 text-base font-bold"
             onClick={() => setCompletionOpen(true)}
           >
-            <CheckCircle2 className="w-5 h-5" /> Complete Job
+            <CheckCircle2 className="w-5 h-5" /> Finished Job
           </Button>
         </div>
         {tabContent[activeTab]}
