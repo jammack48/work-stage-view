@@ -46,7 +46,6 @@ function AppLayout() {
               <Route path="/" element={<WorkHome />} />
               <Route path="/hub" element={<WorkHome />} />
               <Route path="/job/:id" element={<WorkJobCard />} />
-              <Route path="/schedule" element={<SchedulePage />} />
               <Route path="*" element={<WorkHome />} />
             </>
           ) : (
