@@ -61,6 +61,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
   const [complianceRequired, setComplianceRequired] = useState(false);
   const [cocNumber, setCocNumber] = useState("");
   const [poConfirmed, setPoConfirmed] = useState(false);
+  const [selectedPhrases, setSelectedPhrases] = useState<string[]>([]);
   const beforeInputRef = useRef<HTMLInputElement>(null);
   const afterInputRef = useRef<HTMLInputElement>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
@@ -174,7 +175,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
               {returnNeeded && (
                 <div className="space-y-2">
                   <Label>What's needed?</Label>
-                  <Textarea value={returnNote} onChange={(e) => setReturnNote(e.target.value)} placeholder="e.g. Waiting on parts, need to finish wiring..." rows={3} />
+                  <Textarea className="bg-background border-border" value={returnNote} onChange={(e) => setReturnNote(e.target.value)} placeholder="e.g. Waiting on parts, need to finish wiring..." rows={3} />
                 </div>
               )}
             </div>
@@ -182,9 +183,48 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
 
           {/* Job sheet */}
           {currentStep?.id === "jobsheet" && (
-            <div className="space-y-2">
+            <div className="space-y-3">
+              <Label>Quick phrases</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  "Arrived on site",
+                  "Spoke with customer",
+                  "Diagnosed fault",
+                  "Tested and commissioned",
+                  "Cleaned up site",
+                  "Left materials on site",
+                  "Isolated power/water",
+                  "Work completed as quoted",
+                ].map((phrase) => {
+                  const active = selectedPhrases.includes(phrase);
+                  return (
+                    <button
+                      key={phrase}
+                      type="button"
+                      onClick={() => {
+                        if (active) {
+                          setSelectedPhrases((p) => p.filter((x) => x !== phrase));
+                          setJobSheet((prev) => prev.replace(`\n• ${phrase}`, "").replace(`• ${phrase}\n`, "").replace(`• ${phrase}`, "").trim());
+                        } else {
+                          setSelectedPhrases((p) => [...p, phrase]);
+                          setJobSheet((prev) => (prev ? `${prev}\n• ${phrase}` : `• ${phrase}`));
+                        }
+                      }}
+                      className={cn(
+                        "text-xs px-2.5 py-1.5 rounded-full border transition-colors font-medium",
+                        active
+                          ? "bg-primary/15 text-primary border-primary/30"
+                          : "bg-muted/50 text-muted-foreground border-border hover:bg-accent"
+                      )}
+                    >
+                      {active && <Check className="w-3 h-3 inline mr-1" />}
+                      {phrase}
+                    </button>
+                  );
+                })}
+              </div>
               <Label>What was done on this job?</Label>
-              <Textarea value={jobSheet} onChange={(e) => setJobSheet(e.target.value)} rows={6} placeholder="Describe the work completed..." />
+              <Textarea className="bg-background border-border" value={jobSheet} onChange={(e) => setJobSheet(e.target.value)} rows={6} placeholder="Describe the work completed..." />
             </div>
           )}
 
@@ -197,7 +237,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
               </div>
               <div className="space-y-1.5">
                 <Label>Actual hours</Label>
-                <Input type="number" step="0.5" value={actualHours} onChange={(e) => setActualHours(e.target.value)} />
+                <Input className="bg-background border-border" type="number" step="0.5" value={actualHours} onChange={(e) => setActualHours(e.target.value)} />
               </div>
               {Number(actualHours) > budgetedHours && (
                 <p className="text-xs text-[hsl(var(--status-orange))]">⚠ {(Number(actualHours) - budgetedHours).toFixed(1)} hrs over budget</p>
@@ -263,7 +303,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                       </div>
                     )}
                     {p.used && p.source === "supplier" && (
-                      <Input className="h-7 text-xs ml-6 w-auto" placeholder="Supplier name..." value={p.supplierName || ""} onChange={(e) => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, supplierName: e.target.value } : pp))} />
+                      <Input className="h-7 text-xs ml-6 w-auto bg-background border-border" placeholder="Supplier name..." value={p.supplierName || ""} onChange={(e) => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, supplierName: e.target.value } : pp))} />
                     )}
                   </div>
                 ))}
@@ -399,7 +439,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
               {complianceRequired && (
                 <div className="space-y-2">
                   <Label>COC / Certificate Number</Label>
-                  <Input value={cocNumber} onChange={(e) => setCocNumber(e.target.value)} placeholder="e.g. COC-2025-001" />
+                  <Input className="bg-background border-border" value={cocNumber} onChange={(e) => setCocNumber(e.target.value)} placeholder="e.g. COC-2025-001" />
                   <div className="space-y-1">
                     <div className="flex items-center gap-2"><Checkbox /> <span className="text-sm">Testing completed</span></div>
                     <div className="flex items-center gap-2"><Checkbox /> <span className="text-sm">Certificate issued</span></div>
