@@ -16,6 +16,13 @@ export function ModePicker() {
         <p className="text-muted-foreground text-sm">How are you using the app today?</p>
       </div>
 
+      {/* Tutorial note */}
+      <div className="w-full max-w-lg mb-5 rounded-lg bg-blue-500/10 border border-blue-500/30 px-4 py-3 text-center">
+        <p className="text-xs text-blue-600 dark:text-blue-400 leading-relaxed">
+          <strong>Tip:</strong> This is where you set access for your team. Staff on the tools only see their schedule and job details — no pricing, quotes, or management features.
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
         {/* Manage */}
         <button
@@ -25,7 +32,7 @@ export function ModePicker() {
           <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center mb-4 group-hover:bg-primary/25 transition-colors">
             <Shield className="w-6 h-6 text-primary" />
           </div>
-          <h2 className="text-lg font-bold text-card-foreground mb-1">I'm the Boss</h2>
+          <h2 className="text-lg font-bold text-card-foreground mb-1">Full Job System</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
             Full access — pipeline, quotes, invoices, pricing, reports, and team management.
           </p>
