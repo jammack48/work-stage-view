@@ -64,7 +64,7 @@ function SectionHeader({ label, total, isOpen, onToggle }: { label: string; tota
   );
 }
 
-/* ── Three-line mobile-friendly item row ─────────────────── */
+/* ── Compact 2-row mobile-friendly item row ──────────────── */
 function ItemRow({ item, isLast, onUpdate, onDelete, onEnterLast, lastRef, globalMarkupValue, useGlobalMarkup, onResetToGlobal }: {
   item: LineItem; isLast: boolean;
   onUpdate: (id: string, field: keyof LineItem, value: string | number) => void;
@@ -77,26 +77,22 @@ function ItemRow({ item, isLast, onUpdate, onDelete, onEnterLast, lastRef, globa
   const differsFromGlobal = useGlobalMarkup && Math.abs(item.markup - globalMarkupValue) > 0.01;
 
   return (
-    <div className="group rounded-md p-2 hover:bg-muted/50 transition-colors space-y-1.5">
+    <div className="group rounded-md p-2 hover:bg-muted/50 transition-colors space-y-1">
+      {/* Row 1: Name + line total + delete */}
       <div className="flex items-center gap-1.5">
-        <Input className="flex-1 h-9 text-sm" value={item.name} placeholder="Item name" onChange={(e) => onUpdate(item.id, "name", e.target.value)} onKeyDown={handleKeyDown} ref={isLast ? lastRef : undefined} />
-        <button onClick={() => onDelete(item.id)} className="shrink-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"><X className="w-4 h-4" /></button>
+        <Input className="flex-1 h-8 text-sm" value={item.name} placeholder="Item name" onChange={(e) => onUpdate(item.id, "name", e.target.value)} onKeyDown={handleKeyDown} ref={isLast ? lastRef : undefined} />
+        <span className="text-sm font-bold whitespace-nowrap min-w-[60px] text-right">${lineTotal.toFixed(2)}</span>
+        <button onClick={() => onDelete(item.id)} className="shrink-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"><X className="w-3.5 h-3.5" /></button>
       </div>
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <div className="flex flex-col"><span className="text-[10px] text-muted-foreground leading-none mb-0.5">Qty</span><Input className="min-w-[3rem] w-14 h-8 text-xs text-center" type="number" min={0} value={item.qty} onChange={(e) => onUpdate(item.id, "qty", parseFloat(e.target.value) || 0)} /></div>
-        <span className="text-xs text-muted-foreground mt-3">×</span>
-        <div className="flex flex-col flex-1 min-w-[4rem]"><span className="text-[10px] text-muted-foreground leading-none mb-0.5">Buy</span><Input className="w-full h-8 text-xs text-center" type="number" min={0} step={0.01} value={item.unitPrice} onChange={(e) => onUpdate(item.id, "unitPrice", parseFloat(e.target.value) || 0)} /></div>
-        <span className="text-xs text-muted-foreground mt-3">→</span>
-        <div className="flex flex-col flex-1 min-w-[4rem]"><span className="text-[10px] text-muted-foreground leading-none mb-0.5">Sell</span><Input className="w-full h-8 text-xs text-center" type="number" min={0} step={0.01} value={item.sellPrice} onChange={(e) => onUpdate(item.id, "sellPrice", parseFloat(e.target.value) || 0)} /></div>
-      </div>
-      <div className="flex items-center gap-1.5">
-        <div className="flex items-center gap-0.5">
-          <div className="flex flex-col"><span className="text-[10px] text-muted-foreground leading-none mb-0.5">Markup</span>
-            <div className="flex items-center gap-0.5"><Input className="w-16 h-8 text-xs text-center" type="number" min={0} step={1} value={Math.round(item.markup * 100) / 100} onChange={(e) => onUpdate(item.id, "markup", parseFloat(e.target.value) || 0)} /><Percent className="w-3 h-3 text-muted-foreground" /></div>
-          </div>
-          {differsFromGlobal && <button onClick={() => onResetToGlobal(item.id)} className="ml-1 p-1 text-muted-foreground hover:text-primary transition-colors" title="Reset to global markup"><RotateCcw className="w-3 h-3" /></button>}
-        </div>
-        <span className="ml-auto text-sm font-bold whitespace-nowrap">${lineTotal.toFixed(2)}</span>
+      {/* Row 2: Qty × Buy | Markup% */}
+      <div className="flex items-center gap-1 text-xs">
+        <Input className="w-12 h-7 text-xs text-center" type="number" min={0} value={item.qty} onChange={(e) => onUpdate(item.id, "qty", parseFloat(e.target.value) || 0)} />
+        <span className="text-muted-foreground">×</span>
+        <Input className="w-16 h-7 text-xs text-center" type="number" min={0} step={0.01} value={item.unitPrice} onChange={(e) => onUpdate(item.id, "unitPrice", parseFloat(e.target.value) || 0)} />
+        <span className="text-muted-foreground ml-1">+</span>
+        <Input className="w-14 h-7 text-xs text-center" type="number" min={0} step={1} value={Math.round(item.markup * 100) / 100} onChange={(e) => onUpdate(item.id, "markup", parseFloat(e.target.value) || 0)} />
+        <Percent className="w-3 h-3 text-muted-foreground" />
+        {differsFromGlobal && <button onClick={() => onResetToGlobal(item.id)} className="p-0.5 text-muted-foreground hover:text-primary transition-colors" title="Reset to global markup"><RotateCcw className="w-3 h-3" /></button>}
       </div>
     </div>
   );
@@ -150,15 +146,35 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
     };
   };
 
-  const createBlockFromJob = (): QuoteBlock => ({
-    id: blockId(),
-    name: job.jobName || "Job",
-    description: job.description || "",
-    qty: 1,
-    labour: job.timeEntries.map((t) => mkItem(`${t.staff} — ${t.description}`, t.hours, HOURLY_RATE)),
-    materials: job.materials.map((m) => mkItem(m.name, m.quantity, m.unitPrice)),
-    extras: [],
-  });
+  const createBlockFromJob = (): QuoteBlock => {
+    // Map staff names to roles using staffPool
+    const staffRoleMap: Record<string, string> = {};
+    const staffPool = [
+      { name: "Jake Turner", role: "Lead Sparky" },
+      { name: "Ben Kowalski", role: "Apprentice" },
+      { name: "Maia Johnson", role: "Plumber" },
+      { name: "Craig Foster", role: "Roofer" },
+      { name: "Sam Te Reo", role: "Electrician" },
+    ];
+    staffPool.forEach((s) => { staffRoleMap[s.name] = s.role; });
+
+    // Aggregate hours by role
+    const roleHours: Record<string, number> = {};
+    job.timeEntries.forEach((t) => {
+      const role = staffRoleMap[t.staff] || t.staff;
+      roleHours[role] = (roleHours[role] || 0) + t.hours;
+    });
+
+    return {
+      id: blockId(),
+      name: job.jobName || "Job",
+      description: job.description || "",
+      qty: 1,
+      labour: Object.entries(roleHours).map(([role, hours]) => mkItem(role, hours, HOURLY_RATE)),
+      materials: job.materials.map((m) => mkItem(m.name, m.quantity, m.unitPrice)),
+      extras: [],
+    };
+  };
 
   const createEmptyBlock = (): QuoteBlock => ({
     id: blockId(), name: "", description: "", qty: 1, labour: [], materials: [], extras: [],
@@ -385,13 +401,13 @@ export function QuoteTab({ job, initialBundle, beforeActions }: QuoteTabProps) {
                     value={block.name}
                     onChange={(e) => updateBlockField(block.id, "name", e.target.value)}
                     placeholder="Job name — e.g. Install Heat Pump"
-                    className="h-9 text-sm font-semibold border-0 bg-transparent px-0 focus-visible:ring-0"
+                    className="h-9 text-base font-bold border-0 bg-transparent px-0 focus-visible:ring-0"
                   />
                   <Textarea
                     value={block.description}
                     onChange={(e) => updateBlockField(block.id, "description", e.target.value)}
                     placeholder="Describe scope of this job…"
-                    className="min-h-[40px] border-0 bg-transparent px-0 focus-visible:ring-0 text-xs resize-none"
+                    className="min-h-[60px] border-0 bg-transparent px-0 focus-visible:ring-0 text-sm resize-none"
                   />
                 </div>
                 <div className="flex items-center gap-1 shrink-0 mt-1">
