@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield, RotateCcw } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield, RotateCcw, Upload, FileImage, Truck, ShoppingCart } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { JobDetail, MaterialItem } from "@/data/dummyJobDetails";
 import { toast } from "@/hooks/use-toast";
@@ -30,40 +31,44 @@ const STEPS = [
 
 interface PartUsed extends MaterialItem {
   used: boolean;
-  source: "stock" | "purchase";
-  poNumber?: string;
+  source: "van-stock" | "supplier";
+  supplierName?: string;
+  receiptPhoto?: boolean;
 }
 
 export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlowProps) {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
 
-  // Step 1 — Job sheet
-  const [jobSheet, setJobSheet] = useState(job.description || `Completed ${job.jobName} at ${job.address}.`);
-
-  // Step 2 — Time
-  const budgetedHours = job.timeEntries.reduce((s, t) => s + t.hours, 0);
-  const [actualHours, setActualHours] = useState(budgetedHours.toString());
-
-  // Step 3 — Parts
-  const [parts, setParts] = useState<PartUsed[]>(() =>
-    job.materials.map((m) => ({ ...m, used: true, source: "stock" as const }))
-  );
-  const [extraPart, setExtraPart] = useState("");
-
-  // Step 4 — Photos (UI placeholder)
-  const [photoCount, setPhotoCount] = useState(0);
-
-  // Step 5 — Compliance
-  const [complianceRequired, setComplianceRequired] = useState(false);
-  const [cocNumber, setCocNumber] = useState("");
-
-  // Step 6 — Return visit
+  // Return visit
   const [returnNeeded, setReturnNeeded] = useState(false);
   const [returnNote, setReturnNote] = useState("");
 
+  // Job sheet
+  const [jobSheet, setJobSheet] = useState(job.description || `Completed ${job.jobName} at ${job.address}.`);
+
+  // Time
+  const budgetedHours = job.timeEntries.reduce((s, t) => s + t.hours, 0);
+  const [actualHours, setActualHours] = useState(budgetedHours.toString());
+
+  // Parts
+  const [parts, setParts] = useState<PartUsed[]>(() =>
+    job.materials.map((m) => ({ ...m, used: true, source: "van-stock" as const }))
+  );
+  const [extraPart, setExtraPart] = useState("");
+
+  // Photos
+  const [photoCount, setPhotoCount] = useState(0);
+
+  // Compliance
+  const [complianceRequired, setComplianceRequired] = useState(false);
+  const [cocNumber, setCocNumber] = useState("");
+
   const canNext = step < STEPS.length - 1;
   const canPrev = step > 0;
+
+  const vanStockUsed = parts.filter((p) => p.used && p.source === "van-stock");
+  const supplierItems = parts.filter((p) => p.used && p.source === "supplier");
 
   function handleAddExtra() {
     if (!extraPart.trim()) return;
@@ -75,18 +80,30 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
       unitPrice: 0,
       supplier: "",
       used: true,
-      source: "purchase",
+      source: "supplier",
     }]);
     setExtraPart("");
   }
 
   function handleSubmit() {
+    const poItems = vanStockUsed;
+    
     toast({
       title: returnNeeded ? "Return Visit Flagged" : "Job Completed ✅",
       description: returnNeeded
         ? `${job.jobName} marked as needing a return visit.`
-        : `${job.jobName} marked as complete.`,
+        : `${job.jobName} marked as complete.${poItems.length > 0 ? ` PO generated for ${poItems.length} van stock items.` : ""}`,
     });
+
+    if (poItems.length > 0) {
+      setTimeout(() => {
+        toast({
+          title: "📋 Purchase Order Generated",
+          description: `Restock PO created for ${poItems.length} items used from van stock.`,
+        });
+      }, 1500);
+    }
+
     onOpenChange(false);
     navigate("/");
   }
@@ -119,6 +136,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
 
         {/* Step content */}
         <div className="space-y-4 min-h-[200px]">
+          {/* Step 0: Return visit */}
           {step === 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -139,6 +157,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
             </div>
           )}
 
+          {/* Step 1: Job sheet */}
           {step === 1 && (
             <div className="space-y-2">
               <Label>What was done on this job?</Label>
@@ -151,6 +170,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
             </div>
           )}
 
+          {/* Step 2: Time */}
           {step === 2 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
@@ -174,44 +194,96 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
             </div>
           )}
 
+          {/* Step 3: Parts — van stock vs supplier */}
           {step === 3 && (
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">Quoted items are pre-selected. Untick anything not used, or add extras.</p>
+              <p className="text-sm text-muted-foreground">
+                Quoted items pre-selected. Mark source: <strong>Van Stock</strong> (auto-generates restock PO) or <strong>Supplier</strong> (photo receipt).
+              </p>
               <div className="space-y-2 max-h-56 overflow-y-auto">
                 {parts.map((p, i) => (
                   <div key={p.id} className={cn(
-                    "flex items-center gap-2 p-2 rounded-lg transition-colors",
-                    p.used ? "bg-accent/30" : "bg-muted/30 opacity-60"
+                    "p-2.5 rounded-lg border transition-colors space-y-2",
+                    p.used ? "bg-accent/20 border-border" : "bg-muted/20 border-transparent opacity-50"
                   )}>
-                    <Checkbox
-                      checked={p.used}
-                      onCheckedChange={(checked) =>
-                        setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, used: !!checked } : pp))
-                      }
-                    />
-                    <span className={cn("text-sm flex-1", !p.used && "line-through")}>{p.name}</span>
-                    <Input
-                      type="number"
-                      className="w-16 h-7 text-xs text-right"
-                      value={p.quantity}
-                      onChange={(e) =>
-                        setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, quantity: Number(e.target.value) || 0 } : pp))
-                      }
-                    />
-                    <span className="text-xs text-muted-foreground w-8">{p.unit}</span>
-                    <button
-                      onClick={() =>
-                        setParts((prev) =>
-                          prev.map((pp, ii) => ii === i ? { ...pp, source: pp.source === "stock" ? "purchase" : "stock" } : pp)
-                        )
-                      }
-                      className={cn(
-                        "text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0",
-                        p.source === "stock" ? "bg-primary/15 text-primary" : "bg-accent text-accent-foreground"
-                      )}
-                    >
-                      {p.source === "stock" ? "Van Stock" : "PO Needed"}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={p.used}
+                        onCheckedChange={(checked) =>
+                          setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, used: !!checked } : pp))
+                        }
+                      />
+                      <span className={cn("text-sm flex-1 font-medium", !p.used && "line-through text-muted-foreground")}>{p.name}</span>
+                      <Input
+                        type="number"
+                        className="w-16 h-7 text-xs text-right"
+                        value={p.quantity}
+                        disabled={!p.used}
+                        onChange={(e) =>
+                          setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, quantity: Number(e.target.value) || 0 } : pp))
+                        }
+                      />
+                      <span className="text-xs text-muted-foreground w-8">{p.unit}</span>
+                    </div>
+                    {p.used && (
+                      <div className="flex items-center gap-1.5 pl-6">
+                        <button
+                          onClick={() =>
+                            setParts((prev) =>
+                              prev.map((pp, ii) => ii === i ? { ...pp, source: "van-stock" } : pp)
+                            )
+                          }
+                          className={cn(
+                            "flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors",
+                            p.source === "van-stock"
+                              ? "bg-primary/15 text-primary ring-1 ring-primary/30"
+                              : "bg-muted text-muted-foreground hover:bg-accent"
+                          )}
+                        >
+                          <Truck className="w-3 h-3" /> Van Stock
+                        </button>
+                        <button
+                          onClick={() =>
+                            setParts((prev) =>
+                              prev.map((pp, ii) => ii === i ? { ...pp, source: "supplier" } : pp)
+                            )
+                          }
+                          className={cn(
+                            "flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors",
+                            p.source === "supplier"
+                              ? "bg-[hsl(var(--status-orange)/0.15)] text-[hsl(var(--status-orange))] ring-1 ring-[hsl(var(--status-orange)/0.3)]"
+                              : "bg-muted text-muted-foreground hover:bg-accent"
+                          )}
+                        >
+                          <ShoppingCart className="w-3 h-3" /> Supplier
+                        </button>
+                        {p.source === "supplier" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn("h-6 px-2 text-[10px] gap-1", p.receiptPhoto && "text-primary")}
+                            onClick={() =>
+                              setParts((prev) =>
+                                prev.map((pp, ii) => ii === i ? { ...pp, receiptPhoto: !pp.receiptPhoto } : pp)
+                              )
+                            }
+                          >
+                            <FileImage className="w-3 h-3" />
+                            {p.receiptPhoto ? "Receipt ✓" : "Add Receipt"}
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                    {p.used && p.source === "supplier" && (
+                      <Input
+                        className="h-7 text-xs ml-6 w-auto"
+                        placeholder="Supplier name..."
+                        value={p.supplierName || ""}
+                        onChange={(e) =>
+                          setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, supplierName: e.target.value } : pp))
+                        }
+                      />
+                    )}
                   </div>
                 ))}
               </div>
@@ -224,9 +296,24 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
                 />
                 <Button size="sm" onClick={handleAddExtra}>Add</Button>
               </div>
+
+              {/* Summary badges */}
+              <div className="flex flex-wrap gap-2 pt-1">
+                {vanStockUsed.length > 0 && (
+                  <Badge variant="secondary" className="gap-1 text-xs">
+                    <Truck className="w-3 h-3" /> {vanStockUsed.length} van stock → PO will be generated
+                  </Badge>
+                )}
+                {supplierItems.length > 0 && (
+                  <Badge variant="outline" className="gap-1 text-xs">
+                    <ShoppingCart className="w-3 h-3" /> {supplierItems.length} from supplier
+                  </Badge>
+                )}
+              </div>
             </div>
           )}
 
+          {/* Step 4: Photos */}
           {step === 4 && (
             <div className="space-y-3">
               <Label>Job photos</Label>
@@ -256,6 +343,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
             </div>
           )}
 
+          {/* Step 5: Compliance */}
           {step === 5 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
