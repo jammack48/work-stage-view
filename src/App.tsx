@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
 import { TutorialProvider } from "@/contexts/TutorialContext";
 import { AppModeProvider, useAppMode } from "@/contexts/AppModeContext";
+import { JobPrefixProvider } from "@/contexts/JobPrefixContext";
 import { AppHeader } from "@/components/AppHeader";
 import { ModePicker } from "@/components/ModePicker";
 import { WorkBottomNav } from "@/components/WorkBottomNav";
@@ -24,6 +25,8 @@ import CustomerCard from "./pages/CustomerCard";
 import SettingsPage from "./pages/SettingsPage";
 import QuotePage from "./pages/QuotePage";
 import ComingSoon from "./pages/ComingSoon";
+import WorkHub from "./pages/WorkHub";
+import WorkTimesheet from "./pages/WorkTimesheet";
 import BundlesPage from "./pages/BundlesPage";
 import SchedulePage from "./pages/SchedulePage";
 import EmailTemplatesPage from "./pages/EmailTemplatesPage";
@@ -48,6 +51,8 @@ function AppLayout() {
               <Route path="/hub" element={<WorkHome />} />
               <Route path="/job/:id" element={<WorkJobCard />} />
               <Route path="/new-job" element={<WorkNewJob />} />
+              <Route path="/work-hub" element={<WorkHub />} />
+              <Route path="/timesheet" element={<WorkTimesheet />} />
               <Route path="*" element={<WorkHome />} />
             </>
           ) : (
@@ -79,6 +84,7 @@ function AppLayout() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      <JobPrefixProvider>
       <AppModeProvider>
       <TutorialProvider>
       <ToolbarPositionProvider>
@@ -96,6 +102,7 @@ const App = () => (
       </ToolbarPositionProvider>
       </TutorialProvider>
       </AppModeProvider>
+      </JobPrefixProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

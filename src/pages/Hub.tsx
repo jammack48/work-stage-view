@@ -1,10 +1,16 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
   Briefcase, Users, Calendar, DollarSign, Calculator, FileText,
   Mail, MessageSquare, FolderOpen, MapPin, ShieldCheck, Star, GraduationCap,
+  ChevronDown, ChevronRight, Upload, Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { TEAM_MEMBERS, type TeamDoc } from "@/data/dummyTeamDocs";
 
 interface Tile {
   id: string;
@@ -29,8 +35,15 @@ const TILES: Tile[] = [
   { id: "training", label: "Training Portal", icon: GraduationCap, route: null },
 ];
 
+const STATUS_COLORS: Record<string, string> = {
+  valid: "bg-[hsl(var(--status-green))] text-white",
+  expiring: "bg-[hsl(var(--status-orange))] text-white",
+  expired: "bg-destructive text-destructive-foreground",
+};
+
 const Hub = () => {
   const navigate = useNavigate();
+  const [expandedMember, setExpandedMember] = useState<string | null>(null);
 
   return (
     <>
@@ -82,6 +95,53 @@ const Hub = () => {
               </button>
             );
           })}
+        </div>
+        {/* Team Documents Section */}
+        <div className="mt-10">
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-1">Team Documents</h2>
+          <p className="text-muted-foreground text-sm mb-4">Manage staff certifications, licenses & documents</p>
+
+          <div className="space-y-2">
+            {TEAM_MEMBERS.map((member) => {
+              const isOpen = expandedMember === member.id;
+              return (
+                <Card key={member.id}>
+                  <button
+                    onClick={() => setExpandedMember(isOpen ? null : member.id)}
+                    className="w-full p-3 flex items-center gap-3 text-left"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                      {member.avatar}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-card-foreground">{member.name}</p>
+                      <p className="text-xs text-muted-foreground">{member.role} · {member.docs.length} docs</p>
+                    </div>
+                    {isOpen ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                  </button>
+                  {isOpen && (
+                    <CardContent className="pt-0 px-3 pb-3 space-y-2">
+                      {member.docs.map((doc) => (
+                        <div key={doc.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50 border border-border">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Award className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium text-card-foreground truncate">{doc.name}</p>
+                              {doc.expiry && <p className="text-[10px] text-muted-foreground">Exp: {doc.expiry}</p>}
+                            </div>
+                          </div>
+                          {doc.status && <Badge className={cn("text-[10px] shrink-0", STATUS_COLORS[doc.status])}>{doc.status}</Badge>}
+                        </div>
+                      ))}
+                      <Button size="sm" variant="outline" className="w-full gap-1.5 mt-1">
+                        <Upload className="w-3.5 h-3.5" /> Add Document
+                      </Button>
+                    </CardContent>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
         </div>
       </div>
     </>
