@@ -419,7 +419,7 @@ export function QuoteTab({ job, initialBundle, initialDescription, beforeActions
                       }
                     }}
                     placeholder="Describe scope of this job…"
-                    className="min-h-[80px] bg-muted/40 rounded-lg px-3 py-2 border border-border/50 focus-visible:ring-1 focus-visible:ring-ring text-sm resize-none overflow-hidden"
+                    className="min-h-[80px] bg-muted/20 rounded-lg px-3 py-2 border border-border focus-visible:ring-1 focus-visible:ring-ring text-sm resize-none overflow-hidden"
                   />
                 </div>
                 <div className="flex items-center gap-1 shrink-0 mt-1">
@@ -436,7 +436,7 @@ export function QuoteTab({ job, initialBundle, initialDescription, beforeActions
               <BlockSection label="Extras" items={block.extras} section="extras" isOpen={sections.extras} onToggle={() => toggleSection(block.id, "extras")} onUpdate={updateItem(block.id, "extras")} onDelete={deleteItem(block.id, "extras")} onAddBlank={() => addBlankTo(block.id, "extras")} onOpenPalette={() => { setPaletteBlockId(block.id); setPaletteSection("extras"); setPaletteOpen(true); }} lastRef={lastInputRef} globalMarkupValue={globalMarkupValue} useGlobalMarkup={useGlobalMarkup} onResetToGlobal={resetToGlobal(block.id, "extras")} />
 
               {/* Block subtotal */}
-              <div className="flex justify-between items-center px-3 py-2 rounded-lg bg-muted/40 text-sm">
+              <div className="flex justify-between items-center px-3 py-2 rounded-lg bg-muted/20 border border-border text-sm">
                 <span className="font-medium text-muted-foreground">{block.name || "Job"} subtotal</span>
                 <span className="font-bold">${blockTotals.sell.toFixed(2)}</span>
               </div>
