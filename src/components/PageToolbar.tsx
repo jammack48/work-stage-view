@@ -40,7 +40,10 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   const isActive = (id: string) => activeTab === id || currentPage === id;
 
   const headingBar = pageHeading ? (
-    <div className="px-4 sm:px-6 py-2 border-b border-border bg-background sticky top-0 z-30">
+    <div className={cn(
+      "px-4 sm:px-6 py-2 border-b border-border bg-background sticky z-30",
+      isMobile ? "top-[48px]" : "top-0"
+    )}>
       {pageHeading}
     </div>
   ) : null;
@@ -103,7 +106,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   // Desktop horizontal bar
   if (!isMobile && isHorizontal) {
     const bar = (
-      <nav className="flex items-center gap-1 px-2 py-1.5 border-b border-border overflow-x-auto sticky top-0 z-40 bg-card">
+      <nav className="flex items-center gap-1 px-2 py-1.5 border-b border-border overflow-x-auto sticky top-[48px] z-40 bg-card">
         
         {tabs.map(({ id, label, icon: Icon }) => {
           const tip = tutorialOn ? sidebarTooltips[id] : undefined;
@@ -199,7 +202,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
     <nav
       className={cn(
         "bg-card flex items-center px-1 py-1 overflow-x-auto gap-0.5",
-        position === "bottom" ? "fixed left-0 right-0 bottom-0 z-40 border-t border-border safe-area-pb pb-[env(safe-area-inset-bottom)]" : "sticky top-0 z-40 border-b border-border"
+        position === "bottom" ? "fixed left-0 right-0 bottom-0 z-40 border-t border-border safe-area-pb pb-[env(safe-area-inset-bottom)]" : "sticky top-[48px] z-40 border-b border-border"
       )}
     >
       

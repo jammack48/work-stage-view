@@ -17,7 +17,7 @@ export function AppHeader() {
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   return (
-    <header className="px-3 sm:px-6 py-2 sm:py-3 border-b border-border bg-background flex items-center justify-between">
+    <header className="px-3 sm:px-6 py-2 sm:py-3 border-b border-border bg-background flex items-center justify-between sticky top-0 z-50 h-12">
       <button onClick={() => navigate("/")} className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity">
         {isWorkMode ? (
           <Wrench className="w-5 h-5 text-primary shrink-0" />
