@@ -192,6 +192,32 @@ const addresses = [
 ];
 
 export function getJobDetail(jobId: string): JobDetail | null {
+  if (jobId === "TB-NEW") {
+    return {
+      id: "TB-NEW",
+      jobName: "New Job",
+      client: "Dave Thompson",
+      clientPhone: "021 555 1234",
+      clientEmail: "dave@example.com",
+      address: "12 Queen St, Auckland",
+      value: 0,
+      stage: "In Progress",
+      ageDays: 0,
+      urgent: false,
+      description: "Charge-up job — add parts and labour as you go.",
+      startDate: new Date().toLocaleDateString("en-NZ", { weekday: "short", day: "numeric", month: "short", year: "numeric" }),
+      dueDate: "",
+      staff: [staffPool[0]],
+      materials: [],
+      notes: [],
+      photos: [],
+      timeEntries: [],
+      invoiceStatus: "Draft",
+      labourTotal: 0,
+      extrasTotal: 0,
+    };
+  }
+
   const job = jobs.find((j) => j.id === jobId);
   if (!job) return null;
 
