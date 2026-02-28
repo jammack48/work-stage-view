@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield, RotateCcw, FileImage, Truck, ShoppingCart, ClipboardList, Mic, MicOff, Maximize2, Minimize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -59,6 +59,11 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
       el.style.height = el.scrollHeight + "px";
     }
   }, []);
+
+  // Auto-resize whenever jobSheet content changes (quick phrases, dictation, typing)
+  useEffect(() => {
+    autoResizeJobSheet();
+  }, [jobSheet, jobSheetExpanded, autoResizeJobSheet]);
   const budgetedHours = job.timeEntries.reduce((s, t) => s + t.hours, 0);
   const [actualHours, setActualHours] = useState(budgetedHours.toString());
   const [parts, setParts] = useState<PartUsed[]>(() =>
@@ -279,12 +284,11 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
               <Textarea
                 ref={jobSheetRef}
                 className={cn(
-                  "bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400 min-h-[120px] resize-none overflow-hidden transition-all",
-                  !jobSheetExpanded && "max-h-[300px] overflow-y-auto"
+                  "bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400 min-h-[120px] resize-none transition-all",
+                  jobSheetExpanded ? "overflow-hidden" : "max-h-[50vh] overflow-y-auto"
                 )}
                 value={jobSheet}
                 onChange={(e) => setJobSheet(e.target.value)}
-                onInput={autoResizeJobSheet}
                 placeholder="Describe the work completed..."
               />
               {jobSheet && jobSheet.length > 100 && (
