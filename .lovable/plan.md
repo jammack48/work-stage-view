@@ -1,51 +1,75 @@
 
 
-## Fix Quote Flow: Skip Redundant Steps and Mobile Layout Issues
+## Add Work Mode (Staff/Field Worker View)
 
-### Problems Identified
+### Concept
+On app load, show a mode picker: **Manage** (current full app for the boss) vs **Work** (stripped-down field worker view for staff). Persisted in localStorage so they don't choose every time.
 
-1. **Customer → New Quote asks for customer again**: When clicking "New Quote" from a customer's QuotesTab, it navigates to `/quote/new` without passing customer info. The funnel then asks "Who is this quote for?" — redundant since the user is already viewing that customer.
+### Work Mode — What Staff Need
 
-2. **Lead → Create Quote also has no pre-fill**: LeadActionMenu navigates to `/quote/{job.id}` which loads an existing job, but doesn't pre-fill customer data for new quotes either.
+Based on Fergus/Tradify patterns and the trades workflow:
 
-3. **Multiple entry points don't pass context**: Dashboard "New Quote" box and customer QuotesTab both go to `/quote/new` without customer data.
+```text
+┌─────────────────────────────────┐
+│  Work Mode Home                 │
+│                                 │
+│  Today's Schedule (primary)     │
+│  ┌─────────────────────────┐    │
+│  │ 8:00  Heat Pump Install │    │
+│  │ 10:30 Switchboard       │    │
+│  │ 1:00  Rewire - 42 Smith │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  My Jobs (list of assigned)     │
+│  ┌─────────────────────────┐    │
+│  │ Heat Pump Install - $X  │    │ ← no $ shown
+│  │ Switchboard Upgrade     │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  Bottom toolbar:                │
+│  [Schedule] [Jobs] [+ Job]      │
+└─────────────────────────────────┘
+```
 
-4. **Mobile layout issues in QuoteTab**: The ItemRow component has horizontal input rows (Qty × Buy → Sell, Markup) that overflow on narrow screens. The preview dialog presets also wrap awkwardly.
+### Work Mode Job Card — Limited Tabs
+When a staff member opens a job, they see a restricted set of tabs:
+- **Overview** — job name, address, customer contact, staff, schedule (no value/pricing)
+- **Scope** — the approved quote description and materials list but **no prices** (qty + item name only)
+- **Time** — start/stop timer, log hours
+- **Materials** — items used on site, can add more (no buy/sell prices, just item + qty)
+- **Notes** — add notes
+- **Photos** — take/upload photos
+- **Forms** — safety checklists etc.
 
-### Plan
+Tabs NOT shown to staff: Quote, Invoice, Sequences, Messages, History, Spend.
 
-**1. Pass customer data via navigation state (3 files)**
+### New Files
+- **`src/contexts/AppModeContext.tsx`** — React context storing `"manage" | "work"`, persisted to localStorage. Provides `mode`, `setMode`, `isWorkMode`.
+- **`src/components/ModePicker.tsx`** — Full-screen picker shown when no mode is set. Two large cards: "I'm the Boss" (Manage) and "I'm on the Tools" (Work). Also accessible from AppHeader to switch.
+- **`src/pages/WorkHome.tsx`** — Work mode home page. Shows today's schedule (reuses existing schedule components filtered to "My Jobs") and a simple job list.
+- **`src/components/job/WorkJobCard.tsx`** — Stripped-down job card for Work mode with limited tabs and no pricing.
+- **`src/components/job/ScopeTab.tsx`** — New tab showing approved quote scope text and materials list without any pricing columns.
 
-- **`src/components/customer/QuotesTab.tsx`**: Change navigate to pass customer object in location state:
-  ```
-  navigate("/quote/new", { state: { customer } })
-  ```
+### Modified Files
+- **`src/App.tsx`** — Wrap in `AppModeProvider`. If mode not set, show `ModePicker`. If work mode, route `/` to `WorkHome` instead of `Index`. Route `/job/:id` to `WorkJobCard` in work mode.
+- **`src/components/AppHeader.tsx`** — Add a small mode indicator/switch button (e.g., a Wrench/Shield toggle) so user can switch between modes.
+- **`src/config/toolbarTabs.ts`** — Add `WORK_JOB_EXTRAS` (Back, Overview, Scope, Time, Materials, Notes, Photos, Forms) and `WORK_HOME_TABS` (Schedule, Jobs, + Job).
 
-- **`src/pages/QuotePage.tsx`**: Read `location.state?.customer` and pass it to `QuoteFunnel` as an `initialCustomer` prop. If provided, the funnel skips step 1 and pre-fills the address.
+### Key Design Decisions
+- **No prices anywhere in Work mode** — materials show item + qty only, no unit price, no totals. Quote scope shows description and materials list only.
+- **Can add items** — staff can add materials they used (item name + qty) and time entries. These feed back into the job for the manager to price later.
+- **Schedule is primary** — Work mode home opens straight to today's schedule, not a pipeline.
+- **Mode persisted** — stored in localStorage, changeable from header. No auth required (this is a UI-only prototype).
 
-- **`src/components/quote/QuoteFunnel.tsx`**: Add `initialCustomer?: Customer` prop. If provided:
-  - Start at step 2 (address) instead of step 1
-  - Pre-fill `customer` and `address` from the initial customer
-  - Update StepIndicator to show step 1 as already complete
-  - "Back" from step 2 still allows going to step 1 to change customer if needed
-
-**2. Fix mobile layout in QuoteTab (1 file)**
-
-- **`src/components/job/QuoteTab.tsx`**: 
-  - Wrap the Qty/Buy/Sell input row in `flex-wrap` so inputs stack on very narrow screens
-  - Make input widths responsive (`w-14` → `min-w-[3rem] flex-1`)
-  - Ensure the "Add another" section and bundle Select don't overflow
-
-**3. Fix mobile preview presets (1 file)**
-
-- **`src/components/quote/QuotePreview.tsx`**:
-  - Make preset buttons use smaller text and wrap properly on mobile
-  - Ensure the dialog content doesn't overflow the viewport
-
-### Files to modify
-- `src/components/customer/QuotesTab.tsx` — pass customer in nav state
-- `src/pages/QuotePage.tsx` — read customer from nav state, pass to funnel
-- `src/components/quote/QuoteFunnel.tsx` — accept initialCustomer, skip step 1
-- `src/components/job/QuoteTab.tsx` — mobile-friendly input layout
-- `src/components/quote/QuotePreview.tsx` — mobile preset button wrapping
+### Files Summary
+| File | Action |
+|------|--------|
+| `src/contexts/AppModeContext.tsx` | Create — mode context + provider |
+| `src/components/ModePicker.tsx` | Create — mode selection screen |
+| `src/pages/WorkHome.tsx` | Create — staff home (schedule + job list) |
+| `src/components/job/ScopeTab.tsx` | Create — quote scope without prices |
+| `src/components/job/WorkJobCard.tsx` | Create — limited job card for staff |
+| `src/config/toolbarTabs.ts` | Modify — add work mode tab sets |
+| `src/App.tsx` | Modify — mode routing |
+| `src/components/AppHeader.tsx` | Modify — mode switch button |
 
