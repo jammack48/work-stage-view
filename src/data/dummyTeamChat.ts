@@ -73,12 +73,18 @@ export interface QuickNote {
   jobName?: string;
   isVoice?: boolean;
   voiceDuration?: string;
+  assignedTo?: string;
+  alertType?: "none" | "alert" | "timer";
+  timerMinutes?: number;
+  priority?: "normal" | "urgent";
 }
 
 export const INITIAL_NOTES: QuickNote[] = [
   { id: "qn1", text: "Client wants work done before Christmas. Confirmed access via side gate — code is 4821.", author: "Jake Turner", timestamp: "2 hours ago", jobId: "TB-0501", jobName: "Kitchen Plumbing" },
-  { id: "qn2", text: "Existing switchboard is 1970s ceramic fuses. Will need full replacement, not just upgrade.", author: "Sam Te Reo", timestamp: "3 hours ago" },
+  { id: "qn2", text: "Customer needs another heat pump quote — rang while you were on site.", author: "Management", timestamp: "2 hours ago", assignedTo: "Dave", alertType: "alert", priority: "urgent", jobId: "TB-0511", jobName: "Heat Pump Install" },
   { id: "qn3", text: "Left materials in garage. Client happy for us to come and go.", author: "Ben Kowalski", timestamp: "Yesterday", jobId: "TB-0503", jobName: "Bathroom Reno" },
-  { id: "qn4", text: "Site walkthrough complete — all good to proceed. Measured up for the vanity unit.", author: "Jake Turner", timestamp: "Yesterday", isVoice: true, voiceDuration: "0:42", jobId: "TB-0503", jobName: "Bathroom Reno" },
-  { id: "qn5", text: "Need to order more 15mm copper pipe — supplier out of stock until Thursday.", author: "Dave", timestamp: "2 days ago" },
+  { id: "qn4", text: "Chase up tile supplier — they said samples arrive by 2pm.", author: "Tama", timestamp: "Yesterday", assignedTo: "Tama", alertType: "timer", timerMinutes: 45 },
+  { id: "qn5", text: "Site walkthrough complete — all good to proceed. Measured up for the vanity unit.", author: "Jake Turner", timestamp: "Yesterday", isVoice: true, voiceDuration: "0:42", jobId: "TB-0503", jobName: "Bathroom Reno" },
+  { id: "qn6", text: "Need to order more 15mm copper pipe — supplier out of stock until Thursday.", author: "Dave", timestamp: "2 days ago" },
+  { id: "qn7", text: "Ring back Mrs Mitchell about the quote revision — she wants to add a second bathroom.", author: "Management", timestamp: "3 hours ago", assignedTo: "Mike", alertType: "alert", priority: "normal" },
 ];
