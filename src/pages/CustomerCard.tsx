@@ -249,7 +249,7 @@ export default function CustomerCard() {
         <Button onClick={() => navigate(`/job/new?stage=Lead&customer=${id}`)} className="gap-1.5"><Plus className="w-4 h-4" /> Create Job</Button>
       </div>
     ),
-    messages: <MessagesTab />,
+    messages: <MessagesTab recordType="customer" customerId={customer.id} showPipelineLink pipelinePath="/" />,
     history: <HistoryTab customer={customer} />,
     photos: <CustomerPhotosTab customer={customer} />,
     documents: <DocumentsTab customer={customer} />,

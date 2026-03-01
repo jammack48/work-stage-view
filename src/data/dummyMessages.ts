@@ -6,6 +6,8 @@ export interface Message {
   body: string;
   timestamp: string;
   status: "Sent" | "Delivered" | "Opened" | "Replied" | "Failed";
+  jobId?: string;
+  customerId?: number;
 }
 
 export const dummyMessages: Message[] = [
