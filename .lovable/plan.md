@@ -1,25 +1,24 @@
 
 
-## Make mail icon larger and more prominent on pipeline cards
+## Fix mail icon click and make it blue
 
-**Problem:** The current mail icon on pipeline status cards is tiny (w-3 h-3) and hard to notice. Users need a clear, attention-grabbing indicator that a customer has replied, and tapping the mail icon should go to messages while tapping elsewhere on the card behaves normally.
+**Problem:** The mail icon button's click is being swallowed by the `LeadActionMenu` wrapper (Popover/Drawer) on Lead stage cards. Even on non-Lead stages, the card's `onClick` or wrapping `TutorialTip` may intercept the event. Also, the icon needs to be bright blue like the tutorial icon for better visibility.
 
 **Changes:**
 
-### 1. `src/components/StageColumn.tsx` — JobPreview component
+### 1. `src/components/StageColumn.tsx` — JobPreview mail button
 
-- Increase the Mail icon from `w-3 h-3` to `w-5 h-5` with a coloured background pill (e.g. `bg-primary/20 rounded-full p-1`) so it stands out visually against the card colour.
-- Move the Mail icon to its own row below the job name, separated from the text, so it has breathing room and is clearly tappable.
-- Wrap the Mail icon in a clickable `<button>` with `e.stopPropagation()` that navigates to `/customers/:id?tab=messages` (or the appropriate messages route for that job).
-- Keep the existing `animate-wiggle` animation — the larger size will make the vibration much more visible.
+- Make the mail icon and "Reply waiting" text use a bright blue color (`text-blue-400` or similar) instead of `text-primary` so it pops against all card backgrounds.
+- Increase icon size to `w-5 h-5` for better tap target.
+- Add `z-10 relative` to the button so it sits above any wrapper overlays.
+- Add both `e.stopPropagation()` and `e.preventDefault()` to ensure no parent handler (LeadActionMenu popover trigger, card onClick) intercepts the tap.
 
-### 2. `src/components/StageColumn.tsx` — Color card click handlers
+### 2. `src/components/StageColumn.tsx` — Color card rendering
 
-- No change needed to the card-level `onClick` — the mail button uses `stopPropagation` so tapping it won't trigger the normal card navigation.
+- For Lead stage cards that have unread messages, avoid wrapping in `LeadActionMenu` — instead render the card with `TutorialTip` like other stages, so the mail button's `stopPropagation` works correctly. The LeadActionMenu should only trigger when clicking the card area outside the mail button. This can be done by moving the LeadActionMenu trigger to the card's own onClick (when no unread) or restructuring so the mail button isn't inside the popover trigger.
+- Alternatively, a simpler fix: render both — keep LeadActionMenu but ensure the mail `<button>` uses `onPointerDown` with `stopPropagation` to prevent the Radix popover from capturing the event before the click fires.
 
-### 3. `src/components/ManagerMode.tsx` — JobCard component
+### 3. `src/components/ManagerMode.tsx` — Same blue styling
 
-- Add a similar prominent Mail icon to the Manager Mode job card header area when `job.hasUnread` is true.
-- Make it a tappable button that navigates to the customer messages view.
-- Use the same large icon + wiggle animation treatment.
+- Update the mail icon button to use bright blue (`text-blue-400`) with matching glow for consistency.
 
