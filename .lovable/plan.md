@@ -1,47 +1,65 @@
 
 
-## Full CRM Search, Filters, Bulk Actions and Service Reminders
+## Work Mode: Quick Notes + Team Chat System
 
 ### What we are building
 
-Transform the Customer Directory into a full CRM workspace with four major capabilities:
+Two new features for Work Mode (tradesman view):
 
-1. **Full-text keyword search** — searches across customer name, email, phone, address, notes, and job history names (e.g. searching "switchboard" finds Dave Thompson)
-2. **Advanced filters** — filter by spend range, job count, status, and sort by name/spend/jobs
-3. **Multi-select with bulk actions** — select multiple customers and send a bulk SMS or Email using existing templates, with an option to attach an automated reminder sequence
-4. **Service reminder scheduling** — when sending a bulk message, optionally attach a recurring service reminder sequence (e.g. "Annual switchboard inspection due") that auto-schedules future follow-ups
+1. **Quick Notes pad** — A persistent notes section on the Work Home screen where tradesmen can quickly dictate or type notes from a customer conversation, with an option to attach the note to a specific job. Notes appear in a feed with timestamps and can optionally link to any active job.
+
+2. **Team Chat (Channels)** — A Slack-like group messaging system accessible from the bottom nav, with:
+   - **General channel** for company-wide announcements from management
+   - **Job-linked channels** that auto-create a thread per job so all comms/notes/tasks stay together
+   - **@mentions** to tag staff members
+   - Management can broadcast messages to all staff
 
 ### Changes
 
-#### 1. `src/pages/Customers.tsx` — Major rewrite
+#### 1. `src/pages/WorkNotes.tsx` — New page
 
-- Add a search `Input` at the top with a Search icon; state `searchQuery` filters across all customer fields including `notes[]` and `jobHistory[].name` using case-insensitive matching
-- Add a filter/sort row beneath search: dropdown for **Sort by** (Name, Spend, Jobs), toggle for **Min spend** (slider or input), **Min jobs** (input)
-- Add multi-select mode: a "Select" toggle button; when active, each customer row gets a Checkbox; a floating action bar appears at the bottom showing "X selected" with **Send SMS**, **Send Email**, and **Schedule Reminder** buttons
-- Send SMS/Email opens a dialog letting user pick a template from existing `dummyTemplates` (filtered by channel), preview the message, and confirm (toast confirmation since no backend)
-- Schedule Reminder opens a dialog where user picks a sequence from `dummySequences` or creates a quick one-off reminder with delay and channel, then confirms (toast)
+- Quick-capture area at top: textarea with Mic button (voice dictation placeholder) and "Add" button
+- Optional job attachment: a Select dropdown listing active jobs (from DEMO_JOBS filtered to current staff) — defaults to "No job" (general note)
+- Notes feed below showing recent notes with author, timestamp, linked job badge (tappable to navigate to job), and voice indicator
+- Uses dummy data for existing notes
 
-#### 2. `src/components/customer/CustomerSearchBar.tsx` — New file
+#### 2. `src/pages/WorkChat.tsx` — New page
 
-- Reusable search input component with debounced filtering
-- Accepts `onSearch(query: string)` callback
+- Left panel: channel list (General, Announcements, plus auto-generated job channels like "#job-switchboard-upgrade")
+- Right/main panel: message thread for selected channel
+- Compose bar at bottom with text input, send button, and @mention trigger
+- Messages show author avatar, name, timestamp, and optional job tag
+- Demo data: a few messages in General from "Management" and job-specific threads
+- @mention: typing `@` shows a dropdown of staff names; selected name renders as a blue badge in the message
 
-#### 3. `src/components/customer/CustomerFilters.tsx` — New file
+#### 3. `src/data/dummyTeamChat.ts` — New data file
 
-- Sort-by select, min-spend input, min-jobs input in a compact horizontal row
-- Collapsible on mobile (behind a Filter icon toggle)
+- Channel definitions: `{ id, name, type: "general" | "job", jobId?, icon }`
+- Messages: `{ id, channelId, author, avatar, text, timestamp, mentions?: string[], jobId? }`
+- Demo channels: General, Announcements, #job-switchboard, #job-bathroom-reno
+- Demo messages from management and staff
 
-#### 4. `src/components/customer/BulkActionBar.tsx` — New file
+#### 4. `src/components/WorkBottomNav.tsx` — Update
 
-- Fixed bottom bar showing selected count and action buttons (Send SMS, Send Email, Schedule Reminder)
-- Each button opens a Dialog with template/sequence picker
+- Add two new nav items: **Notes** (StickyNote icon, path `/work-notes`) and **Chat** (MessageCircle icon, path `/work-chat`)
+- Reorder: Schedule, Notes, New Job (center FAB), Chat, Hub — drop Timesheet to a sub-page or move into Hub
+- Total 5 items: Schedule | Notes | + New Job | Chat | Hub
 
-#### 5. `src/components/customer/BulkMessageDialog.tsx` — New file
+#### 5. `src/App.tsx` — Add routes
 
-- Dialog for bulk SMS/Email: channel selector, template dropdown (from `dummyTemplates`), preview area, optional "Attach reminder sequence" toggle that shows sequence picker, confirm button
+- `/work-notes` → `WorkNotes`
+- `/work-chat` → `WorkChat`
 
-#### 6. Data layer additions
+#### 6. `src/components/job/NotesTab.tsx` — Enhancement
 
-- Add a `tags` field to the `Customer` interface (e.g. `["switchboard", "ac service"]`) for richer keyword matching — or simply search existing `notes` and `jobHistory.name` fields (simpler, no data change needed)
-- Search implementation: combine all searchable text per customer into a single string and test against the query
+- Add an "Attach to job" badge on notes that came from the quick-notes pad (cross-reference)
+- Show a link icon on notes that were dictated from WorkNotes so they appear in both places
+
+### Technical details
+
+- Team chat is fully client-side with local state (no backend) — messages are added to a useState array
+- @mention detection: regex `/(?:^|\s)@(\w+)/` in the compose input triggers a filtered staff dropdown
+- Channel list uses a simple vertical list with unread dot indicators
+- Notes use the existing `NoteEntry` interface from `dummyJobDetails.ts`, extended with an optional `jobId` field
+- Bottom nav goes from 4 to 5 items, keeping the center FAB pattern for New Job
 
