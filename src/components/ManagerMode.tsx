@@ -183,6 +183,7 @@ function JobCard({ job, activeStage, activePriority, note, setNote, onAction, on
   onAction: (job: Job, action: string, actionDef: ActionDef) => void;
   onSaveNote: (job: Job) => void;
 }) {
+  const navigate = useNavigate();
   const history = generateHistory(job, activeStage);
   const sequence = generateSequence(activeStage, job);
   const actions = STAGE_ACTIONS[activeStage] || [];
@@ -191,9 +192,22 @@ function JobCard({ job, activeStage, activePriority, note, setNote, onAction, on
     <div className="rounded-xl border border-border bg-card p-4 space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div>
-          <p className="font-semibold text-card-foreground">{job.client}</p>
-          <p className="text-sm text-muted-foreground">{job.jobName}</p>
+        <div className="flex items-center gap-2">
+          <div>
+            <p className="font-semibold text-card-foreground">{job.client}</p>
+            <p className="text-sm text-muted-foreground">{job.jobName}</p>
+          </div>
+          {job.hasUnread && (
+            <button
+              onClick={() => {
+                const isQ = ["Lead","To Quote","Quote Sent"].includes(activeStage);
+                navigate(isQ ? `/quote/${job.id}?tab=messages` : `/job/${job.id}?tab=messages`);
+              }}
+              className="animate-wiggle bg-primary/20 rounded-full p-1.5 flex items-center justify-center"
+            >
+              <Mail className="w-5 h-5 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
+            </button>
+          )}
         </div>
         <div className="text-right">
           <p className="font-semibold text-card-foreground">${job.value.toLocaleString()}</p>
