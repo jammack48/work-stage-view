@@ -1,7 +1,8 @@
-import { Plus, Mic } from "lucide-react";
+import { Plus, Mic, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { NoteEntry } from "@/data/dummyJobDetails";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface NotesTabProps {
@@ -53,6 +54,11 @@ export function NotesTab({ notes }: NotesTabProps) {
                     )}
                   </div>
                   <p className="text-sm text-card-foreground leading-relaxed">{note.text}</p>
+                  {note.isVoice && (
+                    <Badge variant="secondary" className="text-[10px] gap-1 mt-1.5">
+                      <Link2 className="w-3 h-3" /> From Quick Notes
+                    </Badge>
+                  )}
                 </div>
               ))}
             </div>
