@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { FileText, PlayCircle, Award, ClipboardList, Download, ExternalLink } from "lucide-react";
+import { FileText, PlayCircle, Award, ClipboardList, Download, ExternalLink, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import WorkTimesheet from "./WorkTimesheet";
 
 const COMPANY_DOCS = [
   { id: "cd1", name: "Health & Safety Policy", updated: "15 Jan 2026" },
@@ -48,11 +49,12 @@ export default function WorkHub() {
       <h1 className="text-xl font-bold text-foreground mb-4">Hub</h1>
 
       <Tabs defaultValue="docs" className="w-full">
-        <TabsList className="w-full grid grid-cols-4">
+        <TabsList className="w-full grid grid-cols-5">
           <TabsTrigger value="docs" className="text-xs gap-1"><FileText className="w-3.5 h-3.5" /> Docs</TabsTrigger>
           <TabsTrigger value="training" className="text-xs gap-1"><PlayCircle className="w-3.5 h-3.5" /> Training</TabsTrigger>
           <TabsTrigger value="certs" className="text-xs gap-1"><Award className="w-3.5 h-3.5" /> Certs</TabsTrigger>
           <TabsTrigger value="forms" className="text-xs gap-1"><ClipboardList className="w-3.5 h-3.5" /> Forms</TabsTrigger>
+          <TabsTrigger value="timesheet" className="text-xs gap-1"><Clock className="w-3.5 h-3.5" /> Time</TabsTrigger>
         </TabsList>
 
         <TabsContent value="docs" className="space-y-2 mt-3">
@@ -114,6 +116,9 @@ export default function WorkHub() {
               </CardContent>
             </Card>
           ))}
+        </TabsContent>
+        <TabsContent value="timesheet" className="mt-3">
+          <WorkTimesheet />
         </TabsContent>
       </Tabs>
     </div>
