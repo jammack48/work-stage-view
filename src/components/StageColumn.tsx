@@ -33,6 +33,7 @@ function UnreadDot() {
 /** Job preview row inside a color band */
 function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse" }) {
   const { prefix } = useJobPrefix();
+  const navigate = useNavigate();
   const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
   return (
     <div className={cn(
@@ -42,9 +43,23 @@ function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse
       <div className="font-semibold truncate flex items-center gap-1">
         {job.client}
         {job.hasUnread && notifStyle === "icon" && <UnreadDot />}
-        {job.hasUnread && <Mail className="w-3 h-3 text-primary animate-wiggle shrink-0" />}
       </div>
       <div className="truncate opacity-75">{displayId} · {job.jobName}</div>
+      {job.hasUnread && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const isQ = ["Lead","To Quote","Quote Sent"].includes(job.stage);
+            navigate(isQ ? `/quote/${job.id}?tab=messages` : `/job/${job.id}?tab=messages`);
+          }}
+          className="mt-1 flex items-center gap-1 animate-wiggle"
+        >
+          <span className="bg-primary/25 rounded-full p-1 flex items-center justify-center">
+            <Mail className="w-4 h-4 text-primary drop-shadow-[0_0_4px_hsl(var(--primary)/0.6)]" />
+          </span>
+          <span className="text-[10px] text-primary font-semibold">Reply waiting</span>
+        </button>
+      )}
     </div>
   );
 }
