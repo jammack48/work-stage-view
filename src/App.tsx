@@ -27,6 +27,8 @@ import QuotePage from "./pages/QuotePage";
 import ComingSoon from "./pages/ComingSoon";
 import WorkHub from "./pages/WorkHub";
 import WorkTimesheet from "./pages/WorkTimesheet";
+import WorkNotes from "./pages/WorkNotes";
+import WorkChat from "./pages/WorkChat";
 import BundlesPage from "./pages/BundlesPage";
 import SchedulePage from "./pages/SchedulePage";
 import EmailTemplatesPage from "./pages/EmailTemplatesPage";
@@ -51,6 +53,8 @@ function AppLayout() {
               <Route path="/hub" element={<WorkHome />} />
               <Route path="/job/:id" element={<WorkJobCard />} />
               <Route path="/new-job" element={<WorkNewJob />} />
+              <Route path="/work-notes" element={<WorkNotes />} />
+              <Route path="/work-chat" element={<WorkChat />} />
               <Route path="/work-hub" element={<WorkHub />} />
               <Route path="/timesheet" element={<WorkTimesheet />} />
               <Route path="*" element={<WorkHome />} />

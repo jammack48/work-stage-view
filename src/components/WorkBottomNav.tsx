@@ -1,12 +1,13 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Plus, Clock, FolderOpen } from "lucide-react";
+import { Home, Plus, StickyNote, MessageCircle, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { id: "home", icon: Home, label: "Schedule", path: "/" },
+  { id: "notes", icon: StickyNote, label: "Notes", path: "/work-notes" },
   { id: "add", icon: Plus, label: "New Job", path: "/new-job" },
+  { id: "chat", icon: MessageCircle, label: "Chat", path: "/work-chat" },
   { id: "hub", icon: FolderOpen, label: "Hub", path: "/work-hub" },
-  { id: "timesheet", icon: Clock, label: "Timesheet", path: "/timesheet" },
 ];
 
 export function WorkBottomNav() {
