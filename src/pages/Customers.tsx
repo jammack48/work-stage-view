@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, UserPlus, Phone, Mail, MapPin, CheckSquare } from "lucide-react";
+import { Users, UserPlus, Phone, Mail, MapPin, CheckSquare, Filter, ChevronDown } from "lucide-react";
 import { UNREAD_CLIENTS } from "@/data/dummyJobs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
 
 import { PageToolbar } from "@/components/PageToolbar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DUMMY_CUSTOMERS, type Customer } from "@/data/dummyCustomers";
 import { CUSTOMER_LIST_EXTRAS } from "@/config/toolbarTabs";
 import { CustomerSearchBar } from "@/components/customer/CustomerSearchBar";
@@ -97,19 +98,31 @@ export default function Customers() {
           <CustomerSearchBar onSearch={handleSearch} externalValue={searchInput} />
         </div>
 
-        {/* Quick keyword chips */}
+        {/* Quick filters dropdown */}
         <div className="mb-3">
-          <QuickKeywords onKeyword={(kw) => { setSearchInput(kw); setSearchQuery(kw); }} />
-        </div>
-
-        {/* Filter presets */}
-        <div className="mb-3">
-          <FilterPresets onApply={(preset: FilterPreset) => {
-            setSortBy(preset.sortBy);
-            setMinSpend(preset.minSpend);
-            setMinJobs(preset.minJobs);
-            if (preset.tab) setActiveTab(preset.tab);
-          }} />
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs w-full justify-between">
+                <span className="flex items-center gap-1.5"><Filter className="w-3.5 h-3.5" />Quick Filters & Keywords</span>
+                <ChevronDown className="w-3.5 h-3.5" />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 space-y-3">
+              <div>
+                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1 block">Keywords</span>
+                <QuickKeywords onKeyword={(kw) => { setSearchInput(kw); setSearchQuery(kw); }} />
+              </div>
+              <div>
+                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1 block">Presets</span>
+                <FilterPresets onApply={(preset: FilterPreset) => {
+                  setSortBy(preset.sortBy);
+                  setMinSpend(preset.minSpend);
+                  setMinJobs(preset.minJobs);
+                  if (preset.tab) setActiveTab(preset.tab);
+                }} />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
 
         {/* Filters + Select toggle */}
