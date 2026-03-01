@@ -203,9 +203,9 @@ function JobCard({ job, activeStage, activePriority, note, setNote, onAction, on
                 const isQ = ["Lead","To Quote","Quote Sent"].includes(activeStage);
                 navigate(isQ ? `/quote/${job.id}?tab=messages` : `/job/${job.id}?tab=messages`);
               }}
-              className="animate-wiggle bg-primary/20 rounded-full p-1.5 flex items-center justify-center"
+              className="animate-wiggle bg-blue-500/20 rounded-full p-1.5 flex items-center justify-center"
             >
-              <Mail className="w-5 h-5 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
+              <Mail className="w-5 h-5 text-blue-400 drop-shadow-[0_0_6px_rgba(96,165,250,0.7)]" />
             </button>
           )}
         </div>
