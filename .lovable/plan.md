@@ -1,24 +1,47 @@
 
 
-## Fix mail icon click and make it blue
+## Full CRM Search, Filters, Bulk Actions and Service Reminders
 
-**Problem:** The mail icon button's click is being swallowed by the `LeadActionMenu` wrapper (Popover/Drawer) on Lead stage cards. Even on non-Lead stages, the card's `onClick` or wrapping `TutorialTip` may intercept the event. Also, the icon needs to be bright blue like the tutorial icon for better visibility.
+### What we are building
 
-**Changes:**
+Transform the Customer Directory into a full CRM workspace with four major capabilities:
 
-### 1. `src/components/StageColumn.tsx` — JobPreview mail button
+1. **Full-text keyword search** — searches across customer name, email, phone, address, notes, and job history names (e.g. searching "switchboard" finds Dave Thompson)
+2. **Advanced filters** — filter by spend range, job count, status, and sort by name/spend/jobs
+3. **Multi-select with bulk actions** — select multiple customers and send a bulk SMS or Email using existing templates, with an option to attach an automated reminder sequence
+4. **Service reminder scheduling** — when sending a bulk message, optionally attach a recurring service reminder sequence (e.g. "Annual switchboard inspection due") that auto-schedules future follow-ups
 
-- Make the mail icon and "Reply waiting" text use a bright blue color (`text-blue-400` or similar) instead of `text-primary` so it pops against all card backgrounds.
-- Increase icon size to `w-5 h-5` for better tap target.
-- Add `z-10 relative` to the button so it sits above any wrapper overlays.
-- Add both `e.stopPropagation()` and `e.preventDefault()` to ensure no parent handler (LeadActionMenu popover trigger, card onClick) intercepts the tap.
+### Changes
 
-### 2. `src/components/StageColumn.tsx` — Color card rendering
+#### 1. `src/pages/Customers.tsx` — Major rewrite
 
-- For Lead stage cards that have unread messages, avoid wrapping in `LeadActionMenu` — instead render the card with `TutorialTip` like other stages, so the mail button's `stopPropagation` works correctly. The LeadActionMenu should only trigger when clicking the card area outside the mail button. This can be done by moving the LeadActionMenu trigger to the card's own onClick (when no unread) or restructuring so the mail button isn't inside the popover trigger.
-- Alternatively, a simpler fix: render both — keep LeadActionMenu but ensure the mail `<button>` uses `onPointerDown` with `stopPropagation` to prevent the Radix popover from capturing the event before the click fires.
+- Add a search `Input` at the top with a Search icon; state `searchQuery` filters across all customer fields including `notes[]` and `jobHistory[].name` using case-insensitive matching
+- Add a filter/sort row beneath search: dropdown for **Sort by** (Name, Spend, Jobs), toggle for **Min spend** (slider or input), **Min jobs** (input)
+- Add multi-select mode: a "Select" toggle button; when active, each customer row gets a Checkbox; a floating action bar appears at the bottom showing "X selected" with **Send SMS**, **Send Email**, and **Schedule Reminder** buttons
+- Send SMS/Email opens a dialog letting user pick a template from existing `dummyTemplates` (filtered by channel), preview the message, and confirm (toast confirmation since no backend)
+- Schedule Reminder opens a dialog where user picks a sequence from `dummySequences` or creates a quick one-off reminder with delay and channel, then confirms (toast)
 
-### 3. `src/components/ManagerMode.tsx` — Same blue styling
+#### 2. `src/components/customer/CustomerSearchBar.tsx` — New file
 
-- Update the mail icon button to use bright blue (`text-blue-400`) with matching glow for consistency.
+- Reusable search input component with debounced filtering
+- Accepts `onSearch(query: string)` callback
+
+#### 3. `src/components/customer/CustomerFilters.tsx` — New file
+
+- Sort-by select, min-spend input, min-jobs input in a compact horizontal row
+- Collapsible on mobile (behind a Filter icon toggle)
+
+#### 4. `src/components/customer/BulkActionBar.tsx` — New file
+
+- Fixed bottom bar showing selected count and action buttons (Send SMS, Send Email, Schedule Reminder)
+- Each button opens a Dialog with template/sequence picker
+
+#### 5. `src/components/customer/BulkMessageDialog.tsx` — New file
+
+- Dialog for bulk SMS/Email: channel selector, template dropdown (from `dummyTemplates`), preview area, optional "Attach reminder sequence" toggle that shows sequence picker, confirm button
+
+#### 6. Data layer additions
+
+- Add a `tags` field to the `Customer` interface (e.g. `["switchboard", "ac service"]`) for richer keyword matching — or simply search existing `notes` and `jobHistory.name` fields (simpler, no data change needed)
+- Search implementation: combine all searchable text per customer into a single string and test against the query
 
