@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { getJobDetail, getNewJobDetail, type BundleTemplate } from "@/data/dummyJobDetails";
 import { toast } from "@/hooks/use-toast";
 import { PageToolbar } from "@/components/PageToolbar";
@@ -10,6 +10,7 @@ import { NotesTab } from "@/components/job/NotesTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequenceSelector } from "@/components/quote/SequenceSelector";
 import { SequencesTab } from "@/components/SequencesTab";
+import { MessagesTab } from "@/components/job/MessagesTab";
 import { cn } from "@/lib/utils";
 import { QUOTE_EXTRAS } from "@/config/toolbarTabs";
 import {
@@ -17,7 +18,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-type QuotePageTab = "overview" | "line-items" | "sequences" | "notes" | "history";
+type QuotePageTab = "overview" | "messages" | "line-items" | "sequences" | "notes" | "history";
 
 
 
@@ -35,7 +36,9 @@ export default function QuotePage() {
   const location = useLocation();
   const managerState = (location.state as any);
   const initialCustomer = managerState?.customer || null;
-  const [activeTab, setActiveTab] = useState<QuotePageTab>("line-items");
+  const [searchParams] = useSearchParams();
+  const initialTab = (searchParams.get("tab") as QuotePageTab) || "line-items";
+  const [activeTab, setActiveTab] = useState<QuotePageTab>(initialTab);
   const [status, setStatus] = useState<QuoteStatus>("Draft");
   const [funnelComplete, setFunnelComplete] = useState(false);
   const [funnelData, setFunnelData] = useState<FunnelResult | null>(null);
@@ -147,6 +150,7 @@ export default function QuotePage() {
 
   const tabContent: Record<QuotePageTab, React.ReactNode> = {
     overview: <QuoteOverviewTab job={job} scope={job.description || ""} onScopeChange={() => {}} />,
+    messages: <MessagesTab recordType="quote" recordId={job.id} showPipelineLink pipelinePath="/" />,
     "line-items": (
       <div className="space-y-4">
         <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} initialDescription={funnelData?.description || undefined} beforeActions={

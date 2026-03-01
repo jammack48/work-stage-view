@@ -47,19 +47,17 @@ function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse
       <div className="truncate opacity-75">{displayId} · {job.jobName}</div>
       {job.hasUnread && (
         <button
-          onPointerDown={(e) => { e.stopPropagation(); }}
+          onPointerDown={(e) => { e.stopPropagation(); e.preventDefault(); }}
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
             const isQ = ["Lead","To Quote","Quote Sent"].includes(job.stage);
-            navigate(isQ ? `/quote/${job.id}?tab=messages` : `/job/${job.id}?tab=messages`);
+            navigate(isQ ? `/quote/${job.id}?tab=messages&focus=inbound` : `/job/${job.id}?tab=messages&focus=inbound`);
           }}
-          className="mt-1 flex items-center gap-1 animate-wiggle z-10 relative"
+          className="mt-1 inline-flex items-center gap-1.5 animate-wiggle z-10 relative rounded-full px-2 py-1 bg-primary/20 border border-primary/40 hover:bg-primary/30 transition-colors"
         >
-          <span className="bg-blue-500/25 rounded-full p-1 flex items-center justify-center">
-            <Mail className="w-5 h-5 text-blue-400 drop-shadow-[0_0_6px_rgba(96,165,250,0.7)]" />
-          </span>
-          <span className="text-[10px] text-blue-400 font-semibold">Reply waiting</span>
+          <Mail className="w-4 h-4 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
+          <span className="text-[10px] text-primary font-semibold">Reply waiting</span>
         </button>
       )}
     </div>

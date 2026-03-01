@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { dummyMessages, type Message } from "@/data/dummyMessages";
 import { dummyTemplates } from "@/data/dummyTemplates";
 import { dummySequences } from "@/data/dummySequences";
@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Mail, MessageSquare, Send, Zap, ArrowLeft, Reply, Clock } from "lucide-react";
+import { Mail, MessageSquare, Send, Zap, ArrowLeft, Reply, Clock, ExternalLink } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
   "Sequence Sent": "bg-muted text-muted-foreground",
@@ -93,16 +93,39 @@ function InboxItem({ msg, onClick, isActive }: { msg: Message; onClick: () => vo
 }
 
 /* ─── Message Detail View ─── */
-function MessageDetail({ msg, onBack, onReply }: { msg: Message; onBack: () => void; onReply: () => void }) {
+function MessageDetail({
+  msg,
+  onBack,
+  onReply,
+  showPipelineLink,
+  pipelinePath,
+}: {
+  msg: Message;
+  onBack: () => void;
+  onReply: () => void;
+  showPipelineLink?: boolean;
+  pipelinePath?: string;
+}) {
+  const navigate = useNavigate();
   const isSms = msg.channel === "sms";
   const isInbound = msg.direction === "inbound";
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2">
         <Button size="sm" variant="ghost" onClick={onBack} className="h-8 gap-1 px-2">
           <ArrowLeft className="w-4 h-4" /> Back
         </Button>
+        {showPipelineLink && pipelinePath && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 rounded-full gap-1.5 border-primary/40 bg-primary/10 text-primary hover:bg-primary/20"
+            onClick={() => navigate(pipelinePath)}
+          >
+            <ExternalLink className="w-3.5 h-3.5" /> Pipeline
+          </Button>
+        )}
       </div>
 
       <div className="rounded-lg border border-border bg-card p-4 space-y-3">
@@ -284,12 +307,68 @@ function ComposePanel({ defaultChannel, onClose }: { defaultChannel?: "email" | 
 /* ─── Main MessagesTab ─── */
 type View = "inbox" | "detail" | "compose";
 
-export function MessagesTab() {
+interface MessagesTabProps {
+  recordType?: "job" | "quote" | "customer";
+  recordId?: string;
+  customerId?: number;
+  showPipelineLink?: boolean;
+  pipelinePath?: string;
+}
+
+export function MessagesTab({
+  recordType,
+  recordId,
+  customerId,
+  showPipelineLink,
+  pipelinePath,
+}: MessagesTabProps) {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [view, setView] = useState<View>("inbox");
   const [selectedMsg, setSelectedMsg] = useState<Message | null>(null);
   const [replyChannel, setReplyChannel] = useState<"email" | "sms">("email");
 
-  const sorted = [...dummyMessages].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  const scopedMessages = useMemo(() => {
+    if (recordType === "customer" && customerId != null) {
+      const customerScoped = dummyMessages.filter((msg) => msg.customerId === customerId);
+      if (customerScoped.length > 0) return customerScoped;
+      return dummyMessages.filter((_, idx) => idx % 2 === customerId % 2);
+    }
+
+    if ((recordType === "job" || recordType === "quote") && recordId) {
+      const jobScoped = dummyMessages.filter((msg) => msg.jobId === recordId);
+      if (jobScoped.length > 0) return jobScoped;
+      const seed = recordId.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      return dummyMessages.filter((_, idx) => idx % 3 === seed % 3);
+    }
+
+    return dummyMessages;
+  }, [recordType, recordId, customerId]);
+
+  const sorted = useMemo(
+    () => [...scopedMessages].sort((a, b) => b.timestamp.localeCompare(a.timestamp)),
+    [scopedMessages]
+  );
+
+  useEffect(() => {
+    if (sorted.length === 0) {
+      setSelectedMsg(null);
+      setView("inbox");
+      return;
+    }
+
+    const messageId = searchParams.get("messageId");
+    const focus = searchParams.get("focus");
+
+    const byId = messageId ? sorted.find((m) => m.id === messageId) : null;
+    const inbound = focus === "inbound" ? sorted.find((m) => m.direction === "inbound") : null;
+    const target = byId || inbound;
+
+    if (target) {
+      setSelectedMsg(target);
+      setView("detail");
+    }
+  }, [searchParams, sorted]);
 
   const handleOpenMessage = (msg: Message) => {
     setSelectedMsg(msg);
@@ -322,6 +401,8 @@ export function MessagesTab() {
         msg={selectedMsg}
         onBack={() => { setSelectedMsg(null); setView("inbox"); }}
         onReply={handleReply}
+        showPipelineLink={showPipelineLink}
+        pipelinePath={pipelinePath}
       />
     );
   }
@@ -329,24 +410,42 @@ export function MessagesTab() {
   // Inbox view
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-1 gap-2">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Inbox ({sorted.length})
         </span>
-        <Button size="sm" className="gap-1.5 h-8" onClick={() => { setSelectedMsg(null); setView("compose"); }}>
-          <Send className="w-3.5 h-3.5" /> New Message
-        </Button>
+        <div className="flex items-center gap-2">
+          {showPipelineLink && pipelinePath && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 rounded-full gap-1.5 border-primary/40 bg-primary/10 text-primary hover:bg-primary/20"
+              onClick={() => navigate(pipelinePath)}
+            >
+              <ExternalLink className="w-3.5 h-3.5" /> Pipeline
+            </Button>
+          )}
+          <Button size="sm" className="gap-1.5 h-8 rounded-full bg-primary/20 border border-primary/40 text-primary hover:bg-primary/30" onClick={() => { setSelectedMsg(null); setView("compose"); }}>
+            <Send className="w-3.5 h-3.5" /> New Message
+          </Button>
+        </div>
       </div>
-      <div className="space-y-2">
-        {sorted.map((msg) => (
-          <InboxItem
-            key={msg.id}
-            msg={msg}
-            isActive={selectedMsg?.id === msg.id}
-            onClick={() => handleOpenMessage(msg)}
-          />
-        ))}
-      </div>
+      {sorted.length === 0 ? (
+        <div className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
+          No messages are linked to this record yet.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {sorted.map((msg) => (
+            <InboxItem
+              key={msg.id}
+              msg={msg}
+              isActive={selectedMsg?.id === msg.id}
+              onClick={() => handleOpenMessage(msg)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
