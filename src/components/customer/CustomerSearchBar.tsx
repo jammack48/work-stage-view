@@ -4,10 +4,15 @@ import { Input } from "@/components/ui/input";
 
 interface CustomerSearchBarProps {
   onSearch: (query: string) => void;
+  externalValue?: string;
 }
 
-export function CustomerSearchBar({ onSearch }: CustomerSearchBarProps) {
-  const [value, setValue] = useState("");
+export function CustomerSearchBar({ onSearch, externalValue }: CustomerSearchBarProps) {
+  const [value, setValue] = useState(externalValue ?? "");
+
+  useEffect(() => {
+    if (externalValue !== undefined) setValue(externalValue);
+  }, [externalValue]);
 
   useEffect(() => {
     const t = setTimeout(() => onSearch(value), 200);
