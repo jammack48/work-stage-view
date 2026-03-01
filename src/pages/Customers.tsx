@@ -14,6 +14,8 @@ import { CustomerSearchBar } from "@/components/customer/CustomerSearchBar";
 import { CustomerFilters, type SortOption } from "@/components/customer/CustomerFilters";
 import { BulkActionBar } from "@/components/customer/BulkActionBar";
 import { BulkMessageDialog, ScheduleReminderDialog } from "@/components/customer/BulkMessageDialog";
+import { QuickKeywords } from "@/components/customer/QuickKeywords";
+import { FilterPresets, type FilterPreset } from "@/components/customer/FilterPresets";
 
 type CustomerTab = "all" | "leads" | "active" | "archived";
 
@@ -35,6 +37,7 @@ export default function Customers() {
   const isMobile = useIsMobile();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("name");
   const [minSpend, setMinSpend] = useState(0);
   const [minJobs, setMinJobs] = useState(0);
@@ -91,7 +94,22 @@ export default function Customers() {
       >
         {/* Search */}
         <div className="mb-3">
-          <CustomerSearchBar onSearch={handleSearch} />
+          <CustomerSearchBar onSearch={handleSearch} externalValue={searchInput} />
+        </div>
+
+        {/* Quick keyword chips */}
+        <div className="mb-3">
+          <QuickKeywords onKeyword={(kw) => { setSearchInput(kw); setSearchQuery(kw); }} />
+        </div>
+
+        {/* Filter presets */}
+        <div className="mb-3">
+          <FilterPresets onApply={(preset: FilterPreset) => {
+            setSortBy(preset.sortBy);
+            setMinSpend(preset.minSpend);
+            setMinJobs(preset.minJobs);
+            if (preset.tab) setActiveTab(preset.tab);
+          }} />
         </div>
 
         {/* Filters + Select toggle */}
