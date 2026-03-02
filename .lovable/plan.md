@@ -1,39 +1,52 @@
 
 
-## Make the Close-Out Flow Interactive and Editable
+## Plan: Three-Pathway Mode Picker
 
-The current flow is read-only — managers can't edit costs, check materials, match supplier docs, or adjust line items. Here's the plan to make each step properly interactive.
+### Current State
+Two modes: "manage" (full system) and "work" (employee-only, no pricing). The `AppMode` type is `"manage" | "work" | null`.
 
-### Step 1: Review Job Sheet — Make it actionable
-- Add expandable sections for **Materials Used** (list each material with qty, supplier, unit price) and **Photos** (thumbnail grid)
-- Add a checklist-style verification: tick off "Time entries verified", "Photos complete", "Notes reviewed" — all must be ticked to proceed
-- Add an **"Open Job Card"** link button so the manager can jump out and check details if needed
+### What Changes
 
-### Step 2: Reconcile Costs — Fully editable
-- Show each **material line item** individually (not just a "Materials" total) with editable actual cost inputs
-- Add a **Supplier Doc Match** column — each material row gets a checkbox/icon: "Receipt matched" (green tick) or "Unmatched" (orange warning)
-- Labour rows become editable: show each staff member's hours with inline editable actual-hours and rate fields
-- Extras rows editable with inline inputs
-- Add an **"Add Cost"** button to add unquoted extras (e.g., unexpected parts)
-- Running totals auto-update as values change
-- Margin recalculates live
+**Add a third mode: "sole-trader"** — gets the Work app experience (schedule, job execution) but with pricing visible and the ability to close out/invoice jobs directly from the field. This is the solo operator who does the work AND runs the business.
 
-### Step 3: Generate Invoice — Editable line items
-- Each line item (labour, materials, extras) shown as an editable row — can adjust description, qty, unit price
-- Add/remove line items
-- Toggle line item visibility (include/exclude from invoice)
-- Subtotal, GST, Total update live
+#### 1. `src/contexts/AppModeContext.tsx`
+- Expand `AppMode` type to `"manage" | "work" | "sole-trader" | null`
+- Add `isSoleTrader` boolean to context
+- Update `setMode` to accept the new value
+- Update localStorage read to recognize `"sole-trader"`
 
-### Step 4: Send — No changes needed (already good)
+#### 2. `src/components/ModePicker.tsx`
+- Three cards in a responsive grid (1 col mobile, 3 col desktop)
+- **Full Job System** (Shield icon) — "Manager / Office. Pipeline, quotes, invoices, pricing, reports, and team management."
+- **Sole Trader** (new icon, e.g. `UserCog` or `HardHat`) — "Do the work AND run the business. Full schedule with pricing, close out jobs, and invoice on the spot."
+- **Employee** (Wrench icon) — "On the tools. Today's schedule, job details, time tracking, photos, and notes — no pricing."
+- Update tip text to reflect all three pathways
 
-### Step 5: Done — No changes needed
+#### 3. `src/App.tsx`
+- `isSoleTrader` mode uses Work routes (schedule-first) but adds the Close Out flow capability
+- Sole trader gets the `WorkBottomNav` and `WorkHome` as their entry point
+- Add `/job/:id` route that renders `WorkJobCard` but with close-out access (pass a prop or check mode inside the component)
 
-### Files to change
+#### 4. `src/components/AppHeader.tsx`
+- Update the mode switch button to cycle or show current mode name for sole-trader
+- Header title: "Toolbelt — Solo" for sole trader mode
 
-1. **`src/components/job/JobCloseOutFlow.tsx`** — Major rewrite of steps 1-3:
-   - Step 1: Add material list, photo thumbnails, verification checklist
-   - Step 2: Replace summary rows with per-item editable rows, supplier match toggles, add-cost button
-   - Step 3: Editable invoice line items with add/remove/toggle
+#### 5. `src/components/job/WorkJobCard.tsx` (or similar)
+- When mode is `"sole-trader"`, show pricing on tabs and add the "Close Out Job" button (reusing `JobCloseOutFlow`)
+- Employee mode stays stripped of pricing as-is
 
-2. **`src/data/dummyJobDetails.ts`** — Add `supplierDoc` field to `MaterialItem` interface (e.g., `{ matched: boolean, ref?: string }`) to support reconciliation matching
+#### 6. Files that check `isWorkMode`
+- Update checks: `isWorkMode` should return true for both "work" and "sole-trader" (they share the Work UI shell)
+- Add `isSoleTrader` for conditional features (pricing visibility, close-out access)
+- Key files: `AppHeader.tsx`, `App.tsx`, `PageToolbar.tsx`, and any component hiding pricing
+
+### Summary of the three pathways
+
+| Feature | Manager | Sole Trader | Employee |
+|---|---|---|---|
+| UI Shell | Full pipeline | Work app | Work app |
+| Pricing visible | Yes | Yes | No |
+| Close out / Invoice | Yes (from job card) | Yes (from work app) | No |
+| Pipeline / CRM | Yes | No | No |
+| Schedule-first | No | Yes | Yes |
 
