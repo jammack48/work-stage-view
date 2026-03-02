@@ -10,6 +10,7 @@ import { PhotosTab } from "@/components/job/PhotosTab";
 import { FormsTab } from "@/components/job/FormsTab";
 import { JobCompletionFlow } from "@/components/job/JobCompletionFlow";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
+import { SoleTraderCloseOutFlow } from "@/components/job/SoleTraderCloseOutFlow";
 import { cn } from "@/lib/utils";
 import { WORK_JOB_EXTRAS } from "@/config/toolbarTabs";
 import { Plus, CheckCircle2, Receipt } from "lucide-react";
@@ -74,6 +75,7 @@ export default function WorkJobCard() {
   const [activeTab, setActiveTab] = useState<WorkJobTab>("overview");
   const [completionOpen, setCompletionOpen] = useState(false);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
+  const [unifiedFlowOpen, setUnifiedFlowOpen] = useState(false);
 
   const job = getJobDetail(id || "", locState || undefined);
   const displayId = job ? job.id.replace(/^[A-Z]+-/, `${prefix}-`) : "";
@@ -118,21 +120,21 @@ export default function WorkJobCard() {
       >
         {/* Action buttons */}
         <div className="flex gap-2 mb-3">
-          <Button
-            size="lg"
-            className="flex-1 gap-2 h-12 text-base font-bold"
-            onClick={() => setCompletionOpen(true)}
-          >
-            <CheckCircle2 className="w-5 h-5" /> Finished Job
-          </Button>
-          {isSoleTrader && (
+          {isSoleTrader ? (
             <Button
               size="lg"
-              variant="secondary"
-              className="gap-2 h-12 text-base font-bold"
-              onClick={() => setCloseOutOpen(true)}
+              className="flex-1 gap-2 h-12 text-base font-bold"
+              onClick={() => setUnifiedFlowOpen(true)}
             >
-              <Receipt className="w-5 h-5" /> Close Out
+              <Receipt className="w-5 h-5" /> Finish & Invoice
+            </Button>
+          ) : (
+            <Button
+              size="lg"
+              className="flex-1 gap-2 h-12 text-base font-bold"
+              onClick={() => setCompletionOpen(true)}
+            >
+              <CheckCircle2 className="w-5 h-5" /> Finished Job
             </Button>
           )}
         </div>
@@ -146,9 +148,9 @@ export default function WorkJobCard() {
       />
 
       {isSoleTrader && (
-        <JobCloseOutFlow
-          open={closeOutOpen}
-          onOpenChange={setCloseOutOpen}
+        <SoleTraderCloseOutFlow
+          open={unifiedFlowOpen}
+          onOpenChange={setUnifiedFlowOpen}
           job={job}
         />
       )}

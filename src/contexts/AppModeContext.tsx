@@ -2,17 +2,27 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 
 type AppMode = "manage" | "work" | "sole-trader" | null;
 
+export interface SoleTraderPrefs {
+  vanStock: boolean;
+  reconcileDocs: boolean;
+}
+
+const DEFAULT_PREFS: SoleTraderPrefs = { vanStock: false, reconcileDocs: false };
+
 interface AppModeContextType {
   mode: AppMode;
   setMode: (mode: "manage" | "work" | "sole-trader") => void;
   isWorkMode: boolean;
   isSoleTrader: boolean;
   clearMode: () => void;
+  soleTraderPrefs: SoleTraderPrefs;
+  setSoleTraderPrefs: (prefs: SoleTraderPrefs) => void;
 }
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
 const STORAGE_KEY = "tradie-app-mode";
+const PREFS_KEY = "tradie-sole-trader-prefs";
 
 export function AppModeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<AppMode>(() => {
@@ -20,9 +30,22 @@ export function AppModeProvider({ children }: { children: ReactNode }) {
     return stored === "manage" || stored === "work" || stored === "sole-trader" ? stored : null;
   });
 
+  const [soleTraderPrefs, setSoleTraderPrefsState] = useState<SoleTraderPrefs>(() => {
+    try {
+      const stored = localStorage.getItem(PREFS_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return DEFAULT_PREFS;
+  });
+
   const setMode = (m: "manage" | "work" | "sole-trader") => {
     setModeState(m);
     localStorage.setItem(STORAGE_KEY, m);
+  };
+
+  const setSoleTraderPrefs = (prefs: SoleTraderPrefs) => {
+    setSoleTraderPrefsState(prefs);
+    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
   };
 
   const clearMode = () => {
@@ -37,6 +60,8 @@ export function AppModeProvider({ children }: { children: ReactNode }) {
       isWorkMode: mode === "work" || mode === "sole-trader",
       isSoleTrader: mode === "sole-trader",
       clearMode,
+      soleTraderPrefs,
+      setSoleTraderPrefs,
     }}>
       {children}
     </AppModeContext.Provider>
