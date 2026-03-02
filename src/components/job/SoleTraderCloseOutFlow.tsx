@@ -202,7 +202,13 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job }: Props) {
 
   function handleOpenSchedule() {
     onOpenChange(false);
-    navigate(`/schedule?returnJob=${job.id}`);
+    const params = new URLSearchParams({
+      returnJob: job.id,
+      returnJobName: job.jobName,
+      returnClient: job.client,
+      returnAddress: job.address,
+    });
+    navigate(`/schedule?${params.toString()}`);
   }
 
   function handleBookLater() {

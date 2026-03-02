@@ -19,7 +19,20 @@ const SchedulePage = () => {
   const [searchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const returnJobId = searchParams.get("returnJob");
-  const returnJob = returnJobId ? getJobDetail(returnJobId) : null;
+
+  // Build return booking context from query params first, fallback to getJobDetail
+  const returnBookingJob = useMemo(() => {
+    if (!returnJobId) return null;
+    const qpName = searchParams.get("returnJobName");
+    const qpClient = searchParams.get("returnClient");
+    const qpAddress = searchParams.get("returnAddress");
+    if (qpName) {
+      return { jobName: qpName, client: qpClient || "Customer", address: qpAddress || "" };
+    }
+    const detail = getJobDetail(returnJobId);
+    if (detail) return { jobName: detail.jobName, client: detail.client, address: detail.address };
+    return { jobName: returnJobId, client: "Customer", address: "" };
+  }, [returnJobId, searchParams]);
 
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [selectedStaff, setSelectedStaff] = useState<string[]>([]);
@@ -35,21 +48,21 @@ const SchedulePage = () => {
 
   const allJobs = useMemo(() => {
     const base = [...DEMO_JOBS];
-    if (bookedSlot && returnJob) {
+    if (bookedSlot && returnBookingJob) {
       base.push({
         id: `${returnJobId}-return`,
-        jobName: `↩ ${returnJob.jobName}`,
-        client: returnJob.client,
+        jobName: `↩ ${returnBookingJob.jobName}`,
+        client: returnBookingJob.client,
         assignedTo: "Dave",
         dayOffset: bookedSlot.dayOffset,
         startHour: bookedSlot.startHour,
         durationHours: 2,
-        address: returnJob.address,
+        address: returnBookingJob.address,
         status: "Scheduled",
       });
     }
     return base;
-  }, [bookedSlot, returnJob, returnJobId]);
+  }, [bookedSlot, returnBookingJob, returnJobId]);
 
   const filteredJobs = useMemo(() => {
     if (selectedStaff.length === 0) return allJobs;
@@ -64,11 +77,11 @@ const SchedulePage = () => {
   }, [returnJobId]);
 
   const handleConfirmBooking = () => {
-    if (!bookedSlot || !returnJob) return;
+    if (!bookedSlot || !returnBookingJob) return;
     const dayDate = addDays(weekStart, bookedSlot.dayOffset);
     toast({
       title: "Return Visit Booked ✅",
-      description: `${returnJob.jobName} — ${format(dayDate, "EEE d MMM")} at ${formatTime(bookedSlot.startHour)}`,
+      description: `${returnBookingJob.jobName} — ${format(dayDate, "EEE d MMM")} at ${formatTime(bookedSlot.startHour)}`,
       duration: 4000,
     });
     navigate(-1);
@@ -92,8 +105,8 @@ const SchedulePage = () => {
       pageHeading={
         <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="text-card-foreground font-bold text-base">
-            {returnJob
-              ? `Book Return · ${returnJob.jobName}`
+            {returnBookingJob
+              ? `Book Return · ${returnBookingJob.jobName}`
               : `Schedule · ${format(weekStart, "d MMM")} – ${format(weekEnd, "d MMM")}`
             }
           </span>
@@ -106,7 +119,7 @@ const SchedulePage = () => {
           <CalendarDays className="w-5 h-5 text-primary shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-card-foreground">
-              Booking return visit for {returnJob?.jobName || returnJobId}
+              Booking return visit for {returnBookingJob?.jobName || returnJobId}
             </p>
             <p className="text-xs text-muted-foreground">
               {bookedSlot
