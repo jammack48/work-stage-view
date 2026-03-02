@@ -6,7 +6,7 @@ import {
   DollarSign, Receipt, Send, CheckCircle2, Plus, Trash2, Eye, EyeOff,
   AlertTriangle, Mail, MessageSquare, CalendarDays, FileCheck,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -232,6 +232,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job }: Props) {
             <StepIcon className="w-5 h-5 text-primary" />
             {currentStep?.label}
           </DialogTitle>
+          <DialogDescription className="sr-only">Close out flow for {job.jobName}</DialogDescription>
         </DialogHeader>
 
         {/* Progress dots */}
