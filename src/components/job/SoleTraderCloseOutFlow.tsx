@@ -15,7 +15,10 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { format, parse } from "date-fns";
 import type { JobDetail, MaterialItem } from "@/data/dummyJobDetails";
 import { toast } from "@/hooks/use-toast";
 import { useAppMode } from "@/contexts/AppModeContext";
@@ -81,7 +84,8 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job }: Props) {
   const [jobFinished, setJobFinished] = useState(true);
   const [invoiceNow, setInvoiceNow] = useState(true);
   const [returnNote, setReturnNote] = useState("");
-  const [returnDate, setReturnDate] = useState("");
+  const [returnDate, setReturnDate] = useState<Date | undefined>(undefined);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Job notes state
   const [jobSheet, setJobSheet] = useState(job.description || `Completed ${job.jobName} at ${job.address}.`);
@@ -202,7 +206,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job }: Props) {
   }
 
   function handleEarlyClose() {
-    toast({ title: "Return Visit Scheduled ✅", description: `${job.jobName} — coming back ${returnDate || "soon"}. Notes saved.`, duration: 4000 });
+    toast({ title: "Return Visit Scheduled ✅", description: `${job.jobName} — coming back ${returnDate ? format(returnDate, "dd MMM yyyy") : "soon"}. Notes saved.`, duration: 4000 });
     onOpenChange(false);
   }
 
@@ -260,7 +264,24 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job }: Props) {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">When are you coming back?</Label>
-                    <Input type="date" className="bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} />
+                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className={cn("w-full justify-start text-left font-normal bg-card border-2 border-border", !returnDate && "text-muted-foreground")}>
+                          <CalendarDays className="mr-2 h-4 w-4" />
+                          {returnDate ? format(returnDate, "dd/MM/yyyy") : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 z-[9999]" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={returnDate}
+                          onSelect={(date) => { setReturnDate(date); setCalendarOpen(false); }}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   {!invoiceNow && (
                     <Button className="w-full h-10 gap-2 mt-2" onClick={handleEarlyClose}>
