@@ -1,10 +1,65 @@
-import { Shield, Wrench, HardHat } from "lucide-react";
+import { useState } from "react";
+import { Shield, Wrench, HardHat, ArrowRight } from "lucide-react";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useTutorial } from "@/contexts/TutorialContext";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export function ModePicker() {
-  const { setMode } = useAppMode();
+  const { setMode, setSoleTraderPrefs } = useAppMode();
   const { setTutorialOn } = useTutorial();
+  const [showSetup, setShowSetup] = useState(false);
+  const [vanStock, setVanStock] = useState(false);
+  const [reconcileDocs, setReconcileDocs] = useState(false);
+
+  const handleSoleTraderConfirm = () => {
+    setSoleTraderPrefs({ vanStock, reconcileDocs });
+    setMode("sole-trader");
+  };
+
+  if (showSetup) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <div className="w-14 h-14 rounded-xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
+              <HardHat className="w-7 h-7 text-primary" />
+            </div>
+            <h1 className="text-xl font-bold text-foreground mb-1">Sole Trader Setup</h1>
+            <p className="text-sm text-muted-foreground">Customise your workflow — you can change these later in Settings.</p>
+          </div>
+
+          <div className="space-y-4 rounded-xl border-2 border-border bg-card p-5">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <Label className="text-sm font-semibold text-card-foreground">Do you carry van stock?</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">Track parts used from your van and generate restock POs.</p>
+              </div>
+              <Switch checked={vanStock} onCheckedChange={setVanStock} />
+            </div>
+            <div className="border-t border-border" />
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <Label className="text-sm font-semibold text-card-foreground">Do you reconcile supplier documents?</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">Match supplier invoices/receipts against job costs.</p>
+              </div>
+              <Switch checked={reconcileDocs} onCheckedChange={setReconcileDocs} />
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={() => setShowSetup(false)}>
+              Back
+            </Button>
+            <Button className="flex-1 gap-2" onClick={handleSoleTraderConfirm}>
+              Let's Go <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
@@ -39,7 +94,7 @@ export function ModePicker() {
 
         {/* Sole Trader */}
         <button
-          onClick={() => setMode("sole-trader")}
+          onClick={() => setShowSetup(true)}
           className="group rounded-xl border-2 border-border bg-card p-6 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
         >
           <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center mb-4 group-hover:bg-primary/25 transition-colors">
