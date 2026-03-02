@@ -42,7 +42,6 @@ function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse
     )}>
       <div className="font-semibold truncate flex items-center gap-1">
         {job.client}
-        {job.hasUnread && notifStyle === "icon" && <UnreadDot />}
       </div>
       <div className="truncate opacity-75">{displayId} · {job.jobName}</div>
       {job.hasUnread && (
