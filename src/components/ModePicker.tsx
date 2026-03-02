@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { Shield, Wrench, HardHat, ArrowRight } from "lucide-react";
+import { Shield, Wrench, HardHat, ArrowRight, Building2 } from "lucide-react";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useTutorial } from "@/contexts/TutorialContext";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
+type SubStep = null | "office-choice" | "sole-trader-setup";
+
 export function ModePicker() {
   const { setMode, setSoleTraderPrefs } = useAppMode();
   const { setTutorialOn } = useTutorial();
-  const [showSetup, setShowSetup] = useState(false);
+  const [subStep, setSubStep] = useState<SubStep>(null);
   const [vanStock, setVanStock] = useState(false);
   const [reconcileDocs, setReconcileDocs] = useState(false);
 
@@ -18,7 +20,8 @@ export function ModePicker() {
     setMode("sole-trader");
   };
 
-  if (showSetup) {
+  // Sub-step: Sole Trader setup toggles
+  if (subStep === "sole-trader-setup") {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-md space-y-6">
@@ -26,7 +29,7 @@ export function ModePicker() {
             <div className="w-14 h-14 rounded-xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
               <HardHat className="w-7 h-7 text-primary" />
             </div>
-            <h1 className="text-xl font-bold text-foreground mb-1">Sole Trader Setup</h1>
+            <h1 className="text-xl font-bold text-foreground mb-1">On the Tools Setup</h1>
             <p className="text-sm text-muted-foreground">Customise your workflow — you can change these later in Settings.</p>
           </div>
 
@@ -49,7 +52,7 @@ export function ModePicker() {
           </div>
 
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1" onClick={() => setShowSetup(false)}>
+            <Button variant="outline" className="flex-1" onClick={() => setSubStep("office-choice")}>
               Back
             </Button>
             <Button className="flex-1 gap-2" onClick={handleSoleTraderConfirm}>
@@ -61,6 +64,60 @@ export function ModePicker() {
     );
   }
 
+  // Sub-step: Office or On the Tools choice
+  if (subStep === "office-choice") {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <div className="w-14 h-14 rounded-xl bg-blue-500/15 flex items-center justify-center mx-auto mb-4">
+              <Shield className="w-7 h-7 text-blue-500" />
+            </div>
+            <h1 className="text-xl font-bold text-foreground mb-1">How do you work?</h1>
+            <p className="text-sm text-muted-foreground">Both get the full pipeline — pick what fits you best.</p>
+          </div>
+
+          <div className="grid gap-3">
+            <button
+              onClick={() => setMode("manage")}
+              className="group rounded-xl border-2 border-border bg-card p-5 text-left transition-all hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0 group-hover:bg-blue-500/25 transition-colors">
+                  <Building2 className="w-6 h-6 text-blue-500" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-card-foreground">Run the Office</h2>
+                  <p className="text-sm text-muted-foreground">Manage your team, pipeline, quotes, invoices and reports from the desk.</p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setSubStep("sole-trader-setup")}
+              className="group rounded-xl border-2 border-border bg-card p-5 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">
+                  <HardHat className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-card-foreground">On the Tools</h2>
+                  <p className="text-sm text-muted-foreground">Do the work AND run the business — schedule-first with pricing & invoicing.</p>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <Button variant="outline" className="w-full" onClick={() => setSubStep(null)}>
+            Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Main startup — two buttons
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
       <div className="mb-8 text-center">
@@ -71,52 +128,33 @@ export function ModePicker() {
         <p className="text-muted-foreground text-sm">How are you using the app today?</p>
       </div>
 
-      <div className="w-full max-w-2xl mb-5 rounded-lg bg-blue-500/10 border border-blue-500/30 px-4 py-3 text-center">
-        <p className="text-xs text-blue-600 dark:text-blue-400 leading-relaxed">
-          <strong>Tip:</strong> Choose your setup. Managers get the full pipeline. Sole traders get a mobile-first workflow with pricing and invoicing. Employees only see their schedule and job details — no pricing.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
-        {/* Manager */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
+        {/* Office / Manager */}
         <button
-          onClick={() => setMode("manage")}
-          className="group rounded-xl border-2 border-border bg-card p-6 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
+          onClick={() => setSubStep("office-choice")}
+          className="group rounded-xl border-2 border-border bg-card p-6 text-center transition-all hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center mb-4 group-hover:bg-primary/25 transition-colors">
-            <Shield className="w-6 h-6 text-primary" />
+          <div className="w-14 h-14 rounded-xl bg-blue-500/15 flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-500/25 transition-colors relative">
+            <Shield className="w-7 h-7 text-blue-500" />
+            <span className="absolute inset-0 rounded-xl bg-blue-500/20 animate-glow-ping pointer-events-none" />
           </div>
-          <h2 className="text-lg font-bold text-card-foreground mb-1">Manager / Office</h2>
+          <h2 className="text-lg font-bold text-card-foreground mb-1">Office / Manager</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Full access — pipeline, quotes, invoices, pricing, reports, and team management.
-          </p>
-        </button>
-
-        {/* Sole Trader */}
-        <button
-          onClick={() => setShowSetup(true)}
-          className="group rounded-xl border-2 border-border bg-card p-6 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
-        >
-          <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center mb-4 group-hover:bg-primary/25 transition-colors">
-            <HardHat className="w-6 h-6 text-primary" />
-          </div>
-          <h2 className="text-lg font-bold text-card-foreground mb-1">Sole Trader</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Do the work AND run the business. Schedule-first with pricing, close out jobs, and invoice on the spot.
+            Full pipeline — quotes, invoices, team management & reports.
           </p>
         </button>
 
         {/* Employee */}
         <button
           onClick={() => { setTutorialOn(true); setMode("work"); }}
-          className="group rounded-xl border-2 border-border bg-card p-6 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
+          className="group rounded-xl border-2 border-border bg-card p-6 text-center transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
         >
-          <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center mb-4 group-hover:bg-primary/25 transition-colors">
-            <Wrench className="w-6 h-6 text-primary" />
+          <div className="w-14 h-14 rounded-xl bg-primary/15 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/25 transition-colors">
+            <Wrench className="w-7 h-7 text-primary" />
           </div>
           <h2 className="text-lg font-bold text-card-foreground mb-1">Employee</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            On the tools. Today's schedule, job details, time tracking, photos, and notes — no pricing.
+            On the tools — schedule, job details, time tracking & photos.
           </p>
         </button>
       </div>

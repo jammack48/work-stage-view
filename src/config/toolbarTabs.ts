@@ -18,13 +18,13 @@ export const BACK_TAB: ToolbarTab = { id: "back", label: "Back", icon: ArrowLeft
 /** Always-visible tabs on the Home/Pipeline page only */
 export const COMMON_TABS: ToolbarTab[] = [
   { id: "pipeline", label: "Home", icon: Home },
+  { id: "manager", label: "Manager", icon: Shield },
   { id: "customers", label: "Customers", icon: Users },
   { id: "schedule", label: "Schedule", icon: CalendarDays },
 ];
 
 /** Page-specific extras — each already includes BACK_TAB */
 export const PIPELINE_EXTRAS: ToolbarTab[] = [
-  { id: "manager", label: "Manager", icon: Shield },
   { id: "bundles", label: "Bundles", icon: Package },
   { id: "quotes", label: "New Quote", icon: FilePlus },
   { id: "invoices", label: "New Invoice", icon: Receipt },

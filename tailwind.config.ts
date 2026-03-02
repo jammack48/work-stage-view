@@ -101,6 +101,10 @@ export default {
           "0%, 100%": { opacity: "1", transform: "scale(1)" },
           "50%": { opacity: "0.5", transform: "scale(1.8)" },
         },
+        "glow-ping-subtle": {
+          "0%, 100%": { boxShadow: "0 0 8px 2px hsl(215 80% 55% / 0.2)" },
+          "50%": { boxShadow: "0 0 16px 4px hsl(215 80% 55% / 0.35)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -110,6 +114,7 @@ export default {
         "card-pulse": "card-pulse 1.5s ease-in-out infinite",
         "bell-ring": "bell-ring 2s ease-in-out infinite",
         "glow-ping": "glow-ping 1.5s ease-in-out infinite",
+        "glow-ping-subtle": "glow-ping-subtle 2s ease-in-out infinite",
       },
     },
   },

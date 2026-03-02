@@ -39,6 +39,10 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   const tutorialBanner = tutorialOn ? <TutorialBanner overrideKey={tutorialKey} tabKey={activeTab} /> : null;
   const isActive = (id: string) => activeTab === id || currentPage === id;
 
+  const isManager = (id: string) => id === "manager";
+  const managerInactive = "bg-blue-500/15 text-blue-500 shadow-[0_0_12px_2px_hsl(215_80%_55%/0.25)] animate-glow-ping-subtle";
+  const managerActive = "bg-blue-500 text-white shadow-[0_0_16px_4px_hsl(215_80%_55%/0.35)]";
+
   const headingBar = pageHeading ? (
     <div className={cn(
       "px-4 sm:px-6 py-2 border-b border-border bg-background sticky z-30",
@@ -57,7 +61,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
     return (
       <div className={cn("flex flex-row", position === "right" && "flex-row-reverse")}>
         <nav className={cn(
-          "w-[200px] shrink-0 flex flex-col gap-1 py-2 bg-card sticky top-0 h-screen overflow-y-auto",
+          "w-[200px] shrink-0 flex flex-col gap-1 py-2 px-2 bg-card sticky top-0 h-screen overflow-y-auto",
           position === "left" ? "rounded-r-xl border-r border-border" : "rounded-l-xl border-l border-border"
         )}>
           
@@ -69,9 +73,11 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
                 onClick={() => onTabChange(id)}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left min-h-[48px]",
-                isActive(id)
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground/70 hover:bg-accent hover:text-accent-foreground"
+                  isManager(id)
+                    ? (isActive(id) ? managerActive : managerInactive)
+                    : isActive(id)
+                      ? "bg-primary text-primary-foreground"
+                      : "text-foreground/70 hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 <span className="relative">
@@ -116,9 +122,11 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               onClick={() => onTabChange(id)}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors shrink-0",
-                isActive(id)
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                isManager(id)
+                  ? (isActive(id) ? managerActive : managerInactive)
+                  : isActive(id)
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )}
             >
               <span className="relative">
@@ -175,9 +183,11 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               onClick={() => onTabChange(id)}
               className={cn(
                 "flex flex-col items-center justify-center w-14 min-h-[52px] rounded-lg transition-colors shrink-0 gap-0.5 px-0.5",
-                isActive(id)
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground/70 hover:bg-accent"
+                isManager(id)
+                  ? (isActive(id) ? managerActive : managerInactive)
+                  : isActive(id)
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground/70 hover:bg-accent"
               )}
               title={label}
             >
@@ -213,9 +223,11 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
           onClick={() => onTabChange(id)}
           className={cn(
             "flex flex-col items-center justify-center min-w-[48px] min-h-[52px] rounded-lg transition-colors gap-0.5 shrink-0 px-1",
-            isActive(id)
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-accent"
+            isManager(id)
+              ? (isActive(id) ? managerActive : managerInactive)
+              : isActive(id)
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-accent"
           )}
         >
           <span className="relative">
