@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
 
@@ -36,10 +36,20 @@ export default function JobCard() {
   const initialTab = (searchParams.get("tab") as JobTab) || "overview";
   const [activeTab, setActiveTab] = useState<JobTab>(initialTab);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
+  const actionParam = searchParams.get("action");
 
   const job = id === "new"
     ? getNewJobDetail(searchParams.get("stage") || "Lead")
     : getJobDetail(id || "");
+
+  const isToInvoice = job?.stage === "To Invoice";
+
+  // Auto-open close-out flow when navigating from pipeline with ?action=closeout
+  useEffect(() => {
+    if (actionParam === "closeout" && isToInvoice) {
+      setCloseOutOpen(true);
+    }
+  }, [actionParam, isToInvoice]);
 
   if (!job) {
     return (
@@ -63,7 +73,6 @@ export default function JobCard() {
     sequences: <SequencesTab category="invoices" />,
   };
 
-  const isToInvoice = job.stage === "To Invoice";
 
   const jobHeading = (
     <div className="flex items-center gap-2 flex-wrap">
@@ -89,7 +98,14 @@ export default function JobCard() {
         tabs={JOB_EXTRAS}
         activeTab={activeTab}
         onTabChange={(id) => {
-          if (id === "back") { managerState?.fromManager ? navigate("/", { state: managerState }) : navigate("/"); return; }
+          if (id === "back") {
+            if (activeTab !== "overview") {
+              setActiveTab("overview");
+            } else {
+              managerState?.fromManager ? navigate("/", { state: managerState }) : navigate("/");
+            }
+            return;
+          }
           setActiveTab(id as JobTab);
         }}
         pageHeading={jobHeading}

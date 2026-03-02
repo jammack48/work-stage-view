@@ -102,7 +102,8 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
     e.stopPropagation();
     if (!job || isLeadStage) return; // Lead stage handled by LeadActionMenu
     const isQ = ["Lead","To Quote","Quote Sent"].includes(job.stage);
-    navigate(isQ ? `/quote/${job.id}` : `/job/${job.id}`);
+    const isInv = job.stage === "To Invoice";
+    navigate(isQ ? `/quote/${job.id}` : `/job/${job.id}${isInv ? '?action=closeout' : ''}`);
   };
 
   return (
