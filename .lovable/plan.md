@@ -1,34 +1,46 @@
 
 
-## Issues Found and Fix Plan
+## Restructure Sole Trader "Finish & Invoice" Flow
 
-### Issue 1: "To Invoice" jobs in pipeline don't surface the Close Out flow prominently enough
-**Current**: Clicking a "To Invoice" job from the pipeline navigates to `/job/{id}` (JobCard page). The "Close Out Job" button exists but is a small pulsing text button in the heading bar — easy to miss.
-**Fix**: On the JobCard page, when the job stage is "To Invoice", auto-open the `JobCloseOutFlow` dialog on first render so the user lands directly in the close-out process. Add a URL param (`?action=closeout`) so pipeline links can trigger it, and update the ExpandedStagePanel row click for "To Invoice" jobs to navigate with that param. The "Close Out Job" button stays as a manual trigger too.
+### Current problem
+The step order is wrong and missing key logic. Currently: Job Sheet → Time → Parts → Restock PO → Coming Back? → Photos → Compliance → Reconcile → Invoice → Send → Done. The user wants a natural field-to-billing flow with "coming back?" asked first, and materials renamed appropriately.
 
-### Issue 2: Messages tab "Back" exits the entire job card instead of returning to the job card
-**Current**: The PageToolbar "Back" button on JobCard always navigates to `/` (pipeline). If the user is on the messages tab (or any sub-tab), hitting Back leaves the job card entirely.
-**Fix**: Change the JobCard `onTabChange` handler: when `id === "back"` and `activeTab !== "overview"`, set activeTab to `"overview"` instead of navigating away. Only navigate to pipeline when already on the overview tab.
+### New step order
 
-### Issue 3: Audit pipeline stage flows for consistency
-After reviewing all stages:
-- **Lead**: Opens LeadActionMenu (triage) — correct
-- **To Quote / Quote Sent**: Navigates to `/quote/{id}` — correct
-- **In Progress**: Navigates to `/job/{id}` — correct
-- **To Invoice**: Navigates to `/job/{id}` — needs close-out prominence (Issue 1)
-- **Paid**: Navigates to `/job/{id}` — correct
+| # | Step | Label | Notes |
+|---|------|-------|-------|
+| 1 | status | Job Status | "Is job finished?" or "Need to come back?" If coming back: "Invoice now for work so far?" toggle + return visit notes + schedule date. If no invoice now, skip to Done. |
+| 2 | jobsheet | Job Notes | Quick phrases + dictation (existing) |
+| 3 | time | Labour | Actual hours (existing) |
+| 4 | materials | Materials Used | Renamed from "Parts Used". If vanStock pref: show van stock/supplier toggle + restock PO inline. If no vanStock: just a simple parts list with quantities. No "Reconcile" language. |
+| 5 | paperwork | Paperwork | Attach supplier receipts/docs (only if reconcileDocs pref is on, otherwise skip) |
+| 6 | photos | Photos | Before/after capture (existing) |
+| 7 | certificates | Certificates | Compliance certs, CoC number (existing compliance step) |
+| 8 | invoice | Invoice Summary | Editable lines: Labour first, then Materials. Sequence pipeline selector embedded before send button. |
+| 9 | send | Send | Email/SMS choice (existing) |
+| 10 | done | Done | Margin summary (existing) |
 
-No other stage-level issues found.
+### Key logic changes
 
-### Files to change
+1. **Step 1 (Job Status)** is new — a simple toggle "Job finished?" with "Coming back?" branching. If coming back and they choose NOT to invoice partial work, flow ends early with a "Return Visit Scheduled" toast.
 
-1. **`src/pages/JobCard.tsx`**
-   - Read `?action=closeout` from search params; if present and stage is "To Invoice", auto-open `JobCloseOutFlow`
-   - Change Back button logic: if `activeTab !== "overview"`, go to overview first; only navigate away from overview
+2. **Materials step** merges the old "Parts" + "Restock PO" into one step. If vanStock is on, van stock items auto-generate a PO section at the bottom of the same step. If vanStock is off, it's just a simple list of parts/materials used with name + qty.
 
-2. **`src/components/ExpandedStagePanel.tsx`**
-   - For "To Invoice" row clicks, navigate to `/job/{id}?action=closeout` so the close-out flow opens automatically
+3. **Paperwork step** only shows if `reconcileDocs` pref is on. Lets them attach receipts/supplier invoices against materials.
 
-3. **`src/components/StageColumn.tsx`**
-   - For "To Invoice" color card clicks, append `?action=closeout` to the navigation URL
+4. **Invoice step** includes the `SequenceSelector` component for follow-up sequences, placed before the line items total.
+
+5. Remove the separate "Reconcile Costs" step entirely — sole traders don't reconcile quoted vs actual. They just list what they used and invoice for it.
+
+### File changes
+
+**`src/components/job/SoleTraderCloseOutFlow.tsx`** — Full rewrite of the step definitions and rendering:
+- New ALL_STEPS array with the order above
+- New "status" step UI with finished/coming-back toggle
+- Merge parts + PO into single "materials" step
+- New "paperwork" step (conditional on reconcileDocs)
+- Rename "compliance" to "certificates"
+- Embed SequenceSelector in invoice step
+- Remove "reconcile" step
+- Update activeSteps filter logic for new skip conditions
 
