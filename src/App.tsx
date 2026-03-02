@@ -35,6 +35,7 @@ import EmailTemplatesPage from "./pages/EmailTemplatesPage";
 import SmsTemplatesPage from "./pages/SmsTemplatesPage";
 import InvoicePage from "./pages/InvoicePage";
 import NotFound from "./pages/NotFound";
+
 const queryClient = new QueryClient();
 
 function AppLayout() {
