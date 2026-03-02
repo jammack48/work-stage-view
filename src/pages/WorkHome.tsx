@@ -1,11 +1,12 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { startOfWeek, addWeeks, subWeeks, addDays, format, isToday } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DayStrip } from "@/components/schedule/DayStrip";
 import { TimeGridDesktop } from "@/components/schedule/TimeGridDesktop";
 import { TimeGridMobile } from "@/components/schedule/TimeGridMobile";
 import { DEMO_JOBS } from "@/components/schedule/scheduleData";
-import { Package, ChevronUp, ChevronDown, CalendarDays, LayoutList } from "lucide-react";
+import { Package, ChevronUp, ChevronDown, CalendarDays, LayoutList, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +18,7 @@ const CURRENT_STAFF = "Dave";
 type ViewMode = "day" | "week";
 
 export default function WorkHome() {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [viewMode, setViewMode] = useState<ViewMode>("day");
   const [materialsOpen, setMaterialsOpen] = useState(false);
@@ -146,6 +148,14 @@ export default function WorkHome() {
           <TimeGridDesktop weekStart={weekStart} jobs={myJobs} selectedDay={selectedDay} />
         )}
       </div>
+
+      {/* Floating New Job button */}
+      <button
+        onClick={() => navigate("/new-job")}
+        className="fixed bottom-20 right-4 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
     </div>
   );
 }
