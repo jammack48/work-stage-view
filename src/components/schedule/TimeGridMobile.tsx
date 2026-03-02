@@ -1,11 +1,14 @@
 import { useMemo, useRef } from "react";
 import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_MOBILE, formatTime } from "./scheduleData";
 import { ScheduleJobCard } from "./ScheduleJobCard";
+import { cn } from "@/lib/utils";
 
 interface TimeGridMobileProps {
   jobs: ScheduleJob[];
   dayOffset: number;
   onDayChange?: (day: number) => void;
+  onSlotClick?: (dayOffset: number, hour: number) => void;
+  activeSlot?: { dayOffset: number; startHour: number } | null;
 }
 
 function computeOverlapLayout(jobs: ScheduleJob[]) {
@@ -34,7 +37,7 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
   return layout;
 }
 
-export function TimeGridMobile({ jobs, dayOffset, onDayChange }: TimeGridMobileProps) {
+export function TimeGridMobile({ jobs, dayOffset, onDayChange, onSlotClick, activeSlot }: TimeGridMobileProps) {
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const isHorizontalSwipe = useRef(false);
@@ -90,11 +93,15 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange }: TimeGridMobileP
 
       {/* Single day column */}
       <div className="relative border-l border-border">
-        {hours.map((_, i) => (
+        {hours.map((h, i) => (
           <div
             key={i}
-            className="absolute left-0 right-0 border-t border-border/50"
-            style={{ top: i * HOUR_HEIGHT_MOBILE }}
+            className={cn(
+              "absolute left-0 right-0 border-t border-border/50",
+              onSlotClick && "cursor-pointer hover:bg-primary/10 transition-colors"
+            )}
+            style={{ top: i * HOUR_HEIGHT_MOBILE, height: HOUR_HEIGHT_MOBILE }}
+            onClick={() => onSlotClick?.(dayOffset, h)}
           />
         ))}
 
