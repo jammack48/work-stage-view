@@ -40,9 +40,7 @@ function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse
       "mt-1 text-[11px] text-white/80 leading-tight rounded px-1 -mx-1 transition-all",
       job.hasUnread && notifStyle === "pulse" && "animate-card-pulse bg-white/10"
     )}>
-      <div className="font-semibold truncate flex items-center gap-1">
-        {job.client}
-      </div>
+      <div className="font-semibold truncate">{job.client}</div>
       <div className="truncate opacity-75">{displayId} · {job.jobName}</div>
       {job.hasUnread && (
         <button
@@ -53,10 +51,10 @@ function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse
             const isQ = ["Lead","To Quote","Quote Sent"].includes(job.stage);
             navigate(isQ ? `/quote/${job.id}?tab=messages&focus=inbound` : `/job/${job.id}?tab=messages&focus=inbound`);
           }}
-          className="mt-1 inline-flex items-center gap-1.5 animate-wiggle z-10 relative rounded-full px-2 py-1 bg-primary/20 border border-primary/40 hover:bg-primary/30 transition-colors"
+          className="mt-0.5 inline-flex items-center gap-1 animate-wiggle z-10 relative rounded-full px-1.5 py-0.5 bg-primary/25 border border-primary/40 hover:bg-primary/30 transition-colors"
         >
-          <Mail className="w-4 h-4 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
-          <span className="text-[10px] text-primary font-semibold">Reply waiting</span>
+          <Mail className="w-3 h-3 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
+          <span className="text-[9px] text-primary font-semibold">Message</span>
         </button>
       )}
     </div>
@@ -171,7 +169,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
         {(() => {
           const card = (
             <div
-              className="rounded-md bg-[hsl(var(--status-green))] px-3 py-2 min-h-[72px] sm:h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+              className="rounded-md bg-[hsl(var(--status-green))] px-3 py-2 min-h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
               onClick={(e) => { handleColorClick(e, firstGreen); }}
             >
               <div className="flex items-center justify-between">
@@ -192,7 +190,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
         {(() => {
           const card = (
             <div
-              className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-2 min-h-[72px] sm:h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+              className="rounded-md bg-[hsl(var(--status-orange))] px-3 py-2 min-h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
               onClick={(e) => { handleColorClick(e, firstOrange); }}
             >
               <div className="flex items-center justify-between">
@@ -213,7 +211,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
         {(() => {
           const card = (
             <div
-              className="rounded-md bg-[hsl(var(--status-red))] px-3 py-2 min-h-[72px] sm:h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
+              className="rounded-md bg-[hsl(var(--status-red))] px-3 py-2 min-h-[72px] shadow-sm border border-white/10 hover:shadow-md transition-shadow cursor-pointer"
               onClick={(e) => { handleColorClick(e, firstRed); }}
             >
               <div className="flex items-center justify-between">
