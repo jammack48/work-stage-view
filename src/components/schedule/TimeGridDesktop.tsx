@@ -123,14 +123,14 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
                       width: `${widthPct}%`,
                     }}
                   >
-                    <ScheduleJobCard job={job} compact={totalCols > 2} style={{ height: "100%" }} />
+                    <ScheduleJobCard job={job} compact={totalCols > 2} style={{ height: "100%", pointerEvents: onSlotClick ? "none" : undefined }} />
                   </div>
                 );
               })}
 
               {/* Booking overlay — sits above job cards so clicks always register */}
               {onSlotClick && (
-                <div className="absolute inset-0 z-30">
+                <div className="absolute inset-0 z-50">
                   {hours.map((h, i) => {
                     const isActive = activeSlot?.dayOffset === di && activeSlot?.startHour === h;
                     return (

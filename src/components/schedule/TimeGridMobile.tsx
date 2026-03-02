@@ -38,17 +38,20 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
 }
 
 export function TimeGridMobile({ jobs, dayOffset, onDayChange, onSlotClick, activeSlot }: TimeGridMobileProps) {
+  const isBookingMode = !!onSlotClick;
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const isHorizontalSwipe = useRef(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (isBookingMode) return; // disable swipe in booking mode
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     isHorizontalSwipe.current = false;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    if (isBookingMode) return;
     if (touchStartX.current === null || touchStartY.current === null) return;
     const dx = Math.abs(e.touches[0].clientX - touchStartX.current);
     const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
@@ -59,6 +62,7 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onSlotClick, acti
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    if (isBookingMode) return;
     if (touchStartX.current === null || !onDayChange) {
       touchStartX.current = null;
       return;
@@ -102,7 +106,7 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onSlotClick, acti
           />
         ))}
 
-        {/* Job cards */}
+        {/* Job cards — pointer-events disabled in booking mode */}
         {layout.map(({ job, col, totalCols }) => {
           const top = (job.startHour - WORK_START) * HOUR_HEIGHT_MOBILE;
           const height = job.durationHours * HOUR_HEIGHT_MOBILE;
@@ -120,14 +124,14 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onSlotClick, acti
                 width: `${widthPct}%`,
               }}
             >
-              <ScheduleJobCard job={job} style={{ height: "100%" }} />
+              <ScheduleJobCard job={job} style={{ height: "100%", pointerEvents: isBookingMode ? "none" : undefined }} />
             </div>
           );
         })}
 
         {/* Booking overlay — above job cards */}
         {onSlotClick && (
-          <div className="absolute inset-0 z-30">
+          <div className="absolute inset-0 z-50">
             {hours.map((h, i) => {
               const isActive = activeSlot?.dayOffset === dayOffset && activeSlot?.startHour === h;
               return (
@@ -138,7 +142,8 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onSlotClick, acti
                     isActive && "bg-primary/25 border-primary/40"
                   )}
                   style={{ top: i * HOUR_HEIGHT_MOBILE, height: HOUR_HEIGHT_MOBILE }}
-                  onClick={() => onSlotClick(dayOffset, h)}
+                  onClick={(e) => { e.stopPropagation(); onSlotClick(dayOffset, h); }}
+                  onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); onSlotClick(dayOffset, h); }}
                 />
               );
             })}
