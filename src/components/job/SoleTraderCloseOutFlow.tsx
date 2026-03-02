@@ -15,10 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { format, parse } from "date-fns";
 import type { JobDetail, MaterialItem } from "@/data/dummyJobDetails";
 import { toast } from "@/hooks/use-toast";
 import { useAppMode } from "@/contexts/AppModeContext";
@@ -84,8 +81,6 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job }: Props) {
   const [jobFinished, setJobFinished] = useState(true);
   const [invoiceNow, setInvoiceNow] = useState(true);
   const [returnNote, setReturnNote] = useState("");
-  const [returnDate, setReturnDate] = useState<Date | undefined>(undefined);
-  const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Job notes state
   const [jobSheet, setJobSheet] = useState(job.description || `Completed ${job.jobName} at ${job.address}.`);
@@ -205,8 +200,13 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job }: Props) {
     setStep(next);
   }
 
-  function handleEarlyClose() {
-    toast({ title: "Return Visit Scheduled ✅", description: `${job.jobName} — coming back ${returnDate ? format(returnDate, "dd MMM yyyy") : "soon"}. Notes saved.`, duration: 4000 });
+  function handleOpenSchedule() {
+    onOpenChange(false);
+    navigate(`/schedule?returnJob=${job.id}`);
+  }
+
+  function handleBookLater() {
+    toast({ title: "Return Visit Saved ✅", description: `${job.jobName} — schedule when ready. Notes saved.`, duration: 4000 });
     onOpenChange(false);
   }
 
@@ -262,32 +262,14 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job }: Props) {
                     <Label className="text-xs">Return visit notes</Label>
                     <Textarea className="bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400" value={returnNote} onChange={(e) => setReturnNote(e.target.value)} placeholder="e.g. Waiting on parts, need to finish wiring..." rows={2} />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">When are you coming back?</Label>
-                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className={cn("w-full justify-start text-left font-normal bg-card border-2 border-border", !returnDate && "text-muted-foreground")}>
-                          <CalendarDays className="mr-2 h-4 w-4" />
-                          {returnDate ? format(returnDate, "dd/MM/yyyy") : "Pick a date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 z-[9999]" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={returnDate}
-                          onSelect={(date) => { setReturnDate(date); setCalendarOpen(false); }}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  {!invoiceNow && (
-                    <Button className="w-full h-10 gap-2 mt-2" onClick={handleEarlyClose}>
-                      <CalendarDays className="w-4 h-4" /> Schedule Return & Close
+                  <div className="flex gap-2 mt-2">
+                    <Button className="flex-1 h-10 gap-2" onClick={handleOpenSchedule}>
+                      <CalendarDays className="w-4 h-4" /> Open Schedule
                     </Button>
-                  )}
+                    <Button variant="outline" className="flex-1 h-10 gap-2" onClick={handleBookLater}>
+                      <Clock className="w-4 h-4" /> Book Later
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -489,8 +471,8 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job }: Props) {
               {!jobFinished && !invoiceNow ? (
                 <>
                   <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center mx-auto"><CalendarDays className="w-8 h-8 text-primary" /></div>
-                  <div><h3 className="text-lg font-bold text-card-foreground">Return Visit Scheduled</h3><p className="text-sm text-muted-foreground mt-1">{returnDate ? `Coming back ${returnDate}` : "Return date TBC"}</p>{returnNote && <p className="text-xs text-muted-foreground mt-1">"{returnNote}"</p>}</div>
-                  <Button size="lg" className="w-full h-12 gap-2" onClick={handleEarlyClose}><CheckCircle2 className="w-5 h-5" /> Save & Close</Button>
+                  <div><h3 className="text-lg font-bold text-card-foreground">Return Visit Saved</h3><p className="text-sm text-muted-foreground mt-1">Schedule when ready</p>{returnNote && <p className="text-xs text-muted-foreground mt-1">"{returnNote}"</p>}</div>
+                  <Button size="lg" className="w-full h-12 gap-2" onClick={handleBookLater}><CheckCircle2 className="w-5 h-5" /> Save & Close</Button>
                 </>
               ) : (
                 <>
