@@ -1,52 +1,51 @@
 
 
-## Plan: Three-Pathway Mode Picker
+## Unified Sole Trader Flow: Merge "Finished Job" + "Close Out" into One
 
-### Current State
-Two modes: "manage" (full system) and "work" (employee-only, no pricing). The `AppMode` type is `"manage" | "work" | null`.
+### Problem
+Currently sole traders see TWO buttons: "Finished Job" and "Close Out" — two separate flows that duplicate effort. A sole trader doing and billing the work should have **one flow** that goes from field completion straight through to invoicing.
 
-### What Changes
+### Solution
 
-**Add a third mode: "sole-trader"** — gets the Work app experience (schedule, job execution) but with pricing visible and the ability to close out/invoice jobs directly from the field. This is the solo operator who does the work AND runs the business.
+#### 1. Sole Trader Setup Options (`src/components/ModePicker.tsx`)
+When user taps "Sole Trader", show a quick config step before entering the app:
+- **"Do you carry van stock?"** — toggle (default off). If off, skip the van stock / restock PO steps entirely.
+- **"Do you reconcile supplier documents?"** — toggle (default off). If off, skip supplier doc matching in reconciliation.
 
-#### 1. `src/contexts/AppModeContext.tsx`
-- Expand `AppMode` type to `"manage" | "work" | "sole-trader" | null`
-- Add `isSoleTrader` boolean to context
-- Update `setMode` to accept the new value
-- Update localStorage read to recognize `"sole-trader"`
+Store these preferences in `AppModeContext` (persisted to localStorage alongside the mode).
 
-#### 2. `src/components/ModePicker.tsx`
-- Three cards in a responsive grid (1 col mobile, 3 col desktop)
-- **Full Job System** (Shield icon) — "Manager / Office. Pipeline, quotes, invoices, pricing, reports, and team management."
-- **Sole Trader** (new icon, e.g. `UserCog` or `HardHat`) — "Do the work AND run the business. Full schedule with pricing, close out jobs, and invoice on the spot."
-- **Employee** (Wrench icon) — "On the tools. Today's schedule, job details, time tracking, photos, and notes — no pricing."
-- Update tip text to reflect all three pathways
+#### 2. Update `AppModeContext` (`src/contexts/AppModeContext.tsx`)
+- Add `soleTraderPrefs: { vanStock: boolean; reconcileDocs: boolean }` to context
+- Add `setSoleTraderPrefs()` method
+- Persist alongside mode in localStorage
 
-#### 3. `src/App.tsx`
-- `isSoleTrader` mode uses Work routes (schedule-first) but adds the Close Out flow capability
-- Sole trader gets the `WorkBottomNav` and `WorkHome` as their entry point
-- Add `/job/:id` route that renders `WorkJobCard` but with close-out access (pass a prop or check mode inside the component)
+#### 3. New Unified Flow: `SoleTraderCloseOutFlow` (`src/components/job/SoleTraderCloseOutFlow.tsx`)
+A single flow that merges the completion and close-out steps, skipping irrelevant ones based on prefs:
 
-#### 4. `src/components/AppHeader.tsx`
-- Update the mode switch button to cycle or show current mode name for sole-trader
-- Header title: "Toolbelt — Solo" for sole trader mode
+| Step | From | Skippable? |
+|------|------|-----------|
+| Job Sheet (quick phrases, dictation) | CompletionFlow | No |
+| Time (actual hours) | CompletionFlow | No |
+| Parts Used (van stock / supplier toggle) | CompletionFlow | Skip if `!vanStock` |
+| Restock PO | CompletionFlow | Skip if `!vanStock` or no van stock items |
+| Return Visit? | CompletionFlow | No |
+| Photos (before/after) | CompletionFlow | No |
+| Compliance | CompletionFlow | No |
+| Reconcile Costs (quoted vs actual, supplier match) | CloseOutFlow | Simplified if `!reconcileDocs` (no match column) |
+| Generate Invoice (editable lines) | CloseOutFlow | No |
+| Send (email/SMS) | CloseOutFlow | No |
+| Done (margin summary) | CloseOutFlow | No |
 
-#### 5. `src/components/job/WorkJobCard.tsx` (or similar)
-- When mode is `"sole-trader"`, show pricing on tabs and add the "Close Out Job" button (reusing `JobCloseOutFlow`)
-- Employee mode stays stripped of pricing as-is
+This is essentially the existing `JobCompletionFlow` steps followed by the `JobCloseOutFlow` steps, composed into one stepped dialog. Reuse the existing step rendering code from both components.
 
-#### 6. Files that check `isWorkMode`
-- Update checks: `isWorkMode` should return true for both "work" and "sole-trader" (they share the Work UI shell)
-- Add `isSoleTrader` for conditional features (pricing visibility, close-out access)
-- Key files: `AppHeader.tsx`, `App.tsx`, `PageToolbar.tsx`, and any component hiding pricing
+#### 4. Update `WorkJobCard.tsx`
+- For sole traders: show **one button** — "Finish & Invoice" (or "Close Out Job") — that opens `SoleTraderCloseOutFlow`
+- Remove the separate "Finished Job" and "Close Out" buttons for sole trader mode
+- Employees still get just the "Finished Job" button (no change)
 
-### Summary of the three pathways
-
-| Feature | Manager | Sole Trader | Employee |
-|---|---|---|---|
-| UI Shell | Full pipeline | Work app | Work app |
-| Pricing visible | Yes | Yes | No |
-| Close out / Invoice | Yes (from job card) | Yes (from work app) | No |
-| Pipeline / CRM | Yes | No | No |
-| Schedule-first | No | Yes | Yes |
+#### Files to change
+1. **`src/contexts/AppModeContext.tsx`** — Add `soleTraderPrefs` state and persistence
+2. **`src/components/ModePicker.tsx`** — Add setup step with van stock / reconcile toggles when sole trader is selected
+3. **`src/components/job/SoleTraderCloseOutFlow.tsx`** — New unified flow merging both existing flows, with conditional step skipping
+4. **`src/components/job/WorkJobCard.tsx`** — Single button for sole trader, two-button stays for employee
 
