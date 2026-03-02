@@ -13,7 +13,7 @@ export function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const { tutorialOn, setTutorialOn } = useTutorial();
-  const { isWorkMode, setMode, clearMode } = useAppMode();
+  const { isWorkMode, isSoleTrader, mode, clearMode } = useAppMode();
   const isMobile = useIsMobile();
   const { position, cyclePosition } = useToolbarPosition();
 
@@ -28,7 +28,7 @@ export function AppHeader() {
           <Shield className="w-5 h-5 text-primary shrink-0" />
         )}
         <h1 className="text-base sm:text-lg font-semibold tracking-tight text-foreground/80 truncate hidden min-[360px]:block">
-          {isWorkMode ? "Toolbelt — Work" : "Tradie Toolbelt"}
+          {isSoleTrader ? "Toolbelt — Solo" : isWorkMode ? "Toolbelt — Work" : "Tradie Toolbelt"}
         </h1>
       </button>
       <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
@@ -44,7 +44,7 @@ export function AppHeader() {
           title="Switch mode"
         >
           <ArrowLeftRight className="w-4 h-4" />
-          {!isMobile && <span className="text-xs font-medium">{isWorkMode ? "Manage" : "Work"}</span>}
+          {!isMobile && <span className="text-xs font-medium">Switch</span>}
         </Button>
 
         <Tooltip>
