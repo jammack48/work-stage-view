@@ -1,51 +1,34 @@
 
 
-## Unified Sole Trader Flow: Merge "Finished Job" + "Close Out" into One
+## Issues Found and Fix Plan
 
-### Problem
-Currently sole traders see TWO buttons: "Finished Job" and "Close Out" — two separate flows that duplicate effort. A sole trader doing and billing the work should have **one flow** that goes from field completion straight through to invoicing.
+### Issue 1: "To Invoice" jobs in pipeline don't surface the Close Out flow prominently enough
+**Current**: Clicking a "To Invoice" job from the pipeline navigates to `/job/{id}` (JobCard page). The "Close Out Job" button exists but is a small pulsing text button in the heading bar — easy to miss.
+**Fix**: On the JobCard page, when the job stage is "To Invoice", auto-open the `JobCloseOutFlow` dialog on first render so the user lands directly in the close-out process. Add a URL param (`?action=closeout`) so pipeline links can trigger it, and update the ExpandedStagePanel row click for "To Invoice" jobs to navigate with that param. The "Close Out Job" button stays as a manual trigger too.
 
-### Solution
+### Issue 2: Messages tab "Back" exits the entire job card instead of returning to the job card
+**Current**: The PageToolbar "Back" button on JobCard always navigates to `/` (pipeline). If the user is on the messages tab (or any sub-tab), hitting Back leaves the job card entirely.
+**Fix**: Change the JobCard `onTabChange` handler: when `id === "back"` and `activeTab !== "overview"`, set activeTab to `"overview"` instead of navigating away. Only navigate to pipeline when already on the overview tab.
 
-#### 1. Sole Trader Setup Options (`src/components/ModePicker.tsx`)
-When user taps "Sole Trader", show a quick config step before entering the app:
-- **"Do you carry van stock?"** — toggle (default off). If off, skip the van stock / restock PO steps entirely.
-- **"Do you reconcile supplier documents?"** — toggle (default off). If off, skip supplier doc matching in reconciliation.
+### Issue 3: Audit pipeline stage flows for consistency
+After reviewing all stages:
+- **Lead**: Opens LeadActionMenu (triage) — correct
+- **To Quote / Quote Sent**: Navigates to `/quote/{id}` — correct
+- **In Progress**: Navigates to `/job/{id}` — correct
+- **To Invoice**: Navigates to `/job/{id}` — needs close-out prominence (Issue 1)
+- **Paid**: Navigates to `/job/{id}` — correct
 
-Store these preferences in `AppModeContext` (persisted to localStorage alongside the mode).
+No other stage-level issues found.
 
-#### 2. Update `AppModeContext` (`src/contexts/AppModeContext.tsx`)
-- Add `soleTraderPrefs: { vanStock: boolean; reconcileDocs: boolean }` to context
-- Add `setSoleTraderPrefs()` method
-- Persist alongside mode in localStorage
+### Files to change
 
-#### 3. New Unified Flow: `SoleTraderCloseOutFlow` (`src/components/job/SoleTraderCloseOutFlow.tsx`)
-A single flow that merges the completion and close-out steps, skipping irrelevant ones based on prefs:
+1. **`src/pages/JobCard.tsx`**
+   - Read `?action=closeout` from search params; if present and stage is "To Invoice", auto-open `JobCloseOutFlow`
+   - Change Back button logic: if `activeTab !== "overview"`, go to overview first; only navigate away from overview
 
-| Step | From | Skippable? |
-|------|------|-----------|
-| Job Sheet (quick phrases, dictation) | CompletionFlow | No |
-| Time (actual hours) | CompletionFlow | No |
-| Parts Used (van stock / supplier toggle) | CompletionFlow | Skip if `!vanStock` |
-| Restock PO | CompletionFlow | Skip if `!vanStock` or no van stock items |
-| Return Visit? | CompletionFlow | No |
-| Photos (before/after) | CompletionFlow | No |
-| Compliance | CompletionFlow | No |
-| Reconcile Costs (quoted vs actual, supplier match) | CloseOutFlow | Simplified if `!reconcileDocs` (no match column) |
-| Generate Invoice (editable lines) | CloseOutFlow | No |
-| Send (email/SMS) | CloseOutFlow | No |
-| Done (margin summary) | CloseOutFlow | No |
+2. **`src/components/ExpandedStagePanel.tsx`**
+   - For "To Invoice" row clicks, navigate to `/job/{id}?action=closeout` so the close-out flow opens automatically
 
-This is essentially the existing `JobCompletionFlow` steps followed by the `JobCloseOutFlow` steps, composed into one stepped dialog. Reuse the existing step rendering code from both components.
-
-#### 4. Update `WorkJobCard.tsx`
-- For sole traders: show **one button** — "Finish & Invoice" (or "Close Out Job") — that opens `SoleTraderCloseOutFlow`
-- Remove the separate "Finished Job" and "Close Out" buttons for sole trader mode
-- Employees still get just the "Finished Job" button (no change)
-
-#### Files to change
-1. **`src/contexts/AppModeContext.tsx`** — Add `soleTraderPrefs` state and persistence
-2. **`src/components/ModePicker.tsx`** — Add setup step with van stock / reconcile toggles when sole trader is selected
-3. **`src/components/job/SoleTraderCloseOutFlow.tsx`** — New unified flow merging both existing flows, with conditional step skipping
-4. **`src/components/job/WorkJobCard.tsx`** — Single button for sole trader, two-button stays for employee
+3. **`src/components/StageColumn.tsx`**
+   - For "To Invoice" color card clicks, append `?action=closeout` to the navigation URL
 
