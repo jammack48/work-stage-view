@@ -1,46 +1,42 @@
 
 
-## Restructure Sole Trader "Finish & Invoice" Flow
+## Simplify Startup + Elevate Manager Button
 
-### Current problem
-The step order is wrong and missing key logic. Currently: Job Sheet → Time → Parts → Restock PO → Coming Back? → Photos → Compliance → Reconcile → Invoice → Send → Done. The user wants a natural field-to-billing flow with "coming back?" asked first, and materials renamed appropriately.
+### Changes
 
-### New step order
+#### 1. ModePicker — Two buttons only (`src/components/ModePicker.tsx`)
+Replace the 3-card grid with **2 large buttons**:
+- **"Office / Manager"** — Shield icon, blue accent. On click, shows a sub-choice: "Office" (sets mode `manage`) or "On the Tools" (sets mode `sole-trader`, shows setup toggles).
+- **"Employee"** — Wrench icon. Goes straight to work mode (`work`), no sub-choice.
 
-| # | Step | Label | Notes |
-|---|------|-------|-------|
-| 1 | status | Job Status | "Is job finished?" or "Need to come back?" If coming back: "Invoice now for work so far?" toggle + return visit notes + schedule date. If no invoice now, skip to Done. |
-| 2 | jobsheet | Job Notes | Quick phrases + dictation (existing) |
-| 3 | time | Labour | Actual hours (existing) |
-| 4 | materials | Materials Used | Renamed from "Parts Used". If vanStock pref: show van stock/supplier toggle + restock PO inline. If no vanStock: just a simple parts list with quantities. No "Reconcile" language. |
-| 5 | paperwork | Paperwork | Attach supplier receipts/docs (only if reconcileDocs pref is on, otherwise skip) |
-| 6 | photos | Photos | Before/after capture (existing) |
-| 7 | certificates | Certificates | Compliance certs, CoC number (existing compliance step) |
-| 8 | invoice | Invoice Summary | Editable lines: Labour first, then Materials. Sequence pipeline selector embedded before send button. |
-| 9 | send | Send | Email/SMS choice (existing) |
-| 10 | done | Done | Margin summary (existing) |
+Flow:
+```text
+Startup Screen
+├── [Office / Manager] → Sub-step:
+│   ├── [Run the Office] → mode = "manage" (pipeline)
+│   └── [On the Tools]  → Sole Trader setup toggles → mode = "sole-trader"
+└── [Employee]          → mode = "work" (straight in)
+```
 
-### Key logic changes
+Both Office and Sole Trader share the same pipeline — the difference is just which UI shell wraps it.
 
-1. **Step 1 (Job Status)** is new — a simple toggle "Job finished?" with "Coming back?" branching. If coming back and they choose NOT to invoice partial work, flow ends early with a "Return Visit Scheduled" toast.
+#### 2. Manager tab position + glow (`src/config/toolbarTabs.ts`)
+Move `{ id: "manager", label: "Manager", icon: Shield }` from `PIPELINE_EXTRAS` into `COMMON_TABS` — place it immediately after "Home" so it appears second in every toolbar layout. This ensures it's always visible and prominent.
 
-2. **Materials step** merges the old "Parts" + "Restock PO" into one step. If vanStock is on, van stock items auto-generate a PO section at the bottom of the same step. If vanStock is off, it's just a simple list of parts/materials used with name + qty.
+#### 3. Manager button styling (`src/components/PageToolbar.tsx`)
+Add special styling for the "manager" tab ID:
+- Blue background tint (`bg-blue-500/15 text-blue-500`) when inactive
+- Soft pulsing glow animation (`animate-pulse` or a subtle `shadow-blue-500/30` box-shadow)
+- When active, solid blue (`bg-blue-500 text-white`)
 
-3. **Paperwork step** only shows if `reconcileDocs` pref is on. Lets them attach receipts/supplier invoices against materials.
+This makes it visually distinct and attention-grabbing across all toolbar positions (left, right, top, bottom).
 
-4. **Invoice step** includes the `SequenceSelector` component for follow-up sequences, placed before the line items total.
+#### 4. Fix left layout spacing (`src/components/PageToolbar.tsx`)
+The desktop left sidebar uses `w-[200px]` with no padding on the nav container and items using `px-4`. Add `px-2` to the nav element so items have consistent inset, and ensure the main content area doesn't overlap.
 
-5. Remove the separate "Reconcile Costs" step entirely — sole traders don't reconcile quoted vs actual. They just list what they used and invoice for it.
-
-### File changes
-
-**`src/components/job/SoleTraderCloseOutFlow.tsx`** — Full rewrite of the step definitions and rendering:
-- New ALL_STEPS array with the order above
-- New "status" step UI with finished/coming-back toggle
-- Merge parts + PO into single "materials" step
-- New "paperwork" step (conditional on reconcileDocs)
-- Rename "compliance" to "certificates"
-- Embed SequenceSelector in invoice step
-- Remove "reconcile" step
-- Update activeSteps filter logic for new skip conditions
+#### Files
+1. **`src/components/ModePicker.tsx`** — Rewrite to 2-button start → sub-step for Office/Manager
+2. **`src/config/toolbarTabs.ts`** — Move manager from `PIPELINE_EXTRAS` to `COMMON_TABS` (after Home)
+3. **`src/components/PageToolbar.tsx`** — Blue glow styling for manager tab, fix left layout padding
+4. **`src/index.css`** — Add `@keyframes` for soft glow if needed
 
