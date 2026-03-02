@@ -35,7 +35,9 @@ const SchedulePage = () => {
   }, [returnJobId, searchParams]);
 
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
-  const [selectedStaff, setSelectedStaff] = useState<string[]>([]);
+  // In booking mode (Work/sole-trader), lock to logged-in user's calendar
+  const isBookingMode = !!returnJobId;
+  const [selectedStaff, setSelectedStaff] = useState<string[]>(isBookingMode ? ["Dave"] : []);
   const [selectedDay, setSelectedDay] = useState(() => {
     const today = new Date();
     const start = startOfWeek(today, { weekStartsOn: 1 });
@@ -157,7 +159,7 @@ const SchedulePage = () => {
                 setSelectedDay(diff);
               }}
             />
-            <StaffFilterBar selectedStaff={selectedStaff} onSelectionChange={setSelectedStaff} />
+            {!isBookingMode && <StaffFilterBar selectedStaff={selectedStaff} onSelectionChange={setSelectedStaff} />}
           </div>
           <div className="flex-1 overflow-y-auto mt-3">
             <TimeGridMobile
@@ -184,7 +186,7 @@ const SchedulePage = () => {
               setSelectedDay(diff);
             }}
           />
-          <StaffFilterBar selectedStaff={selectedStaff} onSelectionChange={setSelectedStaff} />
+          {!isBookingMode && <StaffFilterBar selectedStaff={selectedStaff} onSelectionChange={setSelectedStaff} />}
           <TimeGridDesktop
             weekStart={weekStart}
             jobs={filteredJobs}
