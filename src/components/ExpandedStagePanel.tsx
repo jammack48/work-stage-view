@@ -1,6 +1,9 @@
-import { AlertTriangle, X, Mail } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, X, Mail, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Job } from "@/data/dummyJobs";
+import { getJobDetail } from "@/data/dummyJobDetails";
+import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { cn } from "@/lib/utils";
 import { useThresholds } from "@/contexts/ThresholdContext";
 import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
@@ -39,6 +42,9 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
   const sorted = sortByStatus(jobs, thresholds.greenMax, thresholds.orangeMax);
   const isLeadStage = stage === "Lead";
   const isQuoteStage = ["Lead", "To Quote", "Quote Sent"].includes(stage);
+  const isToInvoice = stage === "To Invoice";
+  const [closeOutJob, setCloseOutJob] = useState<Job | null>(null);
+  const closeOutJobDetail = closeOutJob ? getJobDetail(closeOutJob.id) : null;
 
   return (
     <div className="animate-fade-in bg-card rounded-xl shadow-2xl border border-border overflow-hidden">
@@ -116,6 +122,20 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
             );
           }
 
+          if (isToInvoice) {
+            return (
+              <div key={job.id} className="flex items-center">
+                <div className="flex-1">{rowContent}</div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setCloseOutJob(job); }}
+                  className="shrink-0 mr-4 flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  Close Out <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            );
+          }
+
           return (
             <TutorialTip key={job.id} tip={tipText} side="left">
               {rowContent}
@@ -123,6 +143,14 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
           );
         })}
       </div>
+
+      {closeOutJobDetail && (
+        <JobCloseOutFlow
+          open={!!closeOutJob}
+          onOpenChange={(open) => { if (!open) setCloseOutJob(null); }}
+          job={closeOutJobDetail}
+        />
+      )}
     </div>
   );
 }
