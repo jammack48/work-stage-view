@@ -93,18 +93,16 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onSlotClick, acti
 
       {/* Single day column */}
       <div className="relative border-l border-border">
+        {/* Hour lines */}
         {hours.map((h, i) => (
           <div
             key={i}
-            className={cn(
-              "absolute left-0 right-0 border-t border-border/50",
-              onSlotClick && "cursor-pointer hover:bg-primary/10 transition-colors"
-            )}
+            className="absolute left-0 right-0 border-t border-border/50"
             style={{ top: i * HOUR_HEIGHT_MOBILE, height: HOUR_HEIGHT_MOBILE }}
-            onClick={() => onSlotClick?.(dayOffset, h)}
           />
         ))}
 
+        {/* Job cards */}
         {layout.map(({ job, col, totalCols }) => {
           const top = (job.startHour - WORK_START) * HOUR_HEIGHT_MOBILE;
           const height = job.durationHours * HOUR_HEIGHT_MOBILE;
@@ -126,6 +124,38 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onSlotClick, acti
             </div>
           );
         })}
+
+        {/* Booking overlay — above job cards */}
+        {onSlotClick && (
+          <div className="absolute inset-0 z-30">
+            {hours.map((h, i) => {
+              const isActive = activeSlot?.dayOffset === dayOffset && activeSlot?.startHour === h;
+              return (
+                <div
+                  key={`overlay-${i}`}
+                  className={cn(
+                    "absolute left-0 right-0 cursor-pointer transition-colors border-t border-transparent hover:bg-primary/15",
+                    isActive && "bg-primary/25 border-primary/40"
+                  )}
+                  style={{ top: i * HOUR_HEIGHT_MOBILE, height: HOUR_HEIGHT_MOBILE }}
+                  onClick={() => onSlotClick(dayOffset, h)}
+                />
+              );
+            })}
+            {/* Active slot 2-hour highlight */}
+            {activeSlot && activeSlot.dayOffset === dayOffset && (
+              <div
+                className="absolute left-1 right-1 rounded-lg bg-primary/20 border-2 border-primary/50 pointer-events-none flex items-center justify-center"
+                style={{
+                  top: (activeSlot.startHour - WORK_START) * HOUR_HEIGHT_MOBILE,
+                  height: 2 * HOUR_HEIGHT_MOBILE,
+                }}
+              >
+                <span className="text-xs font-semibold text-primary">Return Visit</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
