@@ -8,6 +8,8 @@ interface TimeGridDesktopProps {
   weekStart: Date;
   jobs: ScheduleJob[];
   selectedDay?: number;
+  onSlotClick?: (dayOffset: number, hour: number) => void;
+  activeSlot?: { dayOffset: number; startHour: number } | null;
 }
 
 function computeOverlapLayout(jobs: ScheduleJob[]) {
@@ -38,7 +40,7 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
   return layout;
 }
 
-export function TimeGridDesktop({ weekStart, jobs, selectedDay }: TimeGridDesktopProps) {
+export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, activeSlot }: TimeGridDesktopProps) {
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
   const days = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
   const totalHeight = hours.length * HOUR_HEIGHT_DESKTOP;
@@ -94,12 +96,16 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay }: TimeGridDeskto
                 selectedDay !== di && isToday(d) && "bg-primary/5"
               )}
             >
-              {/* Hour lines */}
-              {hours.map((_, i) => (
+              {/* Hour lines — clickable when booking */}
+              {hours.map((h, i) => (
                 <div
                   key={i}
-                  className="absolute left-0 right-0 border-t border-border/50"
-                  style={{ top: i * HOUR_HEIGHT_DESKTOP }}
+                  className={cn(
+                    "absolute left-0 right-0 border-t border-border/50",
+                    onSlotClick && "cursor-pointer hover:bg-primary/10 transition-colors"
+                  )}
+                  style={{ top: i * HOUR_HEIGHT_DESKTOP, height: HOUR_HEIGHT_DESKTOP }}
+                  onClick={() => onSlotClick?.(di, h)}
                 />
               ))}
 
