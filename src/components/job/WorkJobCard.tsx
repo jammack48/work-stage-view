@@ -9,10 +9,12 @@ import { NotesTab } from "@/components/job/NotesTab";
 import { PhotosTab } from "@/components/job/PhotosTab";
 import { FormsTab } from "@/components/job/FormsTab";
 import { JobCompletionFlow } from "@/components/job/JobCompletionFlow";
+import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { cn } from "@/lib/utils";
 import { WORK_JOB_EXTRAS } from "@/config/toolbarTabs";
-import { Plus, CheckCircle2 } from "lucide-react";
+import { Plus, CheckCircle2, Receipt } from "lucide-react";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { useAppMode } from "@/contexts/AppModeContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +23,7 @@ import type { MaterialItem } from "@/data/dummyJobDetails";
 
 type WorkJobTab = "overview" | "scope" | "time" | "materials" | "notes" | "photos" | "forms";
 
-function WorkMaterialsTab({ materials }: { materials: MaterialItem[] }) {
+function WorkMaterialsTab({ materials, showPricing }: { materials: MaterialItem[]; showPricing?: boolean }) {
   return (
     <Card>
       <CardHeader className="pb-3 flex flex-row items-center justify-between">
@@ -40,6 +42,7 @@ function WorkMaterialsTab({ materials }: { materials: MaterialItem[] }) {
                 <TableHead>Item</TableHead>
                 <TableHead className="text-right w-20">Qty</TableHead>
                 <TableHead className="w-20">Unit</TableHead>
+                {showPricing && <TableHead className="text-right w-24">Cost</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -48,6 +51,9 @@ function WorkMaterialsTab({ materials }: { materials: MaterialItem[] }) {
                   <TableCell className="font-medium">{m.name}</TableCell>
                   <TableCell className="text-right">{m.quantity}</TableCell>
                   <TableCell className="text-muted-foreground">{m.unit}</TableCell>
+                  {showPricing && (
+                    <TableCell className="text-right font-mono">${(m.unitPrice * m.quantity).toFixed(2)}</TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -63,9 +69,11 @@ export default function WorkJobCard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { prefix } = useJobPrefix();
+  const { isSoleTrader } = useAppMode();
   const locState = location.state as { customer?: string; address?: string; description?: string } | null;
   const [activeTab, setActiveTab] = useState<WorkJobTab>("overview");
   const [completionOpen, setCompletionOpen] = useState(false);
+  const [closeOutOpen, setCloseOutOpen] = useState(false);
 
   const job = getJobDetail(id || "", locState || undefined);
   const displayId = job ? job.id.replace(/^[A-Z]+-/, `${prefix}-`) : "";
@@ -82,7 +90,7 @@ export default function WorkJobCard() {
     overview: <WorkOverviewTab job={job} />,
     scope: <ScopeTab job={job} />,
     time: <TimeTab timeEntries={job.timeEntries} />,
-    materials: <WorkMaterialsTab materials={job.materials} />,
+    materials: <WorkMaterialsTab materials={job.materials} showPricing={isSoleTrader} />,
     notes: <NotesTab notes={job.notes} />,
     photos: <PhotosTab photos={job.photos} />,
     forms: <FormsTab />,
@@ -117,6 +125,16 @@ export default function WorkJobCard() {
           >
             <CheckCircle2 className="w-5 h-5" /> Finished Job
           </Button>
+          {isSoleTrader && (
+            <Button
+              size="lg"
+              variant="secondary"
+              className="gap-2 h-12 text-base font-bold"
+              onClick={() => setCloseOutOpen(true)}
+            >
+              <Receipt className="w-5 h-5" /> Close Out
+            </Button>
+          )}
         </div>
         {tabContent[activeTab]}
       </PageToolbar>
@@ -126,6 +144,14 @@ export default function WorkJobCard() {
         onOpenChange={setCompletionOpen}
         job={job}
       />
+
+      {isSoleTrader && (
+        <JobCloseOutFlow
+          open={closeOutOpen}
+          onOpenChange={setCloseOutOpen}
+          job={job}
+        />
+      )}
     </>
   );
 }
