@@ -14,6 +14,7 @@ import { FormsTab } from "@/components/job/FormsTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequencesTab } from "@/components/SequencesTab";
 import { MessagesTab } from "@/components/job/MessagesTab";
+import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { cn } from "@/lib/utils";
 import { JOB_EXTRAS } from "@/config/toolbarTabs";
 
@@ -34,6 +35,7 @@ export default function JobCard() {
   const managerState = (location.state as any);
   const initialTab = (searchParams.get("tab") as JobTab) || "overview";
   const [activeTab, setActiveTab] = useState<JobTab>(initialTab);
+  const [closeOutOpen, setCloseOutOpen] = useState(false);
 
   const job = id === "new"
     ? getNewJobDetail(searchParams.get("stage") || "Lead")
@@ -61,6 +63,8 @@ export default function JobCard() {
     sequences: <SequencesTab category="invoices" />,
   };
 
+  const isToInvoice = job.stage === "To Invoice";
+
   const jobHeading = (
     <div className="flex items-center gap-2 flex-wrap">
       <h2 className="text-base font-bold text-card-foreground">{job.jobName}</h2>
@@ -68,6 +72,14 @@ export default function JobCard() {
       <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", statusColor(job.stage))}>
         {job.stage}
       </span>
+      {isToInvoice && (
+        <button
+          onClick={() => setCloseOutOpen(true)}
+          className="ml-auto text-xs font-bold px-3 py-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors animate-pulse"
+        >
+          Close Out Job →
+        </button>
+      )}
     </div>
   );
 
@@ -84,6 +96,7 @@ export default function JobCard() {
       >
         {tabContent[activeTab]}
       </PageToolbar>
+      <JobCloseOutFlow open={closeOutOpen} onOpenChange={setCloseOutOpen} job={job} />
     </>
   );
 }
