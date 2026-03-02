@@ -13,6 +13,7 @@ export interface MaterialItem {
   unit: string;
   unitPrice: number;
   supplier: string;
+  supplierDoc?: { matched: boolean; ref?: string };
 }
 
 export interface NoteEntry {
