@@ -1,31 +1,25 @@
 
 
-## Issues Found
+## Problem
 
-1. **Booking banner layout**: The banner text wraps word-by-word on narrow screens because `flex-wrap` + long text in a constrained container causes poor line breaks.
+After booking a return visit on the schedule and navigating back to the job card, the completion flow doesn't resume properly:
 
-2. **No return to completion flow**: After confirming the booking on the schedule, `navigate(-1)` goes back to the job card but the `JobCompletionFlow` dialog is closed and there's no indication the booking succeeded. The user expects to land back on the job card with a visible "Return Visit Booked" confirmation (as shown in screenshot image-67).
+1. **Sole Trader mode**: `WorkJobCard` explicitly blocks auto-open with `resumeCompletion && !isSoleTrader`, so `SoleTraderCloseOutFlow` never opens.
+2. **SoleTraderCloseOutFlow** doesn't accept a `resumeAfterBooking` prop, so it always starts at step 0 (the status question again) instead of skipping to "Job Notes" (step 1).
+3. **Employee mode** works correctly already (tested and verified).
 
 ## Plan
 
-### 1. Fix booking banner layout on schedule page
-- **File**: `src/pages/SchedulePage.tsx`
-- Restructure the booking banner to stack vertically on mobile instead of using `flex-wrap`
-- Keep the text as a single flowing line with `whitespace-nowrap` or constrained width
-- Move Confirm/Cancel buttons below the text on narrow screens
-
-### 2. Navigate back to job card with booking confirmation state
-- **File**: `src/pages/SchedulePage.tsx`
-- Change `handleConfirmBooking` to navigate to `/job/${returnJobId}` with search params `?returnBooked=true&returnDate=...&returnTime=...` instead of `navigate(-1)`
-
-### 3. Show "Return Visit Booked" banner on job card
+### 1. Fix WorkJobCard to auto-open the sole trader flow on resume
 - **File**: `src/components/job/WorkJobCard.tsx`
-- Read `returnBooked` search param on mount
-- Display a green success banner at the top: "Return Visit Booked ✅ — Deck Lighting — Tue 3 Mar at 11am" (matching screenshot image-67)
-- Banner persists on the page (dismissible with X or auto-fades)
+- Change: When `isSoleTrader && resumeCompletion`, initialize `unifiedFlowOpen` to `true` instead of only setting `completionOpen` for non-sole-traders.
 
-### Technical details
-- The schedule page already has `returnJobId` and `returnBookingJob` context from URL params — reuse these to build the return URL
-- `WorkJobCard` reads `useSearchParams` to detect `returnBooked` and display the confirmation
-- The `JobCompletionFlow` dialog stays closed after returning — the green banner replaces the need to re-enter the flow
+### 2. Add `resumeAfterBooking` prop to SoleTraderCloseOutFlow
+- **File**: `src/components/job/SoleTraderCloseOutFlow.tsx`
+- Add `resumeAfterBooking?: boolean` to the `Props` interface.
+- When `resumeAfterBooking` is true, initialize `step` to `1` (skipping the "Job Status" question) and `jobFinished` to the appropriate state so the flow continues from "Job Notes" onward.
+
+### 3. Pass the prop from WorkJobCard
+- **File**: `src/components/job/WorkJobCard.tsx`
+- Pass `resumeAfterBooking={resumeCompletion}` to `SoleTraderCloseOutFlow`.
 
