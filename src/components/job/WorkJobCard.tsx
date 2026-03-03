@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { getJobDetail } from "@/data/dummyJobDetails";
 import { PageToolbar } from "@/components/PageToolbar";
 import { WorkOverviewTab } from "@/components/job/WorkOverviewTab";
@@ -13,7 +13,7 @@ import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { SoleTraderCloseOutFlow } from "@/components/job/SoleTraderCloseOutFlow";
 import { cn } from "@/lib/utils";
 import { WORK_JOB_EXTRAS } from "@/config/toolbarTabs";
-import { Plus, CheckCircle2, Receipt } from "lucide-react";
+import { Plus, CheckCircle2, Receipt, CalendarCheck, X } from "lucide-react";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { Button } from "@/components/ui/button";
@@ -71,11 +71,18 @@ export default function WorkJobCard() {
   const location = useLocation();
   const { prefix } = useJobPrefix();
   const { isSoleTrader } = useAppMode();
+  const [searchParams, setSearchParams] = useSearchParams();
   const locState = location.state as { customer?: string; address?: string; description?: string } | null;
   const [activeTab, setActiveTab] = useState<WorkJobTab>("overview");
   const [completionOpen, setCompletionOpen] = useState(false);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
   const [unifiedFlowOpen, setUnifiedFlowOpen] = useState(false);
+
+  // Return booking confirmation
+  const returnBooked = searchParams.get("returnBooked") === "true";
+  const returnDate = searchParams.get("returnDate") || "";
+  const returnTime = searchParams.get("returnTime") || "";
+  const [showBookedBanner, setShowBookedBanner] = useState(returnBooked);
 
   const job = getJobDetail(id || "", locState || undefined);
   const displayId = job ? job.id.replace(/^[A-Z]+-/, `${prefix}-`) : "";
@@ -118,6 +125,35 @@ export default function WorkJobCard() {
         pageHeading={jobHeading}
         tutorialKey="work-job"
       >
+        {/* Return visit booked banner */}
+        {showBookedBanner && (
+          <div className="rounded-lg border-2 border-green-500/50 bg-green-500/10 p-3 mb-3 flex items-center gap-3">
+            <CalendarCheck className="w-5 h-5 text-green-600 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-card-foreground">
+                Return Visit Booked ✅
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {job.jobName} — {returnDate} at {returnTime}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 shrink-0"
+              onClick={() => {
+                setShowBookedBanner(false);
+                searchParams.delete("returnBooked");
+                searchParams.delete("returnDate");
+                searchParams.delete("returnTime");
+                setSearchParams(searchParams, { replace: true });
+              }}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
         {/* Action buttons */}
         <div className="flex gap-2 mb-3">
           {isSoleTrader ? (

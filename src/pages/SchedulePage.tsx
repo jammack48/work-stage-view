@@ -79,14 +79,11 @@ const SchedulePage = () => {
   }, [returnJobId]);
 
   const handleConfirmBooking = () => {
-    if (!bookedSlot || !returnBookingJob) return;
+    if (!bookedSlot || !returnBookingJob || !returnJobId) return;
     const dayDate = addDays(weekStart, bookedSlot.dayOffset);
-    toast({
-      title: "Return Visit Booked ✅",
-      description: `${returnBookingJob.jobName} — ${format(dayDate, "EEE d MMM")} at ${formatTime(bookedSlot.startHour)}`,
-      duration: 4000,
-    });
-    navigate(-1);
+    const dateStr = format(dayDate, "EEE d MMM");
+    const timeStr = formatTime(bookedSlot.startHour);
+    navigate(`/job/${returnJobId}?returnBooked=true&returnDate=${encodeURIComponent(dateStr)}&returnTime=${encodeURIComponent(timeStr)}`, { replace: true });
   };
 
   const handleCancelReturn = () => {
@@ -117,20 +114,22 @@ const SchedulePage = () => {
     >
       {/* Return job banner */}
       {returnJobId && (
-        <div className="rounded-lg border-2 border-primary/50 bg-primary/10 p-3 mb-3 flex items-center gap-3 flex-wrap">
-          <CalendarDays className="w-5 h-5 text-primary shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-card-foreground">
-              Booking return visit for {returnBookingJob?.jobName || returnJobId}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {bookedSlot
-                ? `Selected: ${format(addDays(weekStart, bookedSlot.dayOffset), "EEE d MMM")} at ${formatTime(bookedSlot.startHour)}`
-                : "Tap an empty time slot to book"
-              }
-            </p>
+        <div className="rounded-lg border-2 border-primary/50 bg-primary/10 p-3 mb-3 space-y-2">
+          <div className="flex items-start gap-2">
+            <CalendarDays className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-card-foreground">
+                Booking return visit for {returnBookingJob?.jobName || returnJobId}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {bookedSlot
+                  ? `Selected: ${format(addDays(weekStart, bookedSlot.dayOffset), "EEE d MMM")} at ${formatTime(bookedSlot.startHour)}`
+                  : "Tap an empty time slot to book"
+                }
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 pl-7">
             {bookedSlot && (
               <Button size="sm" className="h-8 gap-1.5" onClick={handleConfirmBooking}>
                 <Check className="w-3.5 h-3.5" /> Confirm
