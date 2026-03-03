@@ -25,6 +25,7 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   job: JobDetail;
+  resumeAfterBooking?: boolean;
 }
 
 interface PartUsed extends MaterialItem {
@@ -72,10 +73,10 @@ function buildInvoiceLines(job: JobDetail, parts: PartUsed[], actualHours: numbe
   return lines;
 }
 
-export function SoleTraderCloseOutFlow({ open, onOpenChange, job }: Props) {
+export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBooking }: Props) {
   const navigate = useNavigate();
   const { soleTraderPrefs } = useAppMode();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(resumeAfterBooking ? 1 : 0);
 
   // Status step state
   const [jobFinished, setJobFinished] = useState(true);
