@@ -77,7 +77,7 @@ export default function WorkJobCard() {
   const resumeCompletion = searchParams.get("resumeCompletion") === "true";
   const [completionOpen, setCompletionOpen] = useState(resumeCompletion && !isSoleTrader);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
-  const [unifiedFlowOpen, setUnifiedFlowOpen] = useState(false);
+  const [unifiedFlowOpen, setUnifiedFlowOpen] = useState(resumeCompletion && isSoleTrader);
 
   // Return booking confirmation
   const returnBooked = searchParams.get("returnBooked") === "true";
@@ -190,6 +190,7 @@ export default function WorkJobCard() {
           open={unifiedFlowOpen}
           onOpenChange={setUnifiedFlowOpen}
           job={job}
+          resumeAfterBooking={resumeCompletion}
         />
       )}
     </>
