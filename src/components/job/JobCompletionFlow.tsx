@@ -1,7 +1,7 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield, RotateCcw, FileImage, Truck, ShoppingCart, ClipboardList, Mic, MicOff, Maximize2, Minimize2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield, RotateCcw, FileImage, Truck, ShoppingCart, ClipboardList, Mic, MicOff, Maximize2, Minimize2, CheckCircle2, CalendarDays } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -21,11 +21,11 @@ interface JobCompletionFlowProps {
 }
 
 const STEPS = [
+  { id: "status", label: "Job Status", icon: CheckCircle2 },
   { id: "jobsheet", label: "Job Sheet", icon: FileText },
   { id: "time", label: "Time", icon: Clock },
   { id: "parts", label: "Parts Used", icon: Package },
   { id: "po-review", label: "Restock PO", icon: ClipboardList },
-  { id: "return", label: "Coming Back?", icon: RotateCcw },
   { id: "photos", label: "Photos", icon: Camera },
   { id: "compliance", label: "Compliance", icon: Shield },
 ];
@@ -46,6 +46,7 @@ interface CapturedPhoto {
 export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlowProps) {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
+  const [jobFinished, setJobFinished] = useState(true);
 
   const [returnNeeded, setReturnNeeded] = useState(false);
   const [returnNote, setReturnNote] = useState("");
@@ -138,8 +139,19 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
   const vanStockUsed = parts.filter((p) => p.used && p.source === "van-stock");
   const supplierItems = parts.filter((p) => p.used && p.source === "supplier");
 
-  // Skip PO step if no van stock items
-  const activeSteps = vanStockUsed.length > 0 ? STEPS : STEPS.filter((s) => s.id !== "po-review");
+  // Build active steps: skip completion steps when coming back
+  const activeSteps = useMemo(() => {
+    return STEPS.filter((s) => {
+      if (!jobFinished) {
+        // Coming back: only show status step
+        return s.id === "status";
+      }
+      // Skip PO step if no van stock items
+      if (s.id === "po-review" && vanStockUsed.length === 0) return false;
+      return true;
+    });
+  }, [jobFinished, vanStockUsed.length]);
+
   const currentStep = activeSteps[step];
   const canNext = step < activeSteps.length - 1;
   const canPrev = step > 0;
@@ -183,6 +195,22 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
     navigate("/");
   }
 
+  function handleOpenSchedule() {
+    onOpenChange(false);
+    const params = new URLSearchParams({
+      returnJob: job.id,
+      returnJobName: job.jobName,
+      returnClient: job.client,
+      returnAddress: job.address,
+    });
+    navigate(`/schedule?${params.toString()}`);
+  }
+
+  function handleBookLater() {
+    toast({ title: "Return Visit Saved ✅", description: `${job.jobName} — schedule when ready. Notes saved.`, duration: 4000 });
+    onOpenChange(false);
+  }
+
   const StepIcon = currentStep?.icon || Package;
 
   return (
@@ -193,6 +221,7 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
             <StepIcon className="w-5 h-5 text-primary" />
             {currentStep?.label}
           </DialogTitle>
+          <DialogDescription className="sr-only">Completion flow for {job.jobName}</DialogDescription>
         </DialogHeader>
 
         {/* Progress dots */}
@@ -210,17 +239,35 @@ export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlow
         </div>
 
         <div className="space-y-4 min-h-[200px]">
-          {/* Return */}
-          {currentStep?.id === "return" && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>Do you need to come back?</Label>
-                <Switch checked={returnNeeded} onCheckedChange={setReturnNeeded} />
+          {/* Status — first step */}
+          {currentStep?.id === "status" && (
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Is this job finished?</Label>
+                <div className="flex gap-2">
+                  <button onClick={() => setJobFinished(true)} className={cn("flex-1 py-3 rounded-lg border-2 text-sm font-medium transition-all", jobFinished ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:bg-accent")}>
+                    <CheckCircle2 className="w-5 h-5 mx-auto mb-1" /> Job Finished
+                  </button>
+                  <button onClick={() => setJobFinished(false)} className={cn("flex-1 py-3 rounded-lg border-2 text-sm font-medium transition-all", !jobFinished ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:bg-accent")}>
+                    <CalendarDays className="w-5 h-5 mx-auto mb-1" /> Coming Back
+                  </button>
+                </div>
               </div>
-              {returnNeeded && (
-                <div className="space-y-2">
-                  <Label>What's needed?</Label>
-                  <Textarea className="bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400" value={returnNote} onChange={(e) => setReturnNote(e.target.value)} placeholder="e.g. Waiting on parts, need to finish wiring..." rows={3} />
+
+              {!jobFinished && (
+                <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Return visit notes</Label>
+                    <Textarea className="bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400" value={returnNote} onChange={(e) => setReturnNote(e.target.value)} placeholder="e.g. Waiting on parts, need to finish wiring..." rows={2} />
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <Button className="flex-1 h-10 gap-2" onClick={handleOpenSchedule}>
+                      <CalendarDays className="w-4 h-4" /> Open Schedule
+                    </Button>
+                    <Button variant="outline" className="flex-1 h-10 gap-2" onClick={handleBookLater}>
+                      <Clock className="w-4 h-4" /> Book Later
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
