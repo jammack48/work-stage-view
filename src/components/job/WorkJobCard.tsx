@@ -74,7 +74,8 @@ export default function WorkJobCard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const locState = location.state as { customer?: string; address?: string; description?: string } | null;
   const [activeTab, setActiveTab] = useState<WorkJobTab>("overview");
-  const [completionOpen, setCompletionOpen] = useState(false);
+  const resumeCompletion = searchParams.get("resumeCompletion") === "true";
+  const [completionOpen, setCompletionOpen] = useState(resumeCompletion && !isSoleTrader);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
   const [unifiedFlowOpen, setUnifiedFlowOpen] = useState(false);
 
@@ -181,6 +182,7 @@ export default function WorkJobCard() {
         open={completionOpen}
         onOpenChange={setCompletionOpen}
         job={job}
+        resumeAfterBooking={resumeCompletion}
       />
 
       {isSoleTrader && (

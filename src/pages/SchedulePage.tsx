@@ -83,7 +83,7 @@ const SchedulePage = () => {
     const dayDate = addDays(weekStart, bookedSlot.dayOffset);
     const dateStr = format(dayDate, "EEE d MMM");
     const timeStr = formatTime(bookedSlot.startHour);
-    navigate(`/job/${returnJobId}?returnBooked=true&returnDate=${encodeURIComponent(dateStr)}&returnTime=${encodeURIComponent(timeStr)}`, { replace: true });
+    navigate(`/job/${returnJobId}?returnBooked=true&returnDate=${encodeURIComponent(dateStr)}&returnTime=${encodeURIComponent(timeStr)}&resumeCompletion=true`, { replace: true });
   };
 
   const handleCancelReturn = () => {

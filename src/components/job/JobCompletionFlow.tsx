@@ -18,6 +18,8 @@ interface JobCompletionFlowProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   job: JobDetail;
+  /** When true, skip the status step and start at Job Sheet with jobFinished=true */
+  resumeAfterBooking?: boolean;
 }
 
 const STEPS = [
@@ -43,9 +45,9 @@ interface CapturedPhoto {
   dataUrl: string;
 }
 
-export function JobCompletionFlow({ open, onOpenChange, job }: JobCompletionFlowProps) {
+export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking }: JobCompletionFlowProps) {
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(resumeAfterBooking ? 1 : 0);
   const [jobFinished, setJobFinished] = useState(true);
 
   const [returnNeeded, setReturnNeeded] = useState(false);
