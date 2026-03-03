@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
 import { TutorialProvider } from "@/contexts/TutorialContext";
 import { AppModeProvider, useAppMode } from "@/contexts/AppModeContext";
+import { useState } from "react";
 import { JobPrefixProvider } from "@/contexts/JobPrefixContext";
 import { AppHeader } from "@/components/AppHeader";
 import { ModePicker } from "@/components/ModePicker";
@@ -35,13 +36,22 @@ import EmailTemplatesPage from "./pages/EmailTemplatesPage";
 import SmsTemplatesPage from "./pages/SmsTemplatesPage";
 import InvoicePage from "./pages/InvoicePage";
 import NotFound from "./pages/NotFound";
+import SplashPage from "./pages/SplashPage";
 
 const queryClient = new QueryClient();
 
 function AppLayout() {
   const { mode, isWorkMode } = useAppMode();
+  const [splashDismissed, setSplashDismissed] = useState(() =>
+    localStorage.getItem("tradie-splash-seen") === "1"
+  );
 
-  if (!mode) return <ModePicker />;
+  if (!mode) {
+    if (!splashDismissed) {
+      return <SplashPage onStart={() => { localStorage.setItem("tradie-splash-seen", "1"); setSplashDismissed(true); }} />;
+    }
+    return <ModePicker />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
