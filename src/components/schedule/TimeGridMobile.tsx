@@ -99,7 +99,7 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onNextWeek, onPre
   const layout = useMemo(() => computeOverlapLayout(dayJobs), [dayJobs]);
 
   return (
-    <div className="grid grid-cols-[40px_1fr] touch-pan-y" style={{ height: totalHeight }} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+    <div className="grid grid-cols-[40px_1fr] touch-pan-y" style={{ height: totalHeight, overscrollBehaviorX: "none" }} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
       {/* Time labels */}
       <div className="relative">
         {hours.map((h, i) => (

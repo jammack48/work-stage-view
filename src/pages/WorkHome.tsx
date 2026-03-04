@@ -141,7 +141,7 @@ export default function WorkHome() {
 
       {/* Scrollable time grid */}
       <div className={cn(
-        isMobile ? "flex-1 overflow-y-auto px-3 pb-4 mt-3" : ""
+        isMobile ? "flex-1 overflow-y-auto overflow-x-hidden px-3 pb-4 mt-3" : ""
       )}>
         {viewMode === "day" ? (
           <TimeGridMobile jobs={myJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))} onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))} />
