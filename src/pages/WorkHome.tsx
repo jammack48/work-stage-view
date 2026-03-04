@@ -27,11 +27,11 @@ export default function WorkHome() {
     const today = new Date();
     const start = startOfWeek(today, { weekStartsOn: 1 });
     const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    return diff >= 0 && diff <= 4 ? diff : 0;
+    return diff >= 0 && diff <= 6 ? diff : 0;
   });
 
   const selectedDate = addDays(weekStart, selectedDay);
-  const weekEnd = addDays(weekStart, 4);
+  const weekEnd = addDays(weekStart, 6);
 
   // Filter to only current staff's jobs
   const weekJobs = useMemo(() => generateWeekJobs(weekStart), [weekStart]);
@@ -104,7 +104,7 @@ export default function WorkHome() {
           onJumpToToday={() => {
             const today = new Date();
             setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
-            const diff = Math.min(4, Math.max(0, today.getDay() - 1));
+            const diff = Math.min(6, Math.max(0, today.getDay() === 0 ? 6 : today.getDay() - 1));
             setSelectedDay(diff);
           }}
         />

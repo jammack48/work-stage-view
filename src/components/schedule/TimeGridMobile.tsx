@@ -71,7 +71,7 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onSlotClick, acti
     touchStartX.current = null;
     touchStartY.current = null;
     if (!isHorizontalSwipe.current || Math.abs(diff) < 50) return;
-    if (diff > 0 && dayOffset < 4) onDayChange(dayOffset + 1);
+    if (diff > 0 && dayOffset < 6) onDayChange(dayOffset + 1);
     if (diff < 0 && dayOffset > 0) onDayChange(dayOffset - 1);
   };
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);

@@ -42,7 +42,7 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
 
 export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, activeSlot }: TimeGridDesktopProps) {
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
-  const days = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
+  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const totalHeight = hours.length * HOUR_HEIGHT_DESKTOP;
 
   const dayLayouts = useMemo(() => {

@@ -13,11 +13,11 @@ interface DayStripProps {
 }
 
 export function DayStrip({ weekStart, selectedDay, onSelectDay, onPrevWeek, onNextWeek, onJumpToToday }: DayStripProps) {
-  const days = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
+  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const now = new Date();
   const todayWeekStart = startOfWeek(now, { weekStartsOn: 1 });
   const isCurrentWeek = differenceInCalendarWeeks(weekStart, todayWeekStart, { weekStartsOn: 1 }) === 0;
-  const todayOffset = Math.min(4, Math.max(0, now.getDay() - 1));
+  const todayOffset = now.getDay() === 0 ? 6 : now.getDay() - 1;
   const isTodaySelected = isCurrentWeek && selectedDay === todayOffset;
 
   return (

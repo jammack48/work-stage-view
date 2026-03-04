@@ -42,7 +42,7 @@ const SchedulePage = () => {
     const today = new Date();
     const start = startOfWeek(today, { weekStartsOn: 1 });
     const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    return diff >= 0 && diff <= 4 ? diff : 0;
+    return diff >= 0 && diff <= 6 ? diff : 0;
   });
 
   // Return visit booking state
@@ -73,7 +73,7 @@ const SchedulePage = () => {
     return allJobs.filter((j) => selectedStaff.includes(j.assignedTo));
   }, [selectedStaff, allJobs]);
 
-  const weekEnd = addDays(weekStart, 4);
+  const weekEnd = addDays(weekStart, 6);
 
   const handleSlotClick = useCallback((dayOffset: number, hour: number) => {
     if (!returnJobId) return;
@@ -156,7 +156,7 @@ const SchedulePage = () => {
               onJumpToToday={() => {
                 const today = new Date();
                 setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
-                const diff = Math.min(4, Math.max(0, today.getDay() - 1));
+                const diff = Math.min(6, Math.max(0, today.getDay() === 0 ? 6 : today.getDay() - 1));
                 setSelectedDay(diff);
               }}
             />
@@ -183,7 +183,7 @@ const SchedulePage = () => {
             onJumpToToday={() => {
               const today = new Date();
               setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
-              const diff = Math.min(4, Math.max(0, today.getDay() - 1));
+              const diff = Math.min(6, Math.max(0, today.getDay() === 0 ? 6 : today.getDay() - 1));
               setSelectedDay(diff);
             }}
           />
