@@ -58,7 +58,7 @@ export default function WorkHome() {
   return (
     <div className={cn(
       "max-w-5xl mx-auto flex flex-col",
-      isMobile ? "h-[calc(100dvh-48px-56px)]" : "px-6 py-4 space-y-3 pb-24"
+      isMobile ? "h-[calc(100dvh-48px-56px)] overflow-x-hidden" : "px-6 py-4 space-y-3 pb-24"
     )}>
       {/* Fixed controls section */}
       <div className={cn("shrink-0 space-y-3", isMobile ? "px-3 pt-4" : "")}>

@@ -162,7 +162,7 @@ const SchedulePage = () => {
       )}
 
       {isMobile ? (
-        <div className="flex flex-col" style={{ height: returnJobId ? 'calc(100dvh - 48px - 44px - 52px - 80px)' : 'calc(100dvh - 48px - 44px - 52px)' }}>
+        <div className="flex flex-col overflow-x-hidden" style={{ height: returnJobId ? 'calc(100dvh - 48px - 44px - 52px - 80px)' : 'calc(100dvh - 48px - 44px - 52px)' }}>
           <div className="shrink-0 space-y-3">
             <DayStrip
               weekStart={weekStart}
