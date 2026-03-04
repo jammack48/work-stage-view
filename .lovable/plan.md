@@ -1,23 +1,19 @@
 
 
-## Fix: Schedule jobs not found when clicked
+## Fix schedule job generation
 
-### Problem
-The `generateWeekJobs` function creates jobs with dynamic IDs like `WK-964-30`, but `getJobDetail()` in `dummyJobDetails.ts` only looks up the static `DEMO_JOBS` array (which has IDs like `TB-0501`). So clicking any generated schedule job navigates to `/job/WK-964-30` → "Job not found".
+### Problems
+1. **Overlapping jobs per person** — The generator randomly assigns start times without checking if that staff member already has a job at that time. A tradesman can only be at one job at a time.
+2. **No weekend/today coverage** — Only generates Mon–Fri (days 0–4). If today is Saturday or Sunday, or if the week calculation is off, no jobs appear.
 
 ### Solution
 
-**`src/data/dummyJobDetails.ts`** — Update `getJobDetail` to handle dynamic schedule IDs:
-- After the static `DEMO_JOBS` lookup fails, check if the ID matches the `WK-` pattern
-- If so, parse the ID to extract enough info to generate a synthetic `JobDetail` with plausible dummy data (staff, materials, notes, photos, time entries)
-- This way every dynamically generated schedule job is clickable and shows a full job card
+**`src/components/schedule/scheduleData.ts` — Rewrite `generateWeekJobs`:**
 
-**`src/components/schedule/ScheduleJobCard.tsx`** — Pass job metadata via navigation state so `getJobDetail` can use it:
-- When navigating to a job, pass the schedule job's `jobName`, `client`, `address`, and `status` as route state
-- This gives `getJobDetail` real data to populate the card instead of generic placeholders
+- **Sequential scheduling per staff member**: Track each staff member's next available hour (starting at 7am). When assigning a job to a person on a given day, set `startHour` to their next free slot and advance it by the job's duration. This guarantees no overlaps.
+- **Generate for all 7 days** (Mon–Sun, days 0–6), with lighter weekends (0–1 jobs) and busier weekdays (2–4 jobs). This ensures today always has jobs regardless of what day it is.
+- **Realistic durations**: Mix of short (1.5–2hr) and long (3–6hr) jobs so a tradesman's day looks real — e.g. 7am–10am one job, 10am–12pm another, 1pm–4pm a third.
+- **Per-day staff tracker**: For each day, maintain a `Map<string, number>` of staff → next available hour. Pick staff who still have availability before `WORK_END`.
 
-**`src/pages/JobCard.tsx`** — Read route state and pass overrides to `getJobDetail`:
-- Extract job metadata from `location.state` and pass as overrides so the job card shows the correct name/client/address
-
-This ensures every generated schedule job is clickable and displays meaningful detail, for any week.
+**No other files need changes** — `WorkHome.tsx` and `SchedulePage.tsx` already consume the output of `generateWeekJobs`.
 
