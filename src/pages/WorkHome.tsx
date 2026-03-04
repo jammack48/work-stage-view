@@ -13,6 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Card, CardContent } from "@/components/ui/card";
 import { getJobDetail } from "@/data/dummyJobDetails";
 import { cn } from "@/lib/utils";
+import { TutorialBanner } from "@/components/TutorialBanner";
 
 const CURRENT_STAFF = "Dave";
 
@@ -70,6 +71,7 @@ export default function WorkHome() {
       "max-w-5xl mx-auto flex flex-col",
       isMobile ? "h-[calc(100dvh-48px-56px)] overflow-x-hidden" : "px-6 py-4 space-y-3 pb-24"
     )}>
+      <TutorialBanner overrideKey="work-home" />
       {/* Fixed controls section */}
       <div className={cn("shrink-0 space-y-3", isMobile ? "px-3 pt-4" : "")}>
         {/* Greeting + view toggle */}

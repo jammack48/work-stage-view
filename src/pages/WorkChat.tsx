@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { CHANNELS, INITIAL_MESSAGES, STAFF_LIST, type ChatMessage, type Channel } from "@/data/dummyTeamChat";
+import { TutorialBanner } from "@/components/TutorialBanner";
 
 function renderMessageText(text: string) {
   const parts = text.split(/(@\w+)/g);
@@ -84,6 +85,7 @@ export default function WorkChat() {
   if (!activeChannel) {
     return (
       <div className="max-w-lg mx-auto px-4 py-4">
+        <TutorialBanner overrideKey="work-chat" />
         <div className="flex items-center gap-2 mb-4">
           <MessageCircle className="w-5 h-5 text-primary" />
           <h1 className="text-lg font-bold text-foreground">Team Chat</h1>

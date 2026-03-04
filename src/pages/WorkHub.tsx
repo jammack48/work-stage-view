@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import WorkTimesheet from "./WorkTimesheet";
+import { TutorialBanner } from "@/components/TutorialBanner";
 
 const COMPANY_DOCS = [
   { id: "cd1", name: "Health & Safety Policy", updated: "15 Jan 2026" },
@@ -46,6 +47,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function WorkHub() {
   return (
     <div className="px-4 py-4 max-w-2xl mx-auto">
+      <TutorialBanner overrideKey="work-hub" />
       <h1 className="text-xl font-bold text-foreground mb-4">Hub</h1>
 
       <Tabs defaultValue="docs" className="w-full">

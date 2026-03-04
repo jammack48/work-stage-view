@@ -9,6 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { cn } from "@/lib/utils";
 import { DEMO_JOBS } from "@/components/schedule/scheduleData";
 import { STAFF_LIST, INITIAL_NOTES, type QuickNote } from "@/data/dummyTeamChat";
+import { TutorialBanner } from "@/components/TutorialBanner";
 import { useToast } from "@/hooks/use-toast";
 
 export default function WorkNotes() {
@@ -106,6 +107,7 @@ export default function WorkNotes() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
+      <TutorialBanner overrideKey="work-notes" />
       <div className="flex items-center gap-2 mb-1">
         <StickyNote className="w-5 h-5 text-primary" />
         <h1 className="text-lg font-bold text-foreground">Quick Notes</h1>

@@ -155,6 +155,28 @@ export const tutorialPages: Record<string, TutorialEntry> = {
     body: "Automated follow-up sequences attached to this job. These send emails and SMS on a schedule so you don't have to remember to chase. Set it and forget it — the app nags them so you don't have to.",
   },
 
+  // ── Work Mode Pages ──
+  "work-home": {
+    title: "Your Day at a Glance",
+    body: "This is your daily schedule — see what jobs you're on today, check tomorrow, and swipe through the week. The pickup list shows what materials you need before you leave. Tap any job to open the full job card with scope, photos, and forms.",
+  },
+  "work-hub": {
+    title: "Your Hub",
+    body: "Company docs, training videos, your certs, and blank forms — all in one spot. Download what you need before heading to site. Check your cert expiry dates so nothing catches you off guard.",
+  },
+  "work-notes": {
+    title: "Quick Notes",
+    body: "Jot down anything on the fly — site access codes, what the customer said, stuff to remember. Link notes to jobs so they're easy to find later. You can even send an alert to a teammate or set a timer reminder for yourself.",
+  },
+  "work-chat": {
+    title: "Team Chat",
+    body: "Message the crew without leaving the app. Each channel keeps chats organised — general banter, job-specific updates, safety alerts. Use @mentions to ping someone directly. No more lost texts or group chat chaos.",
+  },
+  "work-timesheet": {
+    title: "Your Timesheet",
+    body: "Log your hours for the week, add notes for travel time or extras, then submit for approval. No more paper timesheets or end-of-week guessing. The boss sees it instantly and you've got a record if there's ever a question.",
+  },
+
   // ── Quote ──
   quote: {
     title: "Quote Builder",
