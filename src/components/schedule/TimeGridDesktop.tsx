@@ -54,8 +54,8 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
   }, [jobs, days.length]);
 
   return (
-    <div className="overflow-x-auto">
-      <div className="min-w-[700px]">
+    <div className="overflow-hidden">
+      <div>
         {/* Day headers */}
         <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
           <div />

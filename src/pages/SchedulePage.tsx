@@ -179,7 +179,7 @@ const SchedulePage = () => {
             />
             {!isBookingMode && <StaffFilterBar selectedStaff={selectedStaff} onSelectionChange={setSelectedStaff} />}
           </div>
-          <div className="flex-1 overflow-y-auto mt-3">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden mt-3">
             <TimeGridMobile
               jobs={filteredJobs}
               dayOffset={selectedDay}
