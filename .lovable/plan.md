@@ -1,28 +1,23 @@
 
 
-## Add multi-week demo jobs to Schedule
+## Fix: Schedule jobs not found when clicked
 
 ### Problem
-Current `DEMO_JOBS` only has jobs for `dayOffset` 0-4 (one fixed week). Navigating to next/previous weeks shows an empty calendar.
+The `generateWeekJobs` function creates jobs with dynamic IDs like `WK-964-30`, but `getJobDetail()` in `dummyJobDetails.ts` only looks up the static `DEMO_JOBS` array (which has IDs like `TB-0501`). So clicking any generated schedule job navigates to `/job/WK-964-30` → "Job not found".
 
 ### Solution
-Replace the static `DEMO_JOBS` array with a deterministic generator function `getJobsForWeek(weekStart: Date)` that produces 2-3 jobs per day (Mon-Fri) for **any** week. Uses a simple hash of the date to seed consistent job assignments so the same week always shows the same jobs.
 
-### Changes
+**`src/data/dummyJobDetails.ts`** — Update `getJobDetail` to handle dynamic schedule IDs:
+- After the static `DEMO_JOBS` lookup fails, check if the ID matches the `WK-` pattern
+- If so, parse the ID to extract enough info to generate a synthetic `JobDetail` with plausible dummy data (staff, materials, notes, photos, time entries)
+- This way every dynamically generated schedule job is clickable and shows a full job card
 
-**1. `src/components/schedule/scheduleData.ts`**
-- Add a `generateWeekJobs(weekStart: Date)` function that creates ~12-15 jobs per week
-- Uses a pool of job names, clients, addresses, and staff to deterministically assign 2-3 jobs per day
-- Each day gets varied start times and durations across different staff members
-- Keep `DEMO_JOBS` as a fallback but the schedule page will use the generator instead
+**`src/components/schedule/ScheduleJobCard.tsx`** — Pass job metadata via navigation state so `getJobDetail` can use it:
+- When navigating to a job, pass the schedule job's `jobName`, `client`, `address`, and `status` as route state
+- This gives `getJobDetail` real data to populate the card instead of generic placeholders
 
-**2. `src/pages/SchedulePage.tsx`**
-- Replace `DEMO_JOBS` import with `generateWeekJobs`
-- Call `generateWeekJobs(weekStart)` in a `useMemo` keyed on `weekStart`
-- This automatically populates jobs for whatever week the user navigates to
+**`src/pages/JobCard.tsx`** — Read route state and pass overrides to `getJobDetail`:
+- Extract job metadata from `location.state` and pass as overrides so the job card shows the correct name/client/address
 
-**3. `src/pages/WorkHome.tsx`** (if it uses DEMO_JOBS)
-- Update to also use the generator so Work mode home shows consistent data
-
-The week navigation (prev/next arrows, "Jump to Today") already works — this just ensures there's data to display on every week.
+This ensures every generated schedule job is clickable and displays meaningful detail, for any week.
 
