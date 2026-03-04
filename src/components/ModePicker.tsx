@@ -84,8 +84,8 @@ export function ModePicker() {
                   <Building2 className="w-6 h-6 text-blue-500" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-card-foreground">Run the Office</h2>
-                  <p className="text-sm text-muted-foreground">You manage from a desk — quoting, invoicing, scheduling & reports.</p>
+                  <h2 className="text-base font-bold text-card-foreground">In the Office</h2>
+                  <p className="text-sm text-muted-foreground">Full pipeline — quoting, invoicing, scheduling & reports.</p>
                 </div>
               </div>
             </button>
@@ -99,8 +99,8 @@ export function ModePicker() {
                   <HardHat className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-card-foreground">Owner on the Tools</h2>
-                  <p className="text-sm text-muted-foreground">You do the work AND run the business — schedule-first with quoting & invoicing.</p>
+                  <h2 className="text-base font-bold text-card-foreground">On the Tools</h2>
+                  <p className="text-sm text-muted-foreground">Log time, track parts, complete jobs & snap photos.</p>
                 </div>
               </div>
             </button>
