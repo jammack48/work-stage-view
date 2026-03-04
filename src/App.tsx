@@ -42,14 +42,13 @@ const queryClient = new QueryClient();
 
 function AppLayout() {
   const { mode, isWorkMode } = useAppMode();
-  const [splashDismissed, setSplashDismissed] = useState(() =>
-    localStorage.getItem("tradie-splash-seen") === "1"
-  );
+  const [splashDismissed, setSplashDismissed] = useState(false);
+
+  if (!splashDismissed) {
+    return <SplashPage onStart={() => setSplashDismissed(true)} />;
+  }
 
   if (!mode) {
-    if (!splashDismissed) {
-      return <SplashPage onStart={() => { localStorage.setItem("tradie-splash-seen", "1"); setSplashDismissed(true); }} />;
-    }
     return <ModePicker />;
   }
 
