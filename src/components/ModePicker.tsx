@@ -70,8 +70,8 @@ export function ModePicker() {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-md space-y-6">
           <div className="text-center">
-            <h1 className="text-xl font-bold text-foreground mb-1">What are you up to today?</h1>
-            <p className="text-sm text-muted-foreground">On the tools or in the office — you can switch anytime.</p>
+            <h1 className="text-xl font-bold text-foreground mb-1">Where are you today?</h1>
+            <p className="text-sm text-muted-foreground">Office or on the tools — you can switch anytime.</p>
           </div>
 
           <div className="grid gap-3">
