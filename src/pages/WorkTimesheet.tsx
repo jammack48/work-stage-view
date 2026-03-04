@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Send, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
 import { cn } from "@/lib/utils";
+import { TutorialBanner } from "@/components/TutorialBanner";
 
 type TimesheetStatus = "draft" | "pending" | "approved" | "rejected";
 
@@ -88,6 +89,7 @@ export default function WorkTimesheet() {
 
   return (
     <div className="px-4 py-4 max-w-2xl mx-auto">
+      <TutorialBanner overrideKey="work-timesheet" />
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold text-foreground">Timesheet</h1>
         <Badge className={cn("gap-1", badge.class)}>
