@@ -79,29 +79,50 @@ export function generateWeekJobs(weekStart: Date): ScheduleJob[] {
   const jobs: ScheduleJob[] = [];
   let idx = 0;
 
-  for (let day = 0; day < 5; day++) {
-    const jobsPerDay = 2 + Math.floor(seededRandom(baseSeed, idx++) * 2); // 2-3 jobs
-    for (let j = 0; j < jobsPerDay; j++) {
+  for (let day = 0; day < 7; day++) {
+    const isWeekend = day >= 5;
+    // Weekdays: 3-5 jobs, weekends: 1-2 jobs
+    const jobCount = isWeekend
+      ? 1 + Math.floor(seededRandom(baseSeed, idx++) * 2)
+      : 3 + Math.floor(seededRandom(baseSeed, idx++) * 3);
+
+    // Track next available hour per staff member for this day
+    const staffNextFree = new Map<string, number>();
+    STAFF.forEach((s) => staffNextFree.set(s, WORK_START));
+
+    for (let j = 0; j < jobCount; j++) {
       const r = (i: number) => seededRandom(baseSeed, idx + i);
-      const staffIdx = Math.floor(r(0) * STAFF.length);
-      const jobNameIdx = Math.floor(r(1) * JOB_NAMES.length);
-      const clientIdx = Math.floor(r(2) * CLIENTS.length);
-      const addressIdx = Math.floor(r(3) * ADDRESSES.length);
-      const startHour = 7 + Math.floor(r(4) * 4); // 7-10
-      const duration = 2 + Math.floor(r(5) * 5); // 2-6 hours
-      const statusIdx = Math.floor(r(6) * STATUSES.length);
+
+      // Find staff with availability remaining today
+      const available = STAFF.filter((s) => (staffNextFree.get(s) || WORK_START) + 2 <= WORK_END);
+      if (available.length === 0) break;
+
+      const staffMember = available[Math.floor(r(0) * available.length)];
+      const startHour = staffNextFree.get(staffMember) || WORK_START;
+
+      // Duration: 2-5 hours, capped to not exceed WORK_END
+      const maxDuration = Math.min(5, WORK_END - startHour);
+      if (maxDuration < 2) { idx += 7; continue; }
+      const duration = 2 + Math.floor(r(1) * (maxDuration - 1));
+
+      const jobNameIdx = Math.floor(r(2) * JOB_NAMES.length);
+      const clientIdx = Math.floor(r(3) * CLIENTS.length);
+      const addressIdx = Math.floor(r(4) * ADDRESSES.length);
+      const statusIdx = Math.floor(r(5) * STATUSES.length);
 
       jobs.push({
         id: `WK-${baseSeed % 1000}-${day}${j}`,
         jobName: JOB_NAMES[jobNameIdx],
         client: CLIENTS[clientIdx],
-        assignedTo: STAFF[staffIdx],
+        assignedTo: staffMember,
         dayOffset: day,
         startHour,
-        durationHours: Math.min(duration, WORK_END - startHour),
+        durationHours: duration,
         address: ADDRESSES[addressIdx],
         status: STATUSES[statusIdx],
       });
+
+      staffNextFree.set(staffMember, startHour + duration);
       idx += 7;
     }
   }
