@@ -47,21 +47,19 @@ export function AppHeader() {
           {!isMobile && <span className="text-xs font-medium">Switch</span>}
         </Button>
 
-        {!isWorkMode && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => cyclePosition()}
-                className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent"
-              >
-                <LayoutGrid className="w-5 h-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent><p className="text-xs">Layout: {position}</p></TooltipContent>
-          </Tooltip>
-        )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => cyclePosition(isWorkMode ? ["bottom"] : undefined)}
+              className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent"
+            >
+              <LayoutGrid className="w-5 h-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent><p className="text-xs">Layout: {position}</p></TooltipContent>
+        </Tooltip>
 
         {!isWorkMode && (
           <Button
