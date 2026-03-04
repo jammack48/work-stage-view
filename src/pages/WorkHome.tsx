@@ -144,7 +144,7 @@ export default function WorkHome() {
         isMobile ? "flex-1 overflow-y-auto px-3 pb-4 mt-3" : ""
       )}>
         {viewMode === "day" ? (
-          <TimeGridMobile jobs={myJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} />
+          <TimeGridMobile jobs={myJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))} onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))} />
         ) : (
           <TimeGridDesktop weekStart={weekStart} jobs={myJobs} selectedDay={selectedDay} />
         )}

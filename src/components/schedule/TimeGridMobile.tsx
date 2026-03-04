@@ -7,6 +7,8 @@ interface TimeGridMobileProps {
   jobs: ScheduleJob[];
   dayOffset: number;
   onDayChange?: (day: number) => void;
+  onNextWeek?: () => void;
+  onPrevWeek?: () => void;
   onSlotClick?: (dayOffset: number, hour: number) => void;
   activeSlot?: { dayOffset: number; startHour: number } | null;
 }
@@ -37,7 +39,7 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
   return layout;
 }
 
-export function TimeGridMobile({ jobs, dayOffset, onDayChange, onSlotClick, activeSlot }: TimeGridMobileProps) {
+export function TimeGridMobile({ jobs, dayOffset, onDayChange, onNextWeek, onPrevWeek, onSlotClick, activeSlot }: TimeGridMobileProps) {
   const isBookingMode = !!onSlotClick;
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -71,8 +73,14 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onSlotClick, acti
     touchStartX.current = null;
     touchStartY.current = null;
     if (!isHorizontalSwipe.current || Math.abs(diff) < 50) return;
-    if (diff > 0 && dayOffset < 6) onDayChange(dayOffset + 1);
-    if (diff < 0 && dayOffset > 0) onDayChange(dayOffset - 1);
+    if (diff > 0) {
+      if (dayOffset < 6) onDayChange?.(dayOffset + 1);
+      else if (onNextWeek) { onNextWeek(); onDayChange?.(0); }
+    }
+    if (diff < 0) {
+      if (dayOffset > 0) onDayChange?.(dayOffset - 1);
+      else if (onPrevWeek) { onPrevWeek(); onDayChange?.(6); }
+    }
   };
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
   const totalHeight = hours.length * HOUR_HEIGHT_MOBILE;
