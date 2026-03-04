@@ -47,6 +47,7 @@ const SchedulePage = () => {
 
   // Return visit booking state
   const [bookedSlot, setBookedSlot] = useState<{ dayOffset: number; startHour: number } | null>(null);
+  const [returnDuration, setReturnDuration] = useState(2);
 
   const weekJobs = useMemo(() => generateWeekJobs(weekStart), [weekStart]);
 
@@ -60,7 +61,7 @@ const SchedulePage = () => {
         assignedTo: "Dave",
         dayOffset: bookedSlot.dayOffset,
         startHour: bookedSlot.startHour,
-        durationHours: 2,
+        durationHours: returnDuration,
         address: returnBookingJob.address,
         status: "Scheduled",
       });
@@ -125,10 +126,26 @@ const SchedulePage = () => {
               </p>
               <p className="text-xs text-muted-foreground">
                 {bookedSlot
-                  ? `Selected: ${format(addDays(weekStart, bookedSlot.dayOffset), "EEE d MMM")} at ${formatTime(bookedSlot.startHour)}`
+                  ? `Selected: ${format(addDays(weekStart, bookedSlot.dayOffset), "EEE d MMM")} at ${formatTime(bookedSlot.startHour)} · ${returnDuration}h`
                   : "Tap an empty time slot to book"
                 }
               </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 pl-7 flex-wrap">
+            <span className="text-xs font-medium text-card-foreground">Hours:</span>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((h) => (
+                <Button
+                  key={h}
+                  size="sm"
+                  variant={returnDuration === h ? "default" : "outline"}
+                  className="h-7 w-7 p-0 text-xs"
+                  onClick={() => setReturnDuration(h)}
+                >
+                  {h}
+                </Button>
+              ))}
             </div>
           </div>
           <div className="flex gap-2 pl-7">
@@ -171,6 +188,7 @@ const SchedulePage = () => {
               onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
               onSlotClick={returnJobId ? handleSlotClick : undefined}
               activeSlot={bookedSlot}
+              activeDuration={returnDuration}
             />
           </div>
         </div>
@@ -196,6 +214,7 @@ const SchedulePage = () => {
             selectedDay={selectedDay}
             onSlotClick={returnJobId ? handleSlotClick : undefined}
             activeSlot={bookedSlot}
+            activeDuration={returnDuration}
           />
         </div>
       )}

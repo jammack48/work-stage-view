@@ -10,6 +10,7 @@ interface TimeGridDesktopProps {
   selectedDay?: number;
   onSlotClick?: (dayOffset: number, hour: number) => void;
   activeSlot?: { dayOffset: number; startHour: number } | null;
+  activeDuration?: number;
 }
 
 function computeOverlapLayout(jobs: ScheduleJob[]) {
@@ -40,7 +41,7 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
   return layout;
 }
 
-export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, activeSlot }: TimeGridDesktopProps) {
+export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, activeSlot, activeDuration = 2 }: TimeGridDesktopProps) {
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const totalHeight = hours.length * HOUR_HEIGHT_DESKTOP;
@@ -56,7 +57,7 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
     <div className="overflow-x-auto">
       <div className="min-w-[700px]">
         {/* Day headers */}
-        <div className="grid grid-cols-[60px_repeat(5,1fr)] border-b border-border">
+        <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
           <div />
           {days.map((d, i) => (
             <div
@@ -72,7 +73,7 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
         </div>
 
         {/* Time grid */}
-        <div className="grid grid-cols-[60px_repeat(5,1fr)]" style={{ height: totalHeight }}>
+        <div className="grid grid-cols-[60px_repeat(7,1fr)]" style={{ height: totalHeight }}>
           {/* Time labels */}
           <div className="relative">
             {hours.map((h, i) => (
@@ -145,18 +146,6 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
                       />
                     );
                   })}
-                  {/* Active slot 2-hour highlight */}
-                  {activeSlot && activeSlot.dayOffset === di && (
-                    <div
-                      className="absolute left-1 right-1 rounded-lg bg-primary/20 border-2 border-primary/50 pointer-events-none flex items-center justify-center"
-                      style={{
-                        top: (activeSlot.startHour - WORK_START) * HOUR_HEIGHT_DESKTOP,
-                        height: 2 * HOUR_HEIGHT_DESKTOP,
-                      }}
-                    >
-                      <span className="text-xs font-semibold text-primary">Return Visit</span>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
