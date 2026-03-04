@@ -1,28 +1,36 @@
 
 
-## Splash / Landing Page for Beta Testers
+## Redesigned Landing Page
 
-### What we're building
+These are excellent suggestions. The core insight is right: the current page is too text-heavy. Tradies trust screenshots, not bullet lists. The structure should follow a proven SaaS pattern: show the product immediately, create emotional contrast with pain points, then close with a CTA.
 
-A new `SplashPage.tsx` that appears before the `ModePicker` when no mode is set. It's a marketing-style landing page that:
+### Structure (top to bottom)
 
-1. **Hero section**: "Tradie Toolbelt" branding with tagline "Run your entire business from your phone." Big bold headline, beta badge.
+1. **Hero** — Punchy headline ("Run your trade business without the paperwork"), pipeline flow sub-line (Leads → Quotes → Jobs → Invoices → Paid), "Start Demo" button, and a **mock phone frame** showing a miniature rendered pipeline dashboard (not an image file — we'll build a simplified SVG/HTML mock of the stage columns inline so it looks like a real app screenshot without needing actual image assets).
 
-2. **Pain points section**: Conversational questions — "Too slow getting back to enquiries?", "Struggling to keep up with customer follow-ups?", "Missing jobs because you're too busy working?", "Manually tracking time sheets?", "Quiet periods with no leads coming in?" — presented as a checklist or card grid the user can relate to.
+2. **Problem** — "Does this sound familiar?" with 4 tight pain points (quotes never followed up, jobs on scraps of paper, chasing invoices after hours, losing jobs because you're too busy). Shorter than current — 4 items, not 6.
 
-3. **Solution section**: Brief explanation — "One app. From first lead to final payment." with feature highlights: Lead generation & automated follow-ups, Draft quoting on-site, Job sheets & scheduling, Time management & staff tracking, Purchase ordering, Invoicing & payments. Works for one-man bands through to large companies. "As simple or as complicated as you want."
+3. **Solution** — "Everything in one place." with 5 short bullets (Capture leads, Quote on site, Schedule jobs, Track staff time, Send invoices). Clean, minimal.
 
-4. **Beta notice banner**: Prominent but friendly — "This is a beta demo. All data is fake. You can't break anything. The goal is to test the interface and give feedback. All feedback is hugely appreciated."
+4. **3 Feature Snapshots** — Three cards only, each with a title, one-liner, and a small inline mock visual:
+   - "Quotes in seconds" — mini quote card mock
+   - "See every job" — mini pipeline columns mock
+   - "Get paid faster" — mini invoice card mock
 
-5. **CTA button**: "Start Demo" → navigates to the existing `ModePicker` flow.
+5. **Automation Hook** — "The app that chases customers for you." with sub-line about automatic follow-ups. Small inline mock of the sequence builder steps.
+
+6. **Beta Notice + Close CTA** — "One app. From first enquiry to final payment." + beta disclaimer + "Start Demo" button.
 
 ### Technical approach
 
-- **New file**: `src/pages/SplashPage.tsx` — self-contained, responsive, mobile-first
-- **New state**: Add a `showSplash` boolean (localStorage-backed) to `AppModeContext` or handle in `AppLayout`
-- **Modify `src/App.tsx`**: In `AppLayout`, when `mode === null`, check if splash has been seen. If not, show `SplashPage`; if dismissed, show `ModePicker`.
-- The splash page sets a localStorage flag and transitions to `ModePicker` on CTA click
-- No AppHeader shown on splash page (same as ModePicker)
-- Fully responsive: single column on mobile, wider layout on desktop
-- Uses existing design system (Card, Button, Badge components, Tailwind)
+- **Single file change**: Rewrite `src/pages/SplashPage.tsx`
+- **No image assets needed**: Build small inline mock components (styled divs that look like miniature app screenshots — pipeline columns, a quote card, an invoice card, sequence steps). These are simple colored blocks/text that visually represent the UI.
+- **Phone frame component**: A simple rounded-rect border with a notch that wraps the pipeline mock, giving the "app on a phone" feel.
+- **Responsive**: Single column mobile, wider on desktop. Hero phone mock scales down gracefully.
+- **Same props interface** (`onStart` callback), no changes to `App.tsx`.
+
+### What we're NOT doing
+- No actual screenshot images (we don't have image hosting)
+- No stock photos
+- No animations/framer-motion (keep it fast and simple)
 
