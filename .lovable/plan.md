@@ -1,14 +1,18 @@
 
 
-## Fix manager sub-choice heading
+## Update manager sub-choice screen
 
-The manager-choice sub-step heading should reflect that the user has already identified as a Manager/Owner. Change:
+The two options ("Run the Office" and "Owner on the Tools") need simpler, more practical labels and descriptions. The user is already identified as management — this screen just asks where they're working today.
 
-- **Heading**: "What are you up to today?" → "Where are you today?"
-- **Subtitle**: "On the tools or in the office — you can switch anytime." → "Office or on the tools — you can switch anytime."
+### Changes to `src/components/ModePicker.tsx` (lines 87-104)
 
-### File: `src/components/ModePicker.tsx`
-Lines ~73-74 in the manager-choice sub-step:
-- `"What are you up to today?"` → `"Where are you today?"`
-- `"On the tools or in the office — you can switch anytime."` → `"Office or on the tools — you can switch anytime."`
+**Option 1 — "Run the Office":**
+- Title: **"In the Office"**
+- Description: **"Full pipeline — quoting, invoicing, scheduling & reports."**
+
+**Option 2 — "Owner on the Tools":**
+- Title: **"On the Tools"**  
+- Description: **"Log time, track parts, complete jobs & snap photos."**
+
+No other changes needed — heading and subtitle are already correct.
 
