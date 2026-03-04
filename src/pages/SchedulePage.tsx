@@ -8,7 +8,7 @@ import { StaffFilterBar } from "@/components/schedule/StaffFilterBar";
 import { DayStrip } from "@/components/schedule/DayStrip";
 import { TimeGridDesktop } from "@/components/schedule/TimeGridDesktop";
 import { TimeGridMobile } from "@/components/schedule/TimeGridMobile";
-import { DEMO_JOBS, formatTime } from "@/components/schedule/scheduleData";
+import { generateWeekJobs, formatTime } from "@/components/schedule/scheduleData";
 import { SCHEDULE_EXTRAS, handleCommonTab } from "@/config/toolbarTabs";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -48,8 +48,10 @@ const SchedulePage = () => {
   // Return visit booking state
   const [bookedSlot, setBookedSlot] = useState<{ dayOffset: number; startHour: number } | null>(null);
 
+  const weekJobs = useMemo(() => generateWeekJobs(weekStart), [weekStart]);
+
   const allJobs = useMemo(() => {
-    const base = [...DEMO_JOBS];
+    const base = [...weekJobs];
     if (bookedSlot && returnBookingJob) {
       base.push({
         id: `${returnJobId}-return`,
@@ -64,7 +66,7 @@ const SchedulePage = () => {
       });
     }
     return base;
-  }, [bookedSlot, returnBookingJob, returnJobId]);
+  }, [bookedSlot, returnBookingJob, returnJobId, weekJobs]);
 
   const filteredJobs = useMemo(() => {
     if (selectedStaff.length === 0) return allJobs;

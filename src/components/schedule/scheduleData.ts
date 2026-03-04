@@ -41,6 +41,73 @@ export const DEMO_JOBS: ScheduleJob[] = [
   { id: "TB-0513", jobName: "Leak Detection", client: "Emma Clarke", assignedTo: "Mike", dayOffset: 4, startHour: 8, durationHours: 4, address: "15 Broadway, Newmarket", status: "Scheduled" },
 ];
 
+const JOB_NAMES = [
+  "Kitchen Plumbing", "Roof Repair", "Bathroom Reno", "Deck Lighting", "Tiling",
+  "Fence Repair", "Exterior Paint", "EV Charger Install", "Heat Pump Install",
+  "Gas Fitting", "Leak Detection", "Solar Panel Install", "Rewire", "Gutter Replace",
+  "Switchboard Upgrade", "Hot Water Cylinder", "Shower Install", "Spouting Repair",
+];
+const CLIENTS = [
+  "Dave Thompson", "Sarah Mitchell", "Mike O'Brien", "Jenny Wu", "Rangi Patel",
+  "Tama Williams", "Lisa Chen", "Hemi Brown", "Karen Ngata", "Steve Archer",
+  "Aroha Davis", "Ben Kowalski", "Priya Sharma", "Tom Gallagher", "Emma Clarke",
+];
+const ADDRESSES = [
+  "12 Queen St, Auckland", "88 Ponsonby Rd", "5 Te Atatu Rd", "22 Dominion Rd",
+  "9 Mt Eden Rd", "44 Great South Rd", "17 New North Rd", "31 Symonds St",
+  "66 Remuera Rd", "8 Parnell Rd", "15 Broadway, Newmarket", "3 Karangahape Rd",
+  "41 Hobson St", "7 Victoria St West", "29 Albert St",
+];
+const STATUSES: ScheduleJob["status"][] = ["Scheduled", "In Progress", "Invoiced"];
+
+function seedHash(str: string): number {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
+}
+
+function seededRandom(seed: number, index: number): number {
+  const x = Math.sin(seed + index * 9301 + 49297) * 49979;
+  return x - Math.floor(x);
+}
+
+export function generateWeekJobs(weekStart: Date): ScheduleJob[] {
+  const key = `${weekStart.getFullYear()}-${weekStart.getMonth()}-${weekStart.getDate()}`;
+  const baseSeed = seedHash(key);
+  const jobs: ScheduleJob[] = [];
+  let idx = 0;
+
+  for (let day = 0; day < 5; day++) {
+    const jobsPerDay = 2 + Math.floor(seededRandom(baseSeed, idx++) * 2); // 2-3 jobs
+    for (let j = 0; j < jobsPerDay; j++) {
+      const r = (i: number) => seededRandom(baseSeed, idx + i);
+      const staffIdx = Math.floor(r(0) * STAFF.length);
+      const jobNameIdx = Math.floor(r(1) * JOB_NAMES.length);
+      const clientIdx = Math.floor(r(2) * CLIENTS.length);
+      const addressIdx = Math.floor(r(3) * ADDRESSES.length);
+      const startHour = 7 + Math.floor(r(4) * 4); // 7-10
+      const duration = 2 + Math.floor(r(5) * 5); // 2-6 hours
+      const statusIdx = Math.floor(r(6) * STATUSES.length);
+
+      jobs.push({
+        id: `WK-${baseSeed % 1000}-${day}${j}`,
+        jobName: JOB_NAMES[jobNameIdx],
+        client: CLIENTS[clientIdx],
+        assignedTo: STAFF[staffIdx],
+        dayOffset: day,
+        startHour,
+        durationHours: Math.min(duration, WORK_END - startHour),
+        address: ADDRESSES[addressIdx],
+        status: STATUSES[statusIdx],
+      });
+      idx += 7;
+    }
+  }
+  return jobs;
+}
+
 export function formatTime(hour: number) {
   if (hour === 12) return "12pm";
   return hour < 12 ? `${hour}am` : `${hour - 12}pm`;
