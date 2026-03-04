@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useCallback } from "react";
 import { addDays, format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_DESKTOP, formatTime } from "./scheduleData";
@@ -15,6 +15,8 @@ interface TimeGridDesktopProps {
   visibleDays?: number;
   /** Which dayOffset to start from when visibleDays < 7. Defaults to 0. */
   startDayOffset?: number;
+  /** Called when user swipes left/right to shift the visible window */
+  onWindowShift?: (direction: "left" | "right") => void;
 }
 
 function computeOverlapLayout(jobs: ScheduleJob[]) {
@@ -45,7 +47,20 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
   return layout;
 }
 
-export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, activeSlot, activeDuration = 2, visibleDays = 7, startDayOffset = 0 }: TimeGridDesktopProps) {
+export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, activeSlot, activeDuration = 2, visibleDays = 7, startDayOffset = 0, onWindowShift }: TimeGridDesktopProps) {
+  // Touch swipe handling
+  const touchStartX = useRef<number | null>(null);
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null || !onWindowShift) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(dx) > 50) {
+      onWindowShift(dx < 0 ? "right" : "left");
+    }
+  }, [onWindowShift]);
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
   const allDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   // Slice to visible window
@@ -61,7 +76,7 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
   }, [jobs, dayIndices.join(",")]);
 
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden touch-pan-y" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <div>
         {/* Day headers */}
         <div className={`grid border-b border-border`} style={{ gridTemplateColumns: `60px repeat(${visibleDays}, 1fr)` }}>

@@ -29,6 +29,8 @@ export default function WorkHome() {
     const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
     return diff >= 0 && diff <= 6 ? diff : 0;
   });
+  // 3-day window start offset for mobile week view (0 = Mon-Wed, 3 = Thu-Sat, etc.)
+  const [weekWindowStart, setWeekWindowStart] = useState(0);
 
   const selectedDate = addDays(weekStart, selectedDay);
   const weekEnd = addDays(weekStart, 6);
@@ -98,7 +100,14 @@ export default function WorkHome() {
         <DayStrip
           weekStart={weekStart}
           selectedDay={selectedDay}
-          onSelectDay={setSelectedDay}
+          onSelectDay={(d) => {
+            setSelectedDay(d);
+            // Snap the 3-day window to include the selected day
+            if (isMobile && viewMode === "week") {
+              const windowStart = Math.min(Math.floor(d / 3) * 3, 4);
+              setWeekWindowStart(windowStart);
+            }
+          }}
           onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
           onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
           onJumpToToday={() => {
@@ -151,7 +160,28 @@ export default function WorkHome() {
             jobs={myJobs}
             selectedDay={selectedDay}
             visibleDays={isMobile ? 3 : 7}
-            startDayOffset={isMobile ? Math.max(0, Math.min(selectedDay - 1, 4)) : 0}
+            startDayOffset={isMobile ? weekWindowStart : 0}
+            onWindowShift={isMobile ? (dir) => {
+              if (dir === "right") {
+                // Move forward 3 days
+                if (weekWindowStart + 3 >= 7) {
+                  // Wrap to next week
+                  setWeekStart(addWeeks(weekStart, 1));
+                  setWeekWindowStart(0);
+                } else {
+                  setWeekWindowStart(weekWindowStart + 3);
+                }
+              } else {
+                // Move back 3 days
+                if (weekWindowStart - 3 < 0) {
+                  // Wrap to previous week
+                  setWeekStart(subWeeks(weekStart, 1));
+                  setWeekWindowStart(Math.max(0, 4)); // Show Thu-Sat of prev week
+                } else {
+                  setWeekWindowStart(weekWindowStart - 3);
+                }
+              }
+            } : undefined}
           />
         )}
       </div>
