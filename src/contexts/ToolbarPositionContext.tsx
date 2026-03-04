@@ -14,7 +14,7 @@ function getStoredPosition(): ToolbarPosition {
 
 interface ToolbarPositionContextValue {
   position: ToolbarPosition;
-  cyclePosition: () => void;
+  cyclePosition: (skip?: ToolbarPosition[]) => void;
 }
 
 const ToolbarPositionContext = createContext<ToolbarPositionContextValue | null>(null);
@@ -26,9 +26,12 @@ export function ToolbarPositionProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("toolbar-position", position);
   }, [position]);
 
-  const cyclePosition = () => {
-    const idx = POSITION_CYCLE.indexOf(position);
-    setPosition(POSITION_CYCLE[(idx + 1) % POSITION_CYCLE.length]);
+  const cyclePosition = (skip?: ToolbarPosition[]) => {
+    let idx = POSITION_CYCLE.indexOf(position);
+    do {
+      idx = (idx + 1) % POSITION_CYCLE.length;
+    } while (skip?.includes(POSITION_CYCLE[idx]));
+    setPosition(POSITION_CYCLE[idx]);
   };
 
   return (

@@ -202,7 +202,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
         <main className={cn("flex-1 min-w-0", position === "left" ? "ml-16" : "mr-16")}>
           {headingBar}
           {tutorialBanner}
-          <div className="p-4">{children}</div>
+          <div className="p-4 overflow-x-hidden">{children}</div>
         </main>
       </div>
     );
