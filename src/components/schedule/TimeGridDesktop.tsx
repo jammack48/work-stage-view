@@ -11,6 +11,10 @@ interface TimeGridDesktopProps {
   onSlotClick?: (dayOffset: number, hour: number) => void;
   activeSlot?: { dayOffset: number; startHour: number } | null;
   activeDuration?: number;
+  /** Show fewer day columns (e.g. 3 on mobile week view). Defaults to 7. */
+  visibleDays?: number;
+  /** Which dayOffset to start from when visibleDays < 7. Defaults to 0. */
+  startDayOffset?: number;
 }
 
 function computeOverlapLayout(jobs: ScheduleJob[]) {
@@ -41,23 +45,26 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
   return layout;
 }
 
-export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, activeSlot, activeDuration = 2 }: TimeGridDesktopProps) {
+export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, activeSlot, activeDuration = 2, visibleDays = 7, startDayOffset = 0 }: TimeGridDesktopProps) {
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
-  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const allDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  // Slice to visible window
+  const days = allDays.slice(startDayOffset, startDayOffset + visibleDays);
+  const dayIndices = days.map((_, i) => startDayOffset + i);
   const totalHeight = hours.length * HOUR_HEIGHT_DESKTOP;
 
   const dayLayouts = useMemo(() => {
-    return days.map((_, di) => {
+    return dayIndices.map((di) => {
       const dayJobs = jobs.filter((j) => j.dayOffset === di);
       return computeOverlapLayout(dayJobs);
     });
-  }, [jobs, days.length]);
+  }, [jobs, dayIndices.join(",")]);
 
   return (
     <div className="overflow-hidden">
       <div>
         {/* Day headers */}
-        <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
+        <div className={`grid border-b border-border`} style={{ gridTemplateColumns: `60px repeat(${visibleDays}, 1fr)` }}>
           <div />
           {days.map((d, i) => (
             <div
@@ -73,7 +80,7 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
         </div>
 
         {/* Time grid */}
-        <div className="grid grid-cols-[60px_repeat(7,1fr)]" style={{ height: totalHeight }}>
+        <div className="grid" style={{ gridTemplateColumns: `60px repeat(${visibleDays}, 1fr)`, height: totalHeight }}>
           {/* Time labels */}
           <div className="relative">
             {hours.map((h, i) => (
@@ -88,7 +95,9 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
           </div>
 
           {/* Day columns */}
-          {days.map((d, di) => (
+          {days.map((d, i) => {
+            const di = dayIndices[i];
+            return (
             <div
               key={di}
               className={cn(
@@ -98,16 +107,16 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
               )}
             >
               {/* Hour lines */}
-              {hours.map((h, i) => (
+              {hours.map((h, hi) => (
                 <div
-                  key={i}
+                  key={hi}
                   className="absolute left-0 right-0 border-t border-border/50"
-                  style={{ top: i * HOUR_HEIGHT_DESKTOP, height: HOUR_HEIGHT_DESKTOP }}
+                  style={{ top: hi * HOUR_HEIGHT_DESKTOP, height: HOUR_HEIGHT_DESKTOP }}
                 />
               ))}
 
               {/* Job cards */}
-              {dayLayouts[di]?.map(({ job, col, totalCols }) => {
+              {dayLayouts[i]?.map(({ job, col, totalCols }) => {
                 const top = (job.startHour - WORK_START) * HOUR_HEIGHT_DESKTOP;
                 const height = job.durationHours * HOUR_HEIGHT_DESKTOP;
                 const widthPct = 100 / totalCols;
@@ -124,24 +133,24 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
                       width: `${widthPct}%`,
                     }}
                   >
-                    <ScheduleJobCard job={job} compact={totalCols > 2} style={{ height: "100%", pointerEvents: onSlotClick ? "none" : undefined }} />
+                    <ScheduleJobCard job={job} compact={totalCols > 2 || visibleDays <= 3} style={{ height: "100%", pointerEvents: onSlotClick ? "none" : undefined }} />
                   </div>
                 );
               })}
 
-              {/* Booking overlay — sits above job cards so clicks always register */}
+              {/* Booking overlay */}
               {onSlotClick && (
                 <div className="absolute inset-0 z-50">
-                  {hours.map((h, i) => {
+                  {hours.map((h, hi) => {
                     const isActive = activeSlot?.dayOffset === di && activeSlot?.startHour === h;
                     return (
                       <div
-                        key={`overlay-${i}`}
+                        key={`overlay-${hi}`}
                         className={cn(
                           "absolute left-0 right-0 cursor-pointer transition-colors border-t border-transparent hover:bg-primary/15",
                           isActive && "bg-primary/25 border-primary/40"
                         )}
-                        style={{ top: i * HOUR_HEIGHT_DESKTOP, height: HOUR_HEIGHT_DESKTOP }}
+                        style={{ top: hi * HOUR_HEIGHT_DESKTOP, height: HOUR_HEIGHT_DESKTOP }}
                         onClick={() => onSlotClick(di, h)}
                       />
                     );
@@ -149,7 +158,8 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

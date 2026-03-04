@@ -52,7 +52,7 @@ export function AppHeader() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={cyclePosition}
+              onClick={() => cyclePosition(isWorkMode ? ["bottom"] : undefined)}
               className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent"
             >
               <LayoutGrid className="w-5 h-5" />
