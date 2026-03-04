@@ -253,6 +253,38 @@ export function getJobDetail(jobId: string, overrides?: { client?: string; addre
     };
   }
 
+  // Handle dynamically generated schedule IDs (WK-xxx-xx pattern)
+  if (jobId.startsWith("WK-")) {
+    const seed = jobId.split("-").reduce((s, p) => s + (parseInt(p, 10) || 0), 0);
+    const staffCount = (seed % 3) + 1;
+    const matCount = (seed % 4) + 2;
+    return {
+      id: jobId,
+      jobName: overrides?.description || "Scheduled Job",
+      client: overrides?.client || "Site Client",
+      clientPhone: `021 ${400 + (seed % 100)} ${2000 + (seed % 100)}`,
+      clientEmail: `client${seed % 50}@email.co.nz`,
+      address: overrides?.address || addresses[seed % addresses.length],
+      value: 1500 + (seed % 10) * 300,
+      stage: "In Progress",
+      ageDays: (seed % 14) + 1,
+      urgent: seed % 5 === 0,
+      description: overrides?.description
+        ? `${overrides.description} at ${overrides.address || addresses[seed % addresses.length]}. Standard residential job.`
+        : "Scheduled job — standard residential work.",
+      startDate: "Mon 10 Feb 2025",
+      dueDate: "Fri 21 Feb 2025",
+      staff: staffPool.slice(0, staffCount),
+      materials: materialsPool.slice(0, matCount),
+      notes: notesPool.slice(0, (seed % 3) + 1),
+      photos: photosPool.slice(0, (seed % 3) + 2),
+      timeEntries: timePool.slice(0, (seed % 3) + 1),
+      invoiceStatus: seed % 3 === 0 ? "Paid" : seed % 3 === 1 ? "Sent" : "Draft",
+      labourTotal: timePool.slice(0, (seed % 3) + 1).reduce((s, t) => s + t.hours * 85, 0),
+      extrasTotal: (seed % 5) * 75,
+    };
+  }
+
   const job = jobs.find((j) => j.id === jobId);
   if (!job) return null;
 
