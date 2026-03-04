@@ -5,7 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { DayStrip } from "@/components/schedule/DayStrip";
 import { TimeGridDesktop } from "@/components/schedule/TimeGridDesktop";
 import { TimeGridMobile } from "@/components/schedule/TimeGridMobile";
-import { DEMO_JOBS } from "@/components/schedule/scheduleData";
+import { generateWeekJobs } from "@/components/schedule/scheduleData";
 import { Package, ChevronUp, ChevronDown, CalendarDays, LayoutList, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -34,9 +34,10 @@ export default function WorkHome() {
   const weekEnd = addDays(weekStart, 4);
 
   // Filter to only current staff's jobs
+  const weekJobs = useMemo(() => generateWeekJobs(weekStart), [weekStart]);
   const myJobs = useMemo(
-    () => DEMO_JOBS.filter((j) => j.assignedTo === CURRENT_STAFF),
-    []
+    () => weekJobs.filter((j) => j.assignedTo === CURRENT_STAFF),
+    [weekJobs]
   );
 
   // Materials for selected day
