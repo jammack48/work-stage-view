@@ -1,31 +1,44 @@
 
 
-## Fix schedule horizontal drag issue on mobile
+## Fix Week View Clutter + Toolbar Position Issues
 
-### Problem
-Both Day and Week views on mobile allow the entire screen to be dragged sideways. In Week view, `TimeGridDesktop` has `overflow-x-auto` and `min-w-[700px]` which creates a wide scrollable area that drags the whole page. In Day view, the parent containers may allow horizontal overflow.
+### Issue 1: Week view too busy on mobile — show 3 days at a time
 
-### Solution
+The 7-column week grid is unreadable on a ~384px mobile screen (each column ~40px). Instead of cramming 7 days, show a **3-day sliding window** centered on the selected day.
 
-**1. `src/components/schedule/TimeGridDesktop.tsx` — Make week view fit mobile screens**
-- Remove `min-w-[700px]` when used on mobile (accept an `isMobile` prop or make columns responsive)
-- Remove `overflow-x-auto` wrapper — force 7 columns to fit within available width
-- Use `overflow-hidden` instead to prevent any horizontal scroll
-- Make job cards more compact at narrow widths (already has `compact` prop)
+**Changes in `src/pages/WorkHome.tsx`:**
+- When `viewMode === "week"` on mobile, render a new `TimeGrid3Day` component (or pass a `visibleDays={3}` prop to `TimeGridDesktop`) showing only 3 consecutive days around `selectedDay`.
+- Swiping left/right shifts the 3-day window forward/back, wrapping weeks as needed.
 
-**2. `src/components/schedule/TimeGridMobile.tsx` — Prevent page-level horizontal drag**
-- Add `overscroll-behavior-x: none` and `touch-action: pan-y` to the container to prevent the browser from doing a horizontal page scroll during swipe gestures
-- Ensure the outer scrollable wrapper in WorkHome/SchedulePage also has `overflow-x-hidden`
+**Changes in `src/components/schedule/TimeGridDesktop.tsx`:**
+- Add an optional `visibleDays` prop (default 7). When set to 3, only render 3 day columns starting from a `startDayOffset` prop.
+- Grid template becomes `grid-cols-[60px_repeat(3,1fr)]` when `visibleDays=3`, giving each column ~100px — plenty of room for readable job cards.
+- Day headers adjust to show only the visible days.
 
-**3. `src/pages/WorkHome.tsx` — Lock horizontal overflow on the scroll container**
-- Add `overflow-x-hidden` to the scrollable time grid wrapper div (line 143-144) so swiping left/right on the day grid never causes page-level movement
+**Changes in `src/pages/SchedulePage.tsx`:**
+- Same treatment for the manager schedule on mobile: pass `visibleDays={3}` and `startDayOffset={selectedDay}` when `isMobile`.
 
-**4. `src/pages/SchedulePage.tsx` — Same overflow lock**
-- Add `overflow-x-hidden` to the mobile scroll wrapper (line 182)
+### Issue 2: Toolbar layout icon doesn't work properly
+
+The 4-square `LayoutGrid` button in `AppHeader` calls `cyclePosition()` which cycles through left → bottom → right → top. Two problems:
+
+1. **Work mode forces `bottom` → `top`** (line 36 of PageToolbar), so cycling to "bottom" in Work mode silently shows "top" — confusing.
+2. **Schedule/WorkHome pages don't use PageToolbar** — WorkHome has no PageToolbar wrapper at all, so changing position has no visible effect and may cause layout glitches.
+
+**Fix in `src/contexts/ToolbarPositionContext.tsx`:**
+- No changes needed to the context itself.
+
+**Fix in `src/components/AppHeader.tsx`:**
+- When in Work mode, skip "bottom" in the cycle (since it's forced to "top" anyway). Cycle: left → right → top → left.
+- This prevents the confusing state where the user presses the button and nothing visibly changes.
+
+**Fix in `src/components/PageToolbar.tsx`:**
+- When position is "left" or "right" on mobile, the sidebar overlaps content. The schedule page content gets pushed but the time grid may overflow. Add `overflow-x-hidden` to the main content area in the vertical mobile layout (line 205).
 
 ### Files changed
-1. `src/components/schedule/TimeGridDesktop.tsx` — remove min-width/overflow-x-auto, fit to screen
-2. `src/components/schedule/TimeGridMobile.tsx` — add overscroll-behavior-x: none
-3. `src/pages/WorkHome.tsx` — overflow-x-hidden on scroll container
-4. `src/pages/SchedulePage.tsx` — overflow-x-hidden on scroll container
+1. `src/components/schedule/TimeGridDesktop.tsx` — add `visibleDays` + `startDayOffset` props, adjust grid template
+2. `src/pages/WorkHome.tsx` — pass `visibleDays={3}` and computed `startDayOffset` on mobile week view
+3. `src/pages/SchedulePage.tsx` — same 3-day mobile treatment
+4. `src/components/AppHeader.tsx` — skip "bottom" position in Work mode cycle
+5. `src/components/PageToolbar.tsx` — overflow fix for vertical mobile layouts
 
