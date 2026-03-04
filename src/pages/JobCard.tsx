@@ -38,9 +38,10 @@ export default function JobCard() {
   const [closeOutOpen, setCloseOutOpen] = useState(false);
   const actionParam = searchParams.get("action");
 
+  const scheduleState = location.state as { jobName?: string; client?: string; address?: string; status?: string } | undefined;
   const job = id === "new"
     ? getNewJobDetail(searchParams.get("stage") || "Lead")
-    : getJobDetail(id || "");
+    : getJobDetail(id || "", scheduleState ? { client: scheduleState.client, address: scheduleState.address, description: scheduleState.jobName } : undefined);
 
   const isToInvoice = job?.stage === "To Invoice";
 

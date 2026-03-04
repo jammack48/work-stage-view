@@ -23,7 +23,7 @@ export function ScheduleJobCard({ job, style, compact }: ScheduleJobCardProps) {
 
   return (
     <button
-      onClick={() => navigate(`/job/${job.id}`)}
+      onClick={() => navigate(`/job/${job.id}`, { state: { jobName: job.jobName, client: job.client, address: job.address, status: job.status } })}
       className={cn(
         "text-left rounded-lg border bg-card hover:shadow-md transition-shadow cursor-pointer w-full overflow-hidden",
         compact ? "p-1.5" : "p-2"
