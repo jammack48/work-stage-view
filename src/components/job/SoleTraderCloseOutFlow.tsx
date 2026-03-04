@@ -213,8 +213,9 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
   }
 
   function handleBookLater() {
-    toast({ title: "Return Visit Saved ✅", description: `${job.jobName} — schedule when ready. Notes saved.`, duration: 4000 });
-    onOpenChange(false);
+    toast({ title: "Return visit noted ✅", description: "Continuing to job notes…", duration: 3000 });
+    setJobFinished(true);
+    goToStep(1);
   }
 
   function handleComplete() {

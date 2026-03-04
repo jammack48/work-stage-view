@@ -209,8 +209,9 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking 
   }
 
   function handleBookLater() {
-    toast({ title: "Return Visit Saved ✅", description: `${job.jobName} — schedule when ready. Notes saved.`, duration: 4000 });
-    onOpenChange(false);
+    toast({ title: "Return visit noted ✅", description: "Continuing to job sheet…", duration: 3000 });
+    setJobFinished(true);
+    setStep(1);
   }
 
   const StepIcon = currentStep?.icon || Package;

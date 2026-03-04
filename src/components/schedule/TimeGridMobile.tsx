@@ -11,6 +11,7 @@ interface TimeGridMobileProps {
   onPrevWeek?: () => void;
   onSlotClick?: (dayOffset: number, hour: number) => void;
   activeSlot?: { dayOffset: number; startHour: number } | null;
+  activeDuration?: number;
 }
 
 function computeOverlapLayout(jobs: ScheduleJob[]) {
@@ -39,7 +40,7 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
   return layout;
 }
 
-export function TimeGridMobile({ jobs, dayOffset, onDayChange, onNextWeek, onPrevWeek, onSlotClick, activeSlot }: TimeGridMobileProps) {
+export function TimeGridMobile({ jobs, dayOffset, onDayChange, onNextWeek, onPrevWeek, onSlotClick, activeSlot, activeDuration = 2 }: TimeGridMobileProps) {
   const isBookingMode = !!onSlotClick;
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -155,18 +156,6 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onNextWeek, onPre
                 />
               );
             })}
-            {/* Active slot 2-hour highlight */}
-            {activeSlot && activeSlot.dayOffset === dayOffset && (
-              <div
-                className="absolute left-1 right-1 rounded-lg bg-primary/20 border-2 border-primary/50 pointer-events-none flex items-center justify-center"
-                style={{
-                  top: (activeSlot.startHour - WORK_START) * HOUR_HEIGHT_MOBILE,
-                  height: 2 * HOUR_HEIGHT_MOBILE,
-                }}
-              >
-                <span className="text-xs font-semibold text-primary">Return Visit</span>
-              </div>
-            )}
           </div>
         )}
       </div>
