@@ -17,6 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { JobDetail, MaterialItem } from "@/data/dummyJobDetails";
+import { checklistTemplates, type CompletedChecklist } from "@/data/dummyChecklists";
 import { toast } from "@/hooks/use-toast";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { SequenceSelector } from "@/components/quote/SequenceSelector";
@@ -26,6 +27,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   job: JobDetail;
   resumeAfterBooking?: boolean;
+  onChecklistComplete?: (checklist: import("@/data/dummyChecklists").CompletedChecklist) => void;
 }
 
 interface PartUsed extends MaterialItem {
@@ -39,6 +41,76 @@ interface CapturedPhoto {
   id: string;
   type: "before" | "after";
   dataUrl: string;
+}
+
+function ChecklistStepInline({ category, onComplete }: { category: "arrival" | "completion"; onComplete: (cl: CompletedChecklist) => void }) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [completed, setCompleted] = useState<string[]>([]);
+  const filtered = checklistTemplates.filter((t) => t.category === category || t.category === "both");
+  const selected = selectedId ? checklistTemplates.find((t) => t.id === selectedId) : null;
+  const mandatoryDone = selected ? selected.items.filter((i) => i.mandatory).every((i) => checked[i.id]) : false;
+
+  function handleComplete() {
+    if (!selected) return;
+    const cl: CompletedChecklist = {
+      templateId: selected.id, templateName: selected.name, category: selected.category,
+      completedAt: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
+      items: selected.items.map((i) => ({ label: i.label, checked: !!checked[i.id] })),
+    };
+    onComplete(cl);
+    setCompleted((prev) => [...prev, selected.id]);
+    setSelectedId(null);
+    setChecked({});
+  }
+
+  if (selected) {
+    return (
+      <div className="space-y-3">
+        <Button variant="ghost" size="sm" onClick={() => { setSelectedId(null); setChecked({}); }} className="gap-1 -ml-2 text-muted-foreground">
+          <ChevronLeft className="w-4 h-4" /> Back
+        </Button>
+        <div className="space-y-1.5">
+          {selected.items.map((item) => {
+            const isChecked = !!checked[item.id];
+            return (
+              <button key={item.id} onClick={() => setChecked((prev) => ({ ...prev, [item.id]: !prev[item.id] }))}
+                className={cn("w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left",
+                  isChecked ? "border-[hsl(var(--status-green))] bg-[hsl(var(--status-green)/0.1)]" : "border-border bg-card hover:bg-accent/50")}>
+                <div className={cn("w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors",
+                  isChecked ? "bg-[hsl(var(--status-green))] border-[hsl(var(--status-green))] text-white" : "border-muted-foreground/40")}>
+                  {isChecked && <Check className="w-3.5 h-3.5" />}
+                </div>
+                <span className="text-sm font-medium text-card-foreground">{item.label}</span>
+                {item.mandatory && !isChecked && <span className="text-[10px] text-[hsl(var(--status-orange))] font-semibold ml-auto">Required</span>}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center justify-between pt-2">
+          <span className="text-xs text-muted-foreground">{Object.values(checked).filter(Boolean).length}/{selected.items.length}</span>
+          <Button onClick={handleComplete} disabled={!mandatoryDone} className="gap-1.5"><Check className="w-4 h-4" /> Complete</Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">Select a checklist to complete (optional).</p>
+      {filtered.map((t) => (
+        <button key={t.id} onClick={() => setSelectedId(t.id)} disabled={completed.includes(t.id)}
+          className={cn("w-full flex items-center justify-between p-3 rounded-lg transition-colors text-left",
+            completed.includes(t.id) ? "bg-[hsl(var(--status-green)/0.1)] border border-[hsl(var(--status-green)/0.3)]" : "bg-secondary/50 hover:bg-accent/50")}>
+          <div>
+            <div className="text-sm font-medium text-card-foreground">{t.name}</div>
+            <div className="text-xs text-muted-foreground">{completed.includes(t.id) ? "✓ Completed" : `${t.items.length} items`}</div>
+          </div>
+          {!completed.includes(t.id) && <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 interface InvoiceLine {
@@ -56,6 +128,7 @@ const ALL_STEPS = [
   { id: "materials", label: "Materials Used", icon: Package },
   { id: "paperwork", label: "Paperwork", icon: FileCheck },
   { id: "photos", label: "Photos", icon: Camera },
+  { id: "checklist", label: "Checklist", icon: ClipboardList },
   { id: "certificates", label: "Certificates", icon: Shield },
   { id: "invoice", label: "Invoice Summary", icon: Receipt },
   { id: "send", label: "Send", icon: Send },
@@ -73,7 +146,7 @@ function buildInvoiceLines(job: JobDetail, parts: PartUsed[], actualHours: numbe
   return lines;
 }
 
-export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBooking }: Props) {
+export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBooking, onChecklistComplete }: Props) {
   const navigate = useNavigate();
   const { soleTraderPrefs } = useAppMode();
   const [step, setStep] = useState(resumeAfterBooking ? 1 : 0);
@@ -415,6 +488,11 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
               </div>
               {jobPhotos.length > 0 && (<div className="space-y-2"><p className="text-xs text-muted-foreground">{jobPhotos.length} photo(s) added</p><div className="flex gap-2 flex-wrap">{jobPhotos.map((photo) => (<div key={photo.id} className="relative"><img src={photo.dataUrl} alt={photo.type} className="w-16 h-16 rounded-lg object-cover border border-border" /><span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[8px] px-1 rounded-full uppercase">{photo.type[0]}</span></div>))}</div></div>)}
             </div>
+          )}
+
+          {/* ===== CHECKLIST ===== */}
+          {currentStep?.id === "checklist" && (
+            <ChecklistStepInline category="completion" onComplete={(cl) => onChecklistComplete?.(cl)} />
           )}
 
           {/* ===== CERTIFICATES ===== */}
