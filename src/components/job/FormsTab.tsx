@@ -1,7 +1,8 @@
-import { ClipboardCheck, FileCheck, FilePlus } from "lucide-react";
+import { ClipboardCheck, FileCheck, FilePlus, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import type { CompletedChecklist } from "@/data/dummyChecklists";
 
 interface FormEntry {
   id: string;
@@ -23,9 +24,50 @@ function statusStyle(status: FormEntry["status"]) {
   return "bg-secondary text-secondary-foreground";
 }
 
-export function FormsTab() {
+interface FormsTabProps {
+  completedChecklists?: CompletedChecklist[];
+}
+
+export function FormsTab({ completedChecklists = [] }: FormsTabProps) {
   return (
     <div className="space-y-4 max-w-2xl">
+      {/* Completed checklists from arrival/finish flows */}
+      {completedChecklists.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Check className="w-4 h-4 text-[hsl(var(--status-green))]" /> Completed Checklists
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {completedChecklists.map((cl, idx) => (
+                <div
+                  key={`${cl.templateId}-${idx}`}
+                  className="p-3 rounded-lg bg-[hsl(var(--status-green)/0.08)] border border-[hsl(var(--status-green)/0.2)]"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-medium text-card-foreground">{cl.templateName}</span>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[hsl(var(--status-green))] text-white">
+                      Complete
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mb-1.5">{cl.completedAt} • {cl.category === "arrival" ? "Arrival" : cl.category === "completion" ? "Completion" : "General"}</div>
+                  <div className="space-y-0.5">
+                    {cl.items.map((item, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs">
+                        <Check className={cn("w-3 h-3 shrink-0", item.checked ? "text-[hsl(var(--status-green))]" : "text-muted-foreground/40")} />
+                        <span className={cn(item.checked ? "text-card-foreground" : "text-muted-foreground line-through")}>{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">

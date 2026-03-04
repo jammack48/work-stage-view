@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { JobDetail, MaterialItem } from "@/data/dummyJobDetails";
+import { checklistTemplates, type CompletedChecklist } from "@/data/dummyChecklists";
 import { toast } from "@/hooks/use-toast";
 
 interface JobCompletionFlowProps {
@@ -20,6 +21,7 @@ interface JobCompletionFlowProps {
   job: JobDetail;
   /** When true, skip the status step and start at Job Sheet with jobFinished=true */
   resumeAfterBooking?: boolean;
+  onChecklistComplete?: (checklist: import("@/data/dummyChecklists").CompletedChecklist) => void;
 }
 
 const STEPS = [
@@ -29,6 +31,7 @@ const STEPS = [
   { id: "parts", label: "Parts Used", icon: Package },
   { id: "po-review", label: "Restock PO", icon: ClipboardList },
   { id: "photos", label: "Photos", icon: Camera },
+  { id: "checklist", label: "Checklist", icon: ClipboardList },
   { id: "compliance", label: "Compliance", icon: Shield },
 ];
 
@@ -45,7 +48,77 @@ interface CapturedPhoto {
   dataUrl: string;
 }
 
-export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking }: JobCompletionFlowProps) {
+function ChecklistStepInline({ category, onComplete }: { category: "arrival" | "completion"; onComplete: (cl: CompletedChecklist) => void }) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [completed, setCompleted] = useState<string[]>([]);
+  const filtered = checklistTemplates.filter((t) => t.category === category || t.category === "both");
+  const selected = selectedId ? checklistTemplates.find((t) => t.id === selectedId) : null;
+  const mandatoryDone = selected ? selected.items.filter((i) => i.mandatory).every((i) => checked[i.id]) : false;
+
+  function handleComplete() {
+    if (!selected) return;
+    const cl: CompletedChecklist = {
+      templateId: selected.id, templateName: selected.name, category: selected.category,
+      completedAt: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
+      items: selected.items.map((i) => ({ label: i.label, checked: !!checked[i.id] })),
+    };
+    onComplete(cl);
+    setCompleted((prev) => [...prev, selected.id]);
+    setSelectedId(null);
+    setChecked({});
+  }
+
+  if (selected) {
+    return (
+      <div className="space-y-3">
+        <Button variant="ghost" size="sm" onClick={() => { setSelectedId(null); setChecked({}); }} className="gap-1 -ml-2 text-muted-foreground">
+          <ChevronLeft className="w-4 h-4" /> Back
+        </Button>
+        <div className="space-y-1.5">
+          {selected.items.map((item) => {
+            const isChecked = !!checked[item.id];
+            return (
+              <button key={item.id} onClick={() => setChecked((prev) => ({ ...prev, [item.id]: !prev[item.id] }))}
+                className={cn("w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left",
+                  isChecked ? "border-[hsl(var(--status-green))] bg-[hsl(var(--status-green)/0.1)]" : "border-border bg-card hover:bg-accent/50")}>
+                <div className={cn("w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors",
+                  isChecked ? "bg-[hsl(var(--status-green))] border-[hsl(var(--status-green))] text-white" : "border-muted-foreground/40")}>
+                  {isChecked && <Check className="w-3.5 h-3.5" />}
+                </div>
+                <span className="text-sm font-medium text-card-foreground">{item.label}</span>
+                {item.mandatory && !isChecked && <span className="text-[10px] text-[hsl(var(--status-orange))] font-semibold ml-auto">Required</span>}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center justify-between pt-2">
+          <span className="text-xs text-muted-foreground">{Object.values(checked).filter(Boolean).length}/{selected.items.length}</span>
+          <Button onClick={handleComplete} disabled={!mandatoryDone} className="gap-1.5"><Check className="w-4 h-4" /> Complete</Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">Select a checklist to complete (optional).</p>
+      {filtered.map((t) => (
+        <button key={t.id} onClick={() => setSelectedId(t.id)} disabled={completed.includes(t.id)}
+          className={cn("w-full flex items-center justify-between p-3 rounded-lg transition-colors text-left",
+            completed.includes(t.id) ? "bg-[hsl(var(--status-green)/0.1)] border border-[hsl(var(--status-green)/0.3)]" : "bg-secondary/50 hover:bg-accent/50")}>
+          <div>
+            <div className="text-sm font-medium text-card-foreground">{t.name}</div>
+            <div className="text-xs text-muted-foreground">{completed.includes(t.id) ? "✓ Completed" : `${t.items.length} items`}</div>
+          </div>
+          {!completed.includes(t.id) && <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking, onChecklistComplete }: JobCompletionFlowProps) {
   const navigate = useNavigate();
   const [step, setStep] = useState(resumeAfterBooking ? 1 : 0);
   const [jobFinished, setJobFinished] = useState(true);
@@ -555,6 +628,11 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking 
                 </div>
               )}
             </div>
+          )}
+
+          {/* Checklist */}
+          {currentStep?.id === "checklist" && (
+            <ChecklistStepInline category="completion" onComplete={(cl) => onChecklistComplete?.(cl)} />
           )}
 
           {/* Compliance */}

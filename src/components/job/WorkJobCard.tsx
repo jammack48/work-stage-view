@@ -11,9 +11,10 @@ import { FormsTab } from "@/components/job/FormsTab";
 import { JobCompletionFlow } from "@/components/job/JobCompletionFlow";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { SoleTraderCloseOutFlow } from "@/components/job/SoleTraderCloseOutFlow";
+import { ChecklistDialog } from "@/components/job/ChecklistDialog";
 import { cn } from "@/lib/utils";
 import { WORK_JOB_EXTRAS } from "@/config/toolbarTabs";
-import { Plus, CheckCircle2, Receipt, CalendarCheck, X } from "lucide-react";
+import { Plus, CheckCircle2, Receipt, CalendarCheck, X, ClipboardCheck } from "lucide-react";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { MaterialItem } from "@/data/dummyJobDetails";
+import type { CompletedChecklist } from "@/data/dummyChecklists";
 
 type WorkJobTab = "overview" | "scope" | "time" | "materials" | "notes" | "photos" | "forms";
 
@@ -79,6 +81,10 @@ export default function WorkJobCard() {
   const [closeOutOpen, setCloseOutOpen] = useState(false);
   const [unifiedFlowOpen, setUnifiedFlowOpen] = useState(resumeCompletion && isSoleTrader);
 
+  // Checklist state
+  const [arrivalChecklistOpen, setArrivalChecklistOpen] = useState(false);
+  const [completedChecklists, setCompletedChecklists] = useState<CompletedChecklist[]>([]);
+
   // Return booking confirmation
   const returnBooked = searchParams.get("returnBooked") === "true";
   const returnDate = searchParams.get("returnDate") || "";
@@ -103,7 +109,7 @@ export default function WorkJobCard() {
     materials: <WorkMaterialsTab materials={job.materials} showPricing={isSoleTrader} />,
     notes: <NotesTab notes={job.notes} />,
     photos: <PhotosTab photos={job.photos} />,
-    forms: <FormsTab />,
+    forms: <FormsTab completedChecklists={completedChecklists} />,
   };
 
   const jobHeading = (
@@ -157,6 +163,14 @@ export default function WorkJobCard() {
 
         {/* Action buttons */}
         <div className="flex gap-2 mb-3">
+          <Button
+            size="lg"
+            variant="outline"
+            className="flex-1 gap-2 h-12 text-base font-bold"
+            onClick={() => setArrivalChecklistOpen(true)}
+          >
+            <ClipboardCheck className="w-5 h-5" /> Arrived on Site
+          </Button>
           {isSoleTrader ? (
             <Button
               size="lg"
@@ -178,11 +192,20 @@ export default function WorkJobCard() {
         {tabContent[activeTab]}
       </PageToolbar>
 
+      {/* Arrival checklist dialog */}
+      <ChecklistDialog
+        open={arrivalChecklistOpen}
+        onOpenChange={setArrivalChecklistOpen}
+        category="arrival"
+        onComplete={(cl) => setCompletedChecklists((prev) => [...prev, cl])}
+      />
+
       <JobCompletionFlow
         open={completionOpen}
         onOpenChange={setCompletionOpen}
         job={job}
         resumeAfterBooking={resumeCompletion}
+        onChecklistComplete={(cl) => setCompletedChecklists((prev) => [...prev, cl])}
       />
 
       {isSoleTrader && (
@@ -191,6 +214,7 @@ export default function WorkJobCard() {
           onOpenChange={setUnifiedFlowOpen}
           job={job}
           resumeAfterBooking={resumeCompletion}
+          onChecklistComplete={(cl) => setCompletedChecklists((prev) => [...prev, cl])}
         />
       )}
     </>
