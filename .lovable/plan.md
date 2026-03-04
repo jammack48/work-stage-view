@@ -1,30 +1,37 @@
 
 
-## Simplified Onboarding Flow
+## Problem
 
-### Current flow (broken)
-Splash (marketing page) → ModePicker (3 roles + overlay) — too many steps, splash feels like an ad.
+The splash page is skipped because `localStorage` key `tradie-splash-seen` persists across sessions. Once set, the app jumps straight to ModePicker (or the main app if a mode is also saved). The user wants the splash to **always** appear on every app open.
 
-### New flow
-**Step 1: Welcome page** — Personal, casual intro from Jamie. Not a marketing page. Explains: "Hey, I'm building a job management app for tradies. It's in beta, all data is fake, you can't break anything, play with everything, all feedback welcome." One button: "Start Demo".
+## Fix
 
-**Step 2: Role picker** — Two buttons only:
-- **Manager / Owner** → sub-choice: "Run the Office" (manage mode) or "On the Tools" (sole-trader setup)
-- **Employee** → straight into work mode
+### 1. `src/App.tsx` — Remove localStorage persistence for splash
 
-No tutorial overlay. The sub-choice for Manager explains the difference inline.
+Change `splashDismissed` from a localStorage-backed `useState` to a simple `useState(false)`. Remove the `localStorage.setItem("tradie-splash-seen", "1")` call from the `onStart` handler. This way, every fresh page load shows the splash first, regardless of prior visits.
 
-### File changes
+The flow becomes:
+- App opens → Splash always shows
+- "Start Demo" → if `mode` is already saved in localStorage, go straight to the app; if not, show ModePicker
 
-**`src/pages/SplashPage.tsx`** — Complete rewrite. Strip all the marketing sections (phone mock, pain points, feature snapshots, automation hook). Replace with a simple, personal welcome:
-- Wrench icon + "Tradie Toolbelt"
-- "Hey! I'm Jamie." personal greeting
-- Short paragraph: what this is (job management for tradies, one-man bands to small companies, run business from phone), it's beta, all dummy data, can't break anything, please give feedback
-- Single "Start Demo" button
+```tsx
+const [splashDismissed, setSplashDismissed] = useState(false);
 
-**`src/components/ModePicker.tsx`** — Simplify to two primary buttons:
-- "Manager / Owner" — on click, shows inline sub-choice between "Run the Office" and "Owner on the Tools" (which then goes to sole-trader-setup)
-- "Employee" — goes straight to work mode
-- Remove the tutorial overlay entirely — the two-button choice is self-explanatory
-- Keep the sole-trader-setup sub-step as-is
+if (!splashDismissed) {
+  return <SplashPage onStart={() => setSplashDismissed(true)} />;
+}
+
+if (!mode) {
+  return <ModePicker />;
+}
+```
+
+Note: the splash gate moves **above** the mode check so it always shows first, even if a mode is already saved.
+
+### 2. `src/components/AppHeader.tsx` — Enhance reset control
+
+The existing "Switch Role" button already calls `clearMode()`. This is sufficient as a visible reset control. No additional changes needed here — it already lets testers return to the role picker. On next reload they'll see the splash again too.
+
+### Files changed
+- `src/App.tsx` — 3 lines changed (remove localStorage read/write, simplify useState, move splash check above mode check)
 
