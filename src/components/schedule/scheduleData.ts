@@ -79,51 +79,57 @@ export function generateWeekJobs(weekStart: Date): ScheduleJob[] {
   const jobs: ScheduleJob[] = [];
   let idx = 0;
 
+  // Typical tradesman day patterns: [startHour, duration] sequences
+  const DAY_PATTERNS = [
+    [{ start: 7, dur: 4 }, { start: 12, dur: 2 }, { start: 14, dur: 3 }],  // 7-11, 12-2, 2-5
+    [{ start: 8, dur: 4 }, { start: 12, dur: 2 }, { start: 14, dur: 3 }],  // 8-12, 12-2, 2-5
+    [{ start: 7, dur: 3 }, { start: 10, dur: 3 }, { start: 14, dur: 3 }],  // 7-10, 10-1, 2-5
+    [{ start: 8, dur: 3 }, { start: 11, dur: 2 }, { start: 14, dur: 2 }],  // 8-11, 11-1, 2-4
+    [{ start: 7, dur: 5 }, { start: 13, dur: 4 }],                          // 7-12, 1-5 (two big jobs)
+    [{ start: 8, dur: 4 }, { start: 13, dur: 4 }],                          // 8-12, 1-5
+  ];
+
   for (let day = 0; day < 7; day++) {
     const isWeekend = day >= 5;
-    // Weekdays: 3-5 jobs, weekends: 1-2 jobs
-    const jobCount = isWeekend
-      ? 1 + Math.floor(seededRandom(baseSeed, idx++) * 2)
-      : 3 + Math.floor(seededRandom(baseSeed, idx++) * 3);
 
-    // Track next available hour per staff member for this day
-    const staffNextFree = new Map<string, number>();
-    STAFF.forEach((s) => staffNextFree.set(s, WORK_START));
-
-    for (let j = 0; j < jobCount; j++) {
+    for (let si = 0; si < STAFF.length; si++) {
+      const staffMember = STAFF[si];
       const r = (i: number) => seededRandom(baseSeed, idx + i);
 
-      // Find staff with availability remaining today
-      const available = STAFF.filter((s) => (staffNextFree.get(s) || WORK_START) + 2 <= WORK_END);
-      if (available.length === 0) break;
+      // Weekend: 50% chance of no work for this person
+      if (isWeekend && r(0) < 0.5) {
+        idx += 10;
+        continue;
+      }
 
-      const staffMember = available[Math.floor(r(0) * available.length)];
-      const startHour = staffNextFree.get(staffMember) || WORK_START;
+      // Pick a day pattern for this staff member on this day
+      const patternIdx = Math.floor(r(1) * DAY_PATTERNS.length);
+      const pattern = DAY_PATTERNS[patternIdx];
 
-      // Duration: 2-5 hours, capped to not exceed WORK_END
-      const maxDuration = Math.min(5, WORK_END - startHour);
-      if (maxDuration < 2) { idx += 7; continue; }
-      const duration = 2 + Math.floor(r(1) * (maxDuration - 1));
+      // On weekends, only use first 1-2 slots
+      const slotsToUse = isWeekend ? Math.min(pattern.length, 1 + Math.floor(r(2) * 1.5)) : pattern.length;
 
-      const jobNameIdx = Math.floor(r(2) * JOB_NAMES.length);
-      const clientIdx = Math.floor(r(3) * CLIENTS.length);
-      const addressIdx = Math.floor(r(4) * ADDRESSES.length);
-      const statusIdx = Math.floor(r(5) * STATUSES.length);
+      for (let j = 0; j < slotsToUse; j++) {
+        const slot = pattern[j];
+        const jobNameIdx = Math.floor(r(3 + j * 3) * JOB_NAMES.length);
+        const clientIdx = Math.floor(r(4 + j * 3) * CLIENTS.length);
+        const addressIdx = Math.floor(r(5 + j * 3) * ADDRESSES.length);
+        const statusIdx = Math.floor(r(6 + j * 3) * STATUSES.length);
 
-      jobs.push({
-        id: `WK-${baseSeed % 1000}-${day}${j}`,
-        jobName: JOB_NAMES[jobNameIdx],
-        client: CLIENTS[clientIdx],
-        assignedTo: staffMember,
-        dayOffset: day,
-        startHour,
-        durationHours: duration,
-        address: ADDRESSES[addressIdx],
-        status: STATUSES[statusIdx],
-      });
+        jobs.push({
+          id: `WK-${baseSeed % 1000}-${day}${si}${j}`,
+          jobName: JOB_NAMES[jobNameIdx],
+          client: CLIENTS[clientIdx],
+          assignedTo: staffMember,
+          dayOffset: day,
+          startHour: slot.start,
+          durationHours: slot.dur,
+          address: ADDRESSES[addressIdx],
+          status: STATUSES[statusIdx],
+        });
+      }
 
-      staffNextFree.set(staffMember, startHour + duration);
-      idx += 7;
+      idx += 10;
     }
   }
   return jobs;

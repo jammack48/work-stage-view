@@ -167,6 +167,8 @@ const SchedulePage = () => {
               jobs={filteredJobs}
               dayOffset={selectedDay}
               onDayChange={setSelectedDay}
+              onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
+              onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
               onSlotClick={returnJobId ? handleSlotClick : undefined}
               activeSlot={bookedSlot}
             />
