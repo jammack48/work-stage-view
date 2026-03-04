@@ -166,26 +166,26 @@ export default function WorkJobCard() {
           <Button
             size="lg"
             variant="outline"
-            className="flex-1 gap-2 h-12 text-base font-bold"
+            className="flex-1 min-w-0 gap-2 h-12 text-sm font-bold truncate"
             onClick={() => setArrivalChecklistOpen(true)}
           >
-            <ClipboardCheck className="w-5 h-5" /> Arrived on Site
+            <ClipboardCheck className="w-4 h-4 shrink-0" /> Arrived on Site
           </Button>
           {isSoleTrader ? (
             <Button
               size="lg"
-              className="flex-1 gap-2 h-12 text-base font-bold"
+              className="flex-1 min-w-0 gap-2 h-12 text-sm font-bold truncate"
               onClick={() => setUnifiedFlowOpen(true)}
             >
-              <Receipt className="w-5 h-5" /> Finish & Invoice
+              <Receipt className="w-4 h-4 shrink-0" /> Finish & Invoice
             </Button>
           ) : (
             <Button
               size="lg"
-              className="flex-1 gap-2 h-12 text-base font-bold"
+              className="flex-1 min-w-0 gap-2 h-12 text-sm font-bold truncate"
               onClick={() => setCompletionOpen(true)}
             >
-              <CheckCircle2 className="w-5 h-5" /> Finished Job
+              <CheckCircle2 className="w-4 h-4 shrink-0" /> Finished Job
             </Button>
           )}
         </div>
