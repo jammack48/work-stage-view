@@ -1,40 +1,38 @@
 
 
-## Fix Two Issues in Work Mode
+## Job Checklists Feature — Arrive on Site + Finish Job
 
-### Issue 1: Toolbar cycler has no effect in Work mode
+### What the user wants
+Field staff should be able to run through **pre-built checklists** when arriving on site or finishing a job. These checklists are created in the Office app (custom forms) and appear in the Work app. Example: "Switchboard Checklist" with tick items like "Clean up", "Tested", "Fire sealant used", "No gaps", "Tests done".
 
-Work mode pages (`WorkHome`, `WorkHub`, `WorkNotes`, `WorkChat`, `WorkTimesheet`) don't use the `PageToolbar` component — only `WorkJobCard` does. Clicking the LayoutGrid icon changes the stored position but nothing visually changes on most Work screens.
+### Design
 
-**Fix**: Hide the LayoutGrid button on Work mode pages that don't use `PageToolbar`. Since `WorkJobCard` (job detail page) does use `PageToolbar`, only show the cycler when on a `/job/` route in Work mode.
+**Two trigger points in the Work app job card:**
+1. **"Arrived on Site"** button — opens a checklist picker, then the selected checklist with tick items
+2. **Finish Job flow** — adds a new "Checklist" step before the final submission where the worker picks and completes a relevant checklist
 
-**`src/components/AppHeader.tsx`**:
-- Change the visibility condition from always-shown to: show when `!isWorkMode` (Office mode — all pages use PageToolbar) OR when `isWorkMode && pathname.startsWith("/job/")` (Work job card uses PageToolbar).
+**Checklist data** (dummy/static for now):
+- A set of checklist templates stored in a new data file, each with a category ("arrival" | "completion" | "both"), a name, and an array of tick items
+- Examples: "Site Safety Arrival Checklist", "Switchboard Completion Checklist", "General Completion Checklist"
 
-### Issue 2: Tutorial icon highlighted but no tutorials appear in Work mode
+**UI flow:**
+1. Tap "Arrived on Site" or reach the checklist step in completion flow
+2. A dialog/sheet shows available checklists filtered by category
+3. Tap a checklist to open it — shows the name, all items as checkboxes, and a "Complete" button
+4. Items turn green when ticked; "Complete" is enabled when all mandatory items are checked
+5. Completed checklists show as done in the FormsTab on the job card
 
-The `getTutorialKey()` function in `tutorialContent.ts` maps `"/"` to `"pipeline"` — but in Work mode, `/` renders `WorkHome`, not the pipeline. Work mode routes (`/`, `/hub`, `/work-notes`, `/work-chat`, `/work-hub`, `/timesheet`) have no tutorial key mappings, so the banner never appears even though the icon is blue.
+### Files to create/change
 
-**Fix in `src/data/tutorialContent.ts`**:
-- Add Work mode tutorial entries to `tutorialPages`:
-  - `"work-home"` — schedule/day view explanation
-  - `"work-hub"` — docs, training, certs hub
-  - `"work-notes"` — personal notes
-  - `"work-chat"` — team chat
-  - `"work-timesheet"` — timesheet
+1. **`src/data/dummyChecklists.ts`** — New file with checklist template data (5-6 templates with 4-8 items each, categorised as arrival/completion/both)
 
-**Fix in `src/data/tutorialContent.ts` (`getTutorialKey`)**:
-- The function can't know which mode is active. Instead, have Work mode pages pass `overrideKey` to `TutorialBanner`.
+2. **`src/components/job/ChecklistDialog.tsx`** — New component: a dialog that shows checklist picker then the interactive tick-box checklist. Props: `open`, `onOpenChange`, `category` filter, `onComplete` callback
 
-**Fix in Work mode pages** (`WorkHome.tsx`, `WorkHub.tsx`, `WorkNotes.tsx`, `WorkChat.tsx`, `WorkTimesheet.tsx`):
-- Add `<TutorialBanner overrideKey="work-home" />` (etc.) to each page so the correct tutorial content appears.
+3. **`src/components/job/WorkJobCard.tsx`** — Add an "Arrived on Site" button next to the existing "Finished Job" button. Wire it to open the ChecklistDialog with category="arrival". Also update FormsTab to show completed checklists
 
-### Files changed
-1. `src/components/AppHeader.tsx` — conditionally show LayoutGrid based on route + mode
-2. `src/data/tutorialContent.ts` — add work mode tutorial entries
-3. `src/pages/WorkHome.tsx` — add TutorialBanner with `overrideKey="work-home"`
-4. `src/pages/WorkHub.tsx` — add TutorialBanner with `overrideKey="work-hub"`
-5. `src/pages/WorkNotes.tsx` — add TutorialBanner with `overrideKey="work-notes"`
-6. `src/pages/WorkChat.tsx` — add TutorialBanner with `overrideKey="work-chat"`
-7. `src/pages/WorkTimesheet.tsx` — add TutorialBanner with `overrideKey="work-timesheet"`
+4. **`src/components/job/JobCompletionFlow.tsx`** — Add a "Checklist" step (between Photos and Compliance) that lets the worker pick and complete a finish-job checklist inline
+
+5. **`src/components/job/SoleTraderCloseOutFlow.tsx`** — Same: add a "Checklist" step in the appropriate position
+
+6. **`src/components/job/FormsTab.tsx`** — Accept optional `completedChecklists` prop to display checklists that have been ticked off during arrival/completion
 
