@@ -1,19 +1,45 @@
 
 
-## Fix schedule job generation
+## Fix three issues: "Book Later" flow, duration prompt, and overlap display
 
-### Problems
-1. **Overlapping jobs per person** — The generator randomly assigns start times without checking if that staff member already has a job at that time. A tradesman can only be at one job at a time.
-2. **No weekend/today coverage** — Only generates Mon–Fri (days 0–4). If today is Saturday or Sunday, or if the week calculation is off, no jobs appear.
+### Issue 1: "Book Later" closes the dialog instead of continuing the flow
 
-### Solution
+**Problem**: In both `JobCompletionFlow` (line 211-213) and `SoleTraderCloseOutFlow` (line 215-217), `handleBookLater()` calls `onOpenChange(false)` which closes the entire dialog. The user expects to continue through the remaining steps (job sheet, time, parts, photos, etc.) after choosing "Book Later".
 
-**`src/components/schedule/scheduleData.ts` — Rewrite `generateWeekJobs`:**
+**Fix** in both files:
+- Change `handleBookLater` to save the return note, set `jobFinished` to `true` (so the remaining steps become active), then advance to the next step (`setStep(1)` / `goToStep(1)`) instead of closing the dialog.
+- Show a small toast confirming "Return visit noted" but keep the dialog open.
+- The flow continues from Job Sheet → Time → Parts → Photos → etc. as normal.
 
-- **Sequential scheduling per staff member**: Track each staff member's next available hour (starting at 7am). When assigning a job to a person on a given day, set `startHour` to their next free slot and advance it by the job's duration. This guarantees no overlaps.
-- **Generate for all 7 days** (Mon–Sun, days 0–6), with lighter weekends (0–1 jobs) and busier weekdays (2–4 jobs). This ensures today always has jobs regardless of what day it is.
-- **Realistic durations**: Mix of short (1.5–2hr) and long (3–6hr) jobs so a tradesman's day looks real — e.g. 7am–10am one job, 10am–12pm another, 1pm–4pm a third.
-- **Per-day staff tracker**: For each day, maintain a `Map<string, number>` of staff → next available hour. Pick staff who still have availability before `WORK_END`.
+### Issue 2: Return visit booking hardcodes 2 hours — should ask
 
-**No other files need changes** — `WorkHome.tsx` and `SchedulePage.tsx` already consume the output of `generateWeekJobs`.
+**Problem**: In `SchedulePage.tsx`, the return visit block is hardcoded to 2 hours (`durationHours: 2` on line ~67). Users should be able to specify how many hours they need.
+
+**Fix** in `SchedulePage.tsx`:
+- Add a `returnDuration` state (default 2).
+- In the return booking banner, add a simple selector: "How many hours?" with options 1–8 (or a small number input).
+- Use `returnDuration` instead of the hardcoded `2` when creating the temporary job and rendering the highlight block.
+
+**Fix** in `TimeGridDesktop.tsx` and `TimeGridMobile.tsx`:
+- Pass `activeDuration` prop (instead of hardcoding `2 * HOUR_HEIGHT`) for the active slot highlight height.
+
+### Issue 3: Overlapping return visit should display side-by-side (Fergus-style)
+
+**Problem**: Currently, the return visit booking overlay sits on a z-50 layer above all job cards, hiding them. When a return visit is placed on an occupied slot, it should display side-by-side with the existing job, not on top of it.
+
+**Fix**: The overlap layout logic (`computeOverlapLayout`) already handles side-by-side display perfectly. The fix is:
+- In `SchedulePage.tsx`, when `bookedSlot` is set, inject the return visit job into the `allJobs` array (already done) — this makes it participate in the overlap layout automatically.
+- In `TimeGridDesktop.tsx` and `TimeGridMobile.tsx`, remove the separate "Active slot highlight" block that renders on top. The return visit job card will naturally appear side-by-side via the existing overlap layout.
+- Keep the clickable overlay for slot selection, but remove the separate 2-hour highlight div since the job card itself serves as the visual indicator.
+
+### Issue 4 (bonus): Desktop grid only shows 5 columns for 7 days
+
+The desktop grid template is `grid-cols-[60px_repeat(5,1fr)]` but renders 7 day columns. Change to `repeat(7,1fr)`.
+
+### Files changed
+1. **`src/components/job/JobCompletionFlow.tsx`** — `handleBookLater` continues flow instead of closing
+2. **`src/components/job/SoleTraderCloseOutFlow.tsx`** — same fix
+3. **`src/pages/SchedulePage.tsx`** — add duration state + selector in banner, pass duration to grids
+4. **`src/components/schedule/TimeGridDesktop.tsx`** — accept `activeDuration` prop, fix grid to 7 cols, remove separate highlight div
+5. **`src/components/schedule/TimeGridMobile.tsx`** — accept `activeDuration` prop, remove separate highlight div
 
