@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { startOfWeek, addWeeks, subWeeks, addDays, format, isToday } from "date-fns";
+import { startOfWeek, addWeeks, subWeeks, addDays, subDays, format, isToday } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DayStrip } from "@/components/schedule/DayStrip";
 import { TimeGridDesktop } from "@/components/schedule/TimeGridDesktop";
+import { TimeGrid3Day } from "@/components/schedule/TimeGrid3Day";
 import { TimeGridMobile } from "@/components/schedule/TimeGridMobile";
 import { generateWeekJobs } from "@/components/schedule/scheduleData";
 import { Package, ChevronUp, ChevronDown, CalendarDays, LayoutList, Plus } from "lucide-react";
@@ -29,8 +30,15 @@ export default function WorkHome() {
     const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
     return diff >= 0 && diff <= 6 ? diff : 0;
   });
-  // 3-day window start offset for mobile week view (0 = Mon-Wed, 3 = Thu-Sat, etc.)
-  const [weekWindowStart, setWeekWindowStart] = useState(0);
+  // 3-day window: track the absolute start date
+  const [threeDayStart, setThreeDayStart] = useState(() => {
+    const today = new Date();
+    // Snap to nearest 3-day block: Mon, Thu, Sun
+    const ws = startOfWeek(today, { weekStartsOn: 1 });
+    const dayInWeek = Math.floor((today.getTime() - ws.getTime()) / (1000 * 60 * 60 * 24));
+    const blockStart = Math.floor(dayInWeek / 3) * 3;
+    return addDays(ws, blockStart);
+  });
 
   const selectedDate = addDays(weekStart, selectedDay);
   const weekEnd = addDays(weekStart, 6);
@@ -71,7 +79,7 @@ export default function WorkHome() {
             <p className="text-sm text-muted-foreground">
               {viewMode === "day"
                 ? `${format(selectedDate, "EEEE, d MMMM")}${isToday(selectedDate) ? " — Today" : ""}`
-                : `${format(weekStart, "d MMM")} – ${format(weekEnd, "d MMM")}`}
+                : `${format(threeDayStart, "d MMM")} – ${format(addDays(threeDayStart, 2), "d MMM")}`}
             </p>
           </div>
           <div className="flex gap-1 bg-muted rounded-lg p-0.5">
@@ -91,7 +99,7 @@ export default function WorkHome() {
                 viewMode === "week" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
               )}
             >
-              <CalendarDays className="w-3.5 h-3.5" /> Week
+              <CalendarDays className="w-3.5 h-3.5" /> 3 Days
             </button>
           </div>
         </div>
@@ -104,8 +112,8 @@ export default function WorkHome() {
             setSelectedDay(d);
             // Snap the 3-day window to include the selected day
             if (isMobile && viewMode === "week") {
-              const windowStart = Math.min(Math.floor(d / 3) * 3, 4);
-              setWeekWindowStart(windowStart);
+              const blockStart = Math.floor(d / 3) * 3;
+              setThreeDayStart(addDays(weekStart, blockStart));
             }
           }}
           onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
@@ -154,34 +162,24 @@ export default function WorkHome() {
       )}>
         {viewMode === "day" ? (
           <TimeGridMobile jobs={myJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))} onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))} />
+        ) : isMobile ? (
+          <TimeGrid3Day
+            dates={[threeDayStart, addDays(threeDayStart, 1), addDays(threeDayStart, 2)] as [Date, Date, Date]}
+            staffFilter="Dave"
+            selectedDate={selectedDate}
+            onSwipe={(dir) => {
+              if (dir === "right") {
+                setThreeDayStart(addDays(threeDayStart, 3));
+              } else {
+                setThreeDayStart(subDays(threeDayStart, 3));
+              }
+            }}
+          />
         ) : (
           <TimeGridDesktop
             weekStart={weekStart}
             jobs={myJobs}
             selectedDay={selectedDay}
-            visibleDays={isMobile ? 3 : 7}
-            startDayOffset={isMobile ? weekWindowStart : 0}
-            onWindowShift={isMobile ? (dir) => {
-              if (dir === "right") {
-                // Move forward 3 days
-                if (weekWindowStart + 3 >= 7) {
-                  // Wrap to next week
-                  setWeekStart(addWeeks(weekStart, 1));
-                  setWeekWindowStart(0);
-                } else {
-                  setWeekWindowStart(weekWindowStart + 3);
-                }
-              } else {
-                // Move back 3 days
-                if (weekWindowStart - 3 < 0) {
-                  // Wrap to previous week
-                  setWeekStart(subWeeks(weekStart, 1));
-                  setWeekWindowStart(Math.max(0, 4)); // Show Thu-Sat of prev week
-                } else {
-                  setWeekWindowStart(weekWindowStart - 3);
-                }
-              }
-            } : undefined}
           />
         )}
       </div>
