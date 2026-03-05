@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Mic, MicOff, Send, Camera, Sparkles, X, CheckCircle2 } from "lucide-react";
+import { Mic, MicOff, Send, Camera, Sparkles, X, CheckCircle2, Volume2, VolumeX, Keyboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import type { JobDetail } from "@/data/dummyJobDetails";
@@ -19,7 +19,7 @@ async function streamChat({
 }: {
   messages: Msg[];
   onDelta: (deltaText: string) => void;
-  onDone: () => void;
+  onDone: (fullText: string) => void;
 }) {
   const resp = await fetch(CHAT_URL, {
     method: "POST",
@@ -40,6 +40,7 @@ async function streamChat({
   const reader = resp.body.getReader();
   const decoder = new TextDecoder();
   let textBuffer = "";
+  let fullText = "";
   let streamDone = false;
 
   while (!streamDone) {
@@ -65,7 +66,10 @@ async function streamChat({
       try {
         const parsed = JSON.parse(jsonStr);
         const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-        if (content) onDelta(content);
+        if (content) {
+          fullText += content;
+          onDelta(content);
+        }
       } catch {
         textBuffer = line + "\n" + textBuffer;
         break;
@@ -85,56 +89,214 @@ async function streamChat({
       try {
         const parsed = JSON.parse(jsonStr);
         const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-        if (content) onDelta(content);
+        if (content) {
+          fullText += content;
+          onDelta(content);
+        }
       } catch { /* ignore */ }
     }
   }
 
-  onDone();
+  onDone(fullText);
 }
 
-// Speech Recognition types
+// ── Speech Recognition hook (continuous / open-mic) ──
+
 interface SpeechRecognitionEvent {
-  results: { [index: number]: { [index: number]: { transcript: string } }; length: number };
+  results: SpeechRecognitionResultList;
   resultIndex: number;
 }
 
-function useSpeechRecognition() {
+function useContinuousSpeech() {
   const [isListening, setIsListening] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const onResultRef = useRef<((text: string) => void) | null>(null);
+  const shouldBeListeningRef = useRef(false);
+
+  const createRecognition = useCallback(() => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return null;
+
+    const recognition = new SR();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = "en-AU";
+
+    recognition.onresult = (event: any) => {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          const transcript = event.results[i][0].transcript.trim();
+          if (transcript && onResultRef.current) {
+            onResultRef.current(transcript);
+          }
+        }
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      // Auto-restart if we should still be listening
+      if (shouldBeListeningRef.current && !isMuted) {
+        try {
+          setTimeout(() => {
+            if (shouldBeListeningRef.current && recognitionRef.current) {
+              recognitionRef.current.start();
+              setIsListening(true);
+            }
+          }, 200);
+        } catch { /* ignore */ }
+      }
+    };
+
+    recognition.onerror = (e: any) => {
+      if (e.error === "no-speech" || e.error === "aborted") return;
+      console.warn("Speech recognition error:", e.error);
+    };
+
+    return recognition;
+  }, [isMuted]);
 
   const startListening = useCallback((onResult: (text: string) => void) => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
+    onResultRef.current = onResult;
+    shouldBeListeningRef.current = true;
+
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch { /* */ }
+    }
+
+    const recognition = createRecognition();
+    if (!recognition) {
       toast({ title: "Speech not supported", description: "Your browser doesn't support voice input.", variant: "destructive" });
       return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = "en-AU";
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript;
-      onResult(transcript);
-    };
-
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = () => setIsListening(false);
-
     recognitionRef.current = recognition;
-    recognition.start();
-    setIsListening(true);
-  }, []);
+    try {
+      recognition.start();
+      setIsListening(true);
+    } catch { /* */ }
+  }, [createRecognition]);
 
-  const stopListening = useCallback(() => {
-    recognitionRef.current?.stop();
+  const pauseListening = useCallback(() => {
+    shouldBeListeningRef.current = false;
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch { /* */ }
+    }
     setIsListening(false);
   }, []);
 
-  return { isListening, startListening, stopListening };
+  const resumeListening = useCallback(() => {
+    if (isMuted) return;
+    shouldBeListeningRef.current = true;
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch {
+        // Recreate if needed
+        const recognition = createRecognition();
+        if (recognition) {
+          recognitionRef.current = recognition;
+          recognition.start();
+          setIsListening(true);
+        }
+      }
+    }
+  }, [isMuted, createRecognition]);
+
+  const toggleMute = useCallback(() => {
+    setIsMuted(prev => {
+      const newMuted = !prev;
+      if (newMuted) {
+        shouldBeListeningRef.current = false;
+        if (recognitionRef.current) {
+          try { recognitionRef.current.stop(); } catch { /* */ }
+        }
+        setIsListening(false);
+      }
+      return newMuted;
+    });
+  }, []);
+
+  const stopCompletely = useCallback(() => {
+    shouldBeListeningRef.current = false;
+    onResultRef.current = null;
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch { /* */ }
+      recognitionRef.current = null;
+    }
+    setIsListening(false);
+  }, []);
+
+  return { isListening, isMuted, startListening, pauseListening, resumeListening, toggleMute, stopCompletely };
 }
+
+// ── Text-to-Speech hook ──
+
+function useTTS() {
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(true);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  const speak = useCallback((text: string, onEnd?: () => void) => {
+    if (!ttsEnabled || !window.speechSynthesis) {
+      onEnd?.();
+      return;
+    }
+
+    // Strip markdown for cleaner speech
+    const cleanText = text
+      .replace(/[#*_`~>\[\]()!]/g, "")
+      .replace(/\n+/g, ". ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!cleanText) {
+      onEnd?.();
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1.05;
+    utterance.pitch = 1.0;
+    utterance.lang = "en-AU";
+    utteranceRef.current = utterance;
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      onEnd?.();
+    };
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      onEnd?.();
+    };
+
+    window.speechSynthesis.speak(utterance);
+  }, [ttsEnabled]);
+
+  const stopSpeaking = useCallback(() => {
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+  }, []);
+
+  const toggleTTS = useCallback(() => {
+    setTtsEnabled(prev => {
+      if (!prev === false) {
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+      }
+      return !prev;
+    });
+  }, []);
+
+  return { isSpeaking, ttsEnabled, speak, stopSpeaking, toggleTTS };
+}
+
+// ── Main Component ──
 
 interface AICloseOutFlowProps {
   open: boolean;
@@ -148,9 +310,12 @@ export function AICloseOutFlow({ open, onOpenChange, job }: AICloseOutFlowProps)
   const [isLoading, setIsLoading] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [photoCount, setPhotoCount] = useState(0);
+  const [showKeyboard, setShowKeyboard] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { isListening, startListening, stopListening } = useSpeechRecognition();
   const hasInitialized = useRef(false);
+
+  const speech = useContinuousSpeech();
+  const tts = useTTS();
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -179,7 +344,7 @@ ${materialsText}
 Start the close-out conversation now.`,
       };
 
-      sendMessage(contextMsg);
+      sendMessage(contextMsg, true);
     }
   }, [open]);
 
@@ -190,17 +355,33 @@ Start the close-out conversation now.`,
       setInput("");
       setIsComplete(false);
       setPhotoCount(0);
+      setShowKeyboard(false);
       hasInitialized.current = false;
+      speech.stopCompletely();
+      tts.stopSpeaking();
     }
   }, [open]);
 
-  const sendMessage = async (msg: Msg) => {
+  // Start listening after speech recognition callback
+  const handleSpeechResult = useCallback((transcript: string) => {
+    if (transcript.trim()) {
+      sendMessage({ role: "user", content: transcript });
+    }
+  }, [messages]);
+
+  const startOpenMic = useCallback(() => {
+    speech.startListening(handleSpeechResult);
+  }, [speech.startListening, handleSpeechResult]);
+
+  const sendMessage = async (msg: Msg, isInitial = false) => {
     const newMessages = [...messages, msg];
-    // Only show user messages that aren't the context block
     if (!msg.content.startsWith("[JOB CONTEXT")) {
       setMessages(newMessages);
     }
     setIsLoading(true);
+
+    // Pause listening while AI responds
+    speech.pauseListening();
 
     let assistantSoFar = "";
     const upsertAssistant = (nextChunk: string) => {
@@ -218,17 +399,38 @@ Start the close-out conversation now.`,
       await streamChat({
         messages: newMessages,
         onDelta: (chunk) => upsertAssistant(chunk),
-        onDone: () => {
+        onDone: (fullText) => {
           setIsLoading(false);
-          // Check if the AI indicated completion
-          if (assistantSoFar.includes("✅") && assistantSoFar.toLowerCase().includes("all done")) {
+
+          if (fullText.includes("✅") && fullText.toLowerCase().includes("all done")) {
             setIsComplete(true);
+          }
+
+          // Speak the response, then resume listening
+          tts.speak(fullText, () => {
+            if (!speech.isMuted) {
+              speech.resumeListening();
+            }
+          });
+
+          // If initial message and mic not started yet, start after TTS
+          if (isInitial) {
+            const startAfterTTS = () => {
+              if (!speech.isMuted) {
+                startOpenMic();
+              }
+            };
+            // If TTS is disabled, start immediately
+            if (!tts.ttsEnabled) {
+              setTimeout(startAfterTTS, 500);
+            }
           }
         },
       });
     } catch (e: any) {
       console.error("AI closeout error:", e);
       setIsLoading(false);
+      speech.resumeListening();
       toast({ title: "AI Error", description: e.message || "Something went wrong.", variant: "destructive" });
     }
   };
@@ -240,21 +442,9 @@ Start the close-out conversation now.`,
     sendMessage({ role: "user", content: text });
   };
 
-  const handleVoice = () => {
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening((transcript) => {
-        sendMessage({ role: "user", content: transcript });
-      });
-    }
-  };
-
   const handlePhotoCapture = () => {
-    // Simulate photo capture (in production, would use camera API)
     setPhotoCount((c) => c + 1);
     toast({ title: "📸 Photo captured", description: `${photoCount + 1} photo(s) uploaded.` });
-    // Let the AI know
     sendMessage({ role: "user", content: `[Photo uploaded — total: ${photoCount + 1}]` });
   };
 
@@ -263,7 +453,6 @@ Start the close-out conversation now.`,
     onOpenChange(false);
   };
 
-  // Filter out context messages for display
   const displayMessages = messages.filter((m) => !m.content.startsWith("[JOB CONTEXT"));
 
   return (
@@ -323,47 +512,108 @@ Start the close-out conversation now.`,
           )}
         </div>
 
-        {/* Action buttons (photos) */}
-        <div className="px-4 pb-2 flex gap-2 shrink-0">
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handlePhotoCapture}>
-            <Camera className="w-3.5 h-3.5" /> Take Photo {photoCount > 0 && `(${photoCount})`}
-          </Button>
-          {isComplete && (
-            <Button size="sm" className="gap-1.5 text-xs ml-auto bg-green-600 hover:bg-green-700" onClick={handleSubmit}>
-              <CheckCircle2 className="w-3.5 h-3.5" /> Submit Close-Out
-            </Button>
-          )}
-        </div>
-
-        {/* Input area */}
-        <div className="px-4 pb-4 pt-2 border-t border-border shrink-0">
-          <div className="flex gap-2 items-end">
-            <Button
-              variant={isListening ? "default" : "outline"}
-              size="icon"
-              className={cn("h-10 w-10 shrink-0", isListening && "bg-red-500 hover:bg-red-600 animate-pulse")}
-              onClick={handleVoice}
-            >
-              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-            </Button>
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder={isListening ? "Listening..." : "Type or tap mic..."}
-              className="min-h-[40px] max-h-[80px] resize-none text-sm"
-              rows={1}
-              disabled={isListening}
-            />
-            <Button size="icon" className="h-10 w-10 shrink-0" onClick={handleSend} disabled={!input.trim() || isLoading}>
-              <Send className="w-4 h-4" />
-            </Button>
+        {/* Bottom bar */}
+        <div className="px-4 pb-4 pt-2 border-t border-border shrink-0 space-y-2">
+          {/* Status indicator */}
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            {tts.isSpeaking && (
+              <span className="flex items-center gap-1.5 text-violet-500">
+                <Volume2 className="w-3.5 h-3.5 animate-pulse" /> Speaking...
+              </span>
+            )}
+            {speech.isListening && !tts.isSpeaking && (
+              <span className="flex items-center gap-1.5 text-green-500">
+                <Mic className="w-3.5 h-3.5 animate-pulse" /> Listening...
+              </span>
+            )}
+            {speech.isMuted && !tts.isSpeaking && (
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <MicOff className="w-3.5 h-3.5" /> Mic muted
+              </span>
+            )}
+            {isLoading && !tts.isSpeaking && (
+              <span className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 animate-spin" /> Thinking...
+              </span>
+            )}
           </div>
+
+          {/* Action row */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              {/* Mic mute toggle */}
+              <Button
+                variant={speech.isMuted ? "outline" : "default"}
+                size="icon"
+                className={cn(
+                  "h-12 w-12 rounded-full",
+                  !speech.isMuted && speech.isListening && "bg-green-600 hover:bg-green-700 animate-pulse",
+                  !speech.isMuted && !speech.isListening && "bg-green-600 hover:bg-green-700",
+                  speech.isMuted && "border-destructive text-destructive"
+                )}
+                onClick={speech.toggleMute}
+              >
+                {speech.isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </Button>
+
+              {/* TTS toggle */}
+              <Button
+                variant="outline"
+                size="icon"
+                className={cn("h-10 w-10 rounded-full", !tts.ttsEnabled && "text-muted-foreground")}
+                onClick={tts.toggleTTS}
+              >
+                {tts.ttsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              </Button>
+
+              {/* Camera */}
+              <Button variant="outline" size="icon" className="h-10 w-10 rounded-full" onClick={handlePhotoCapture}>
+                <Camera className="w-4 h-4" />
+              </Button>
+              {photoCount > 0 && <span className="text-xs text-muted-foreground">{photoCount} 📸</span>}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Keyboard toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-full"
+                onClick={() => setShowKeyboard(!showKeyboard)}
+              >
+                <Keyboard className="w-4 h-4" />
+              </Button>
+
+              {/* Submit when complete */}
+              {isComplete && (
+                <Button size="sm" className="gap-1.5 bg-green-600 hover:bg-green-700" onClick={handleSubmit}>
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Submit
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Collapsible text input */}
+          {showKeyboard && (
+            <div className="flex gap-2 items-end pt-1">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="Type a message..."
+                className="min-h-[40px] max-h-[80px] resize-none text-sm"
+                rows={1}
+              />
+              <Button size="icon" className="h-10 w-10 shrink-0" onClick={handleSend} disabled={!input.trim() || isLoading}>
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
