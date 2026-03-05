@@ -47,15 +47,15 @@ const STEPS: { id: StepId; label: string; icon: any }[] = [
 ];
 
 const STEP_QUESTIONS: Record<StepId, (job: JobDetail, parts: PartUsed[]) => string> = {
-  status: () => "G'day! Is this job finished, or are you coming back?",
-  jobsheet: (job) => `What did you get done at ${job.address}?`,
-  time: () => "How many hours did you work today?",
+  status: () => "Finished or coming back?",
+  jobsheet: () => "What'd you do?",
+  time: () => "How many hours?",
   parts: (_job, parts) => {
     const names = parts.filter(p => p.used).map(p => p.name).join(", ");
-    return names ? `Did you use the ${names}? Any extras?` : "Did you use any parts or materials?";
+    return names ? `Used ${names}?` : "Any parts?";
   },
-  photos: () => "Got any photos to upload? Tap the camera below, or say skip.",
-  compliance: () => "Any compliance certs or safety docs needed?",
+  photos: () => "Any photos?",
+  compliance: () => "Any compliance certs?",
 };
 
 // ── AI call (non-streaming) ──
@@ -97,19 +97,47 @@ function useSpeech() {
     if (!SR) return null;
     const r = new SR();
     r.continuous = true;
-    r.interimResults = false;
+    r.interimResults = true;
     r.lang = "en-AU";
+
+    let silenceTimer: ReturnType<typeof setTimeout> | null = null;
+    let lastInterim = "";
+
     r.onresult = (e: any) => {
       for (let i = e.resultIndex; i < e.results.length; i++) {
         if (e.results[i].isFinal) {
+          // Clear any pending silence timer — we got a final result
+          if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+          lastInterim = "";
           const t = e.results[i][0].transcript.trim();
-          console.log("[AI CloseOut] Heard:", t);
+          console.log("[AI CloseOut] Heard (final):", t);
           if (t && onResultRef.current) onResultRef.current(t);
+        } else {
+          // Interim result — start silence timer to auto-finalize short words
+          const interim = e.results[i][0].transcript.trim();
+          if (interim) {
+            lastInterim = interim;
+            if (silenceTimer) clearTimeout(silenceTimer);
+            silenceTimer = setTimeout(() => {
+              if (lastInterim && onResultRef.current) {
+                console.log("[AI CloseOut] Heard (silence timeout):", lastInterim);
+                onResultRef.current(lastInterim);
+                lastInterim = "";
+              }
+            }, 1500);
+          }
         }
       }
     };
     r.onend = () => {
       setIsListening(false);
+      // Flush any pending interim
+      if (lastInterim && onResultRef.current) {
+        console.log("[AI CloseOut] Heard (onend flush):", lastInterim);
+        onResultRef.current(lastInterim);
+        lastInterim = "";
+      }
+      if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
       if (shouldListenRef.current && !isMutedRef.current) {
         setTimeout(() => {
           if (shouldListenRef.current && !isMutedRef.current && recognitionRef.current) {
@@ -189,7 +217,7 @@ function useTTS() {
     if (!clean) { onEnd?.(); return; }
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(clean);
-    u.rate = 1.05; u.pitch = 1.0; u.lang = "en-AU";
+    u.rate = 1.35; u.pitch = 1.0; u.lang = "en-AU";
     u.onstart = () => setIsSpeaking(true);
     u.onend = () => { setIsSpeaking(false); onEnd?.(); };
     u.onerror = () => { setIsSpeaking(false); onEnd?.(); };

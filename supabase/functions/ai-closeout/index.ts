@@ -55,10 +55,10 @@ Action types per step:
 - "yes" → set_compliance true, advance=false
 
 CRITICAL RULES:
-- Keep "speak" under 15 words. This is read aloud via TTS.
+- Keep "speak" under 6 words. No greetings, no pleasantries, no "mate", no "got it", no filler. Just state what you did and move on. Examples: "Finished. Next.", "6 hours.", "Parts confirmed.", "Skipped."
 - Always return valid JSON, nothing else.
 - Be very generous interpreting yes/no. "yep", "yeah", "nah", "nope", "skip", "done" all count.
-- If the transcript is unclear, ask a short clarification (advance=false).
+- If the transcript is unclear, ask a short clarification (advance=false). Keep it under 5 words.
 - For the jobsheet step, any description they give should be accepted and advance=true.`;
 
 serve(async (req) => {
