@@ -1,78 +1,42 @@
 
 
-## Redesign: AI Close-Out as Voice-Assisted Step Navigator
+## Fix: Faster, Briefer, Better at Short Words
 
-The current chat-based approach is wrong. The user wants the AI to be like an apprentice sitting next to them — navigating through the **same existing close-out screens** (JobCompletionFlow), reading questions aloud, listening for short answers ("yes", "no", "6 hours"), filling in the fields, and advancing to the next step automatically.
+Three issues to fix:
 
-### How it works
+### 1. Speech recognition can't pick up single words ("yes", "no")
 
-The existing `JobCompletionFlow` already has the right screens:
+`continuous = true` with `interimResults = false` waits for a long pause before finalizing. Single words get swallowed or ignored.
 
-```text
-Status → Checklist → Job Sheet → Time → Parts → Photos → Compliance
-```
+**Fix:** Set `interimResults = true` and add a silence timeout. When we get an interim result, start a 1.5s timer. If no new speech comes in, treat the interim as final and send it. This catches "yes", "no", "nah", "skip" immediately instead of waiting for the recognition engine to decide it's done.
 
-The AI voice layer sits on top of these screens:
+### 2. AI responses too verbose — "G'day!", "Got it mate"
 
-```text
-┌─────────────────────────────┐
-│  [Same step UI as today]    │
-│  Fields auto-fill as user   │
-│  speaks answers              │
-│                              │
-│  ┌─────────────────────────┐│
-│  │ 🎙 "How many hours?"    ││
-│  │ Listening... / Speaking  ││
-│  └─────────────────────────┘│
-└─────────────────────────────┘
-```
+The system prompt says "casual/mate tone" and the step questions say "G'day!" — wastes time.
 
-1. Dialog opens → AI says "G'day, is the job finished or are you coming back?"
-2. User says "finished" → AI selects "Job Finished", auto-advances to next step
-3. AI says "Any checklists to do?" → User says "no skip it" → AI advances
-4. AI says "What did you do on this job?" → User dictates → text fills into the job sheet field
-5. AI says "How many hours?" → User says "6" → fills the hours input, advances
-6. AI says "Did you use the Rinnai unit, valves, and copper pipe?" → User says "yep" → confirms parts
-7. AI says "Got any photos?" → User says "yeah one sec" → taps camera
-8. AI says "Any compliance certs?" → User says "no" → skips, advances
-9. AI reads summary, user says "done" → submits
+**Fix in edge function prompt:**
+- Change rule to: "Keep speak under 6 words. No greetings, no filler. Just confirm and move."
+- Example: instead of `"Got it, 6 hours mate. Moving on to parts."` → `"6 hours. Next."`
 
-The user sees the actual form screens updating in real time as they speak — like autocomplete with voice.
+**Fix step questions** (the initial TTS prompts):
+- `status`: "Job finished or coming back?" (not "G'day! Is this job finished...")
+- `jobsheet`: "What'd you do?" (not "What did you get done at 123 Smith St?")
+- `time`: "How many hours?"
+- `parts`: "These parts right?" / "Any parts used?"
+- `photos`: "Any photos?"
+- `compliance`: "Any compliance certs?"
 
-### Technical approach
+### 3. TTS voice too slow
 
-**File: `src/components/job/AICloseOutFlow.tsx`** — Complete rewrite
+**Fix:** Change `u.rate = 1.05` → `u.rate = 1.35` in the `useTTS` hook.
 
-- Remove the chat UI entirely
-- Import and reuse the same step structure/state from `JobCompletionFlow` (status, jobSheet, actualHours, parts, photos, compliance)
-- Render the same step screens (same UI components) but with a voice bar at the bottom
-- Add a `useVoiceAssistant` hook that:
-  - Maintains a per-step script of what to say/ask
-  - Uses `speechSynthesis` to read the question for the current step
-  - Uses continuous `SpeechRecognition` to capture the answer
-  - Sends the transcript + current step context to the edge function to interpret intent (e.g., "6 hours" → set hours to 6, "yep that's it" → confirm and advance)
-  - The AI returns a structured JSON response: `{ action: "set_hours", value: 6, advance: true }` or `{ action: "confirm_parts", advance: true }`
-- Bottom bar shows: mic status indicator (Listening.../Speaking...), mute toggle, manual keyboard fallback
+### Files to change
 
-**File: `supabase/functions/ai-closeout/index.ts`** — Change response format
+1. **`src/components/job/AICloseOutFlow.tsx`**
+   - `useSpeech`: enable `interimResults = true`, add silence timeout (1.5s) to auto-finalize short utterances
+   - `STEP_QUESTIONS`: shorten all prompts to bare minimum
+   - `useTTS`: set `u.rate = 1.35`
 
-- Instead of free-form conversation, the AI receives the current step + user speech and returns structured actions:
-  ```json
-  { "speak": "Got it, 6 hours. Moving on to parts.", "actions": [{"type": "set_hours", "value": 6}], "advance": true }
-  ```
-- System prompt tells it to interpret short answers ("yes", "no", "6", "skip", "nah") in context of the current step
-- Much better at handling one-word answers because it knows exactly what question was asked
-
-**Key differences from current approach:**
-- No chat history needed — just current step + user's spoken answer
-- No stale closure issues — simple step-based state machine
-- One-word answers work because the AI knows the context (which step/field)
-- User sees familiar screens filling in, not a chat thread
-- TTS reads short prompts per step, not long paragraphs
-
-### Steps to implement
-
-1. Rewrite `AICloseOutFlow.tsx` — same step screens as `JobCompletionFlow` but with voice overlay bar
-2. Update edge function — return structured JSON actions instead of conversational text
-3. Wire voice loop: TTS speaks step question → mic captures answer → edge function interprets → fill field + advance
+2. **`supabase/functions/ai-closeout/index.ts`**
+   - Update system prompt: "Keep speak under 6 words. No greetings, no pleasantries, no filler. Just confirm the action and state what's next."
 
