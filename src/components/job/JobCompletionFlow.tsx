@@ -155,6 +155,7 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
   const [poConfirmed, setPoConfirmed] = useState(false);
   const [selectedPhrases, setSelectedPhrases] = useState<string[]>([]);
   const [isListening, setIsListening] = useState(false);
+  const [hasDictationText, setHasDictationText] = useState(false);
   const recognitionRef = useRef<any>(null);
   const beforeInputRef = useRef<HTMLInputElement>(null);
   const afterInputRef = useRef<HTMLInputElement>(null);
@@ -166,6 +167,11 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
     if (!SpeechRecognition) {
       toast({ title: "Not supported", description: "Voice dictation isn't available in this browser.", duration: 3000 });
       return;
+    }
+    if (recognitionRef.current) {
+      recognitionRef.current.onresult = null;
+      recognitionRef.current.onerror = null;
+      recognitionRef.current.onend = null;
     }
     if (isListening && recognitionRef.current) {
       recognitionRef.current.stop();
@@ -181,13 +187,52 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) transcript += event.results[i][0].transcript;
       }
-      if (transcript) setJobSheet((prev) => (prev ? `${prev} ${transcript.trim()}` : transcript.trim()));
+      if (transcript) {
+        setJobSheet((prev) => (prev ? `${prev} ${transcript.trim()}` : transcript.trim()));
+        setHasDictationText(true);
+      }
     };
-    recognition.onerror = () => setIsListening(false);
+    recognition.onerror = (event: any) => {
+      setIsListening(false);
+      if (event?.error && event.error !== "aborted") {
+        toast({ title: "Dictation issue", description: `Microphone error: ${event.error}.`, duration: 3000 });
+      }
+    };
     recognition.onend = () => setIsListening(false);
     recognitionRef.current = recognition;
-    recognition.start();
-    setIsListening(true);
+    try {
+      recognition.start();
+      setIsListening(true);
+    } catch (e: any) {
+      setIsListening(false);
+      toast({ title: "Couldn't start dictation", description: e?.message || "Please try again.", duration: 3000 });
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) recognitionRef.current.stop();
+    };
+  }, []);
+
+  const handleAiJobSheetAssist = async () => {
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-suggest-description", {
+        body: hasDictationText
+          ? { jobTitle: job.jobName, client: job.client, address: job.address, rawNotes: jobSheet }
+          : { jobTitle: job.jobName, client: job.client, address: job.address },
+      });
+      if (error) throw error;
+      setJobSheet(data.description);
+      if (hasDictationText) {
+        toast({ title: "Job sheet cleaned up ✨", description: "Dictation has been rewritten into clear job notes." });
+      }
+    } catch (e: any) {
+      toast({ title: hasDictationText ? "Couldn't clean up notes" : "Couldn't generate notes", description: e.message, variant: "destructive" });
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const handlePhotoCapture = (type: "before" | "after") => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -396,16 +441,8 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
               <div className="flex items-center justify-between">
                 <Label>What was done on this job?</Label>
                 <div className="flex gap-1.5">
-                  <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8" disabled={aiLoading} onClick={async () => {
-                    setAiLoading(true);
-                    try {
-                      const { data, error } = await supabase.functions.invoke("ai-suggest-description", { body: { jobTitle: job.jobName, client: job.client, address: job.address } });
-                      if (error) throw error;
-                      setJobSheet(data.description);
-                    } catch (e: any) { toast({ title: "Couldn't generate notes", description: e.message, variant: "destructive" }); }
-                    finally { setAiLoading(false); }
-                  }}>
-                    {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} AI Suggest
+                  <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8" disabled={aiLoading} onClick={handleAiJobSheetAssist}>
+                    {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} {hasDictationText ? "AI Clean Up" : "AI Suggest"}
                   </Button>
                   <Button
                     type="button"

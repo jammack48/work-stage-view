@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { jobTitle, client, address } = await req.json();
+    const { jobTitle, client, address, rawNotes } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -22,14 +22,26 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash-lite",
         messages: [
-          {
-            role: "system",
-            content: `You are a job completion notes writer for Australian tradespeople. Given a job title, write practical completion notes describing what was done on site (3-5 sentences). Write as if the tradesperson is logging their work. Example style: "Arrived on site. Spoke with customer regarding requirements. Completed installation as per scope. Tested and commissioned, confirmed operational. Cleaned up site." Use plain trade language. Do not include pricing. Do not use markdown formatting — write plain text only. Do not include the client name or address.`,
-          },
-          {
-            role: "user",
-            content: `Write a job scope description for: "${jobTitle}"${client ? ` for client ${client}` : ""}${address ? ` at ${address}` : ""}.`,
-          },
+          rawNotes
+            ? {
+                role: "system",
+                content:
+                  "You clean up raw speech-to-text notes from Australian tradespeople into professional job sheet notes. Keep the original meaning, fix grammar, improve clarity, and keep it concise (3-6 sentences). Use plain text only. Do not include pricing. Do not include client names or addresses unless they are essential technical context.",
+              }
+            : {
+                role: "system",
+                content:
+                  'You are a job completion notes writer for Australian tradespeople. Given a job title, write practical completion notes describing what was done on site (3-5 sentences). Write as if the tradesperson is logging their work. Example style: "Arrived on site. Spoke with customer regarding requirements. Completed installation as per scope. Tested and commissioned, confirmed operational. Cleaned up site." Use plain trade language. Do not include pricing. Do not use markdown formatting — write plain text only. Do not include the client name or address.',
+              },
+          rawNotes
+            ? {
+                role: "user",
+                content: `Clean up these dictated job notes for \"${jobTitle}\": ${rawNotes}`,
+              }
+            : {
+                role: "user",
+                content: `Write a job scope description for: "${jobTitle}"${client ? ` for client ${client}` : ""}${address ? ` at ${address}` : ""}.`,
+              },
         ],
       }),
     });
