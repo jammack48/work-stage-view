@@ -1,62 +1,42 @@
 
 
-## AI Voice Close-Out Flow — MVP Plan
+## AI Close-Out: Open Mic + Text-to-Speech
 
-### What you're after
-A new "AI-assisted" mode — accessible from the mode picker alongside the existing options. When closing out a job, instead of tapping through form steps, an AI assistant talks you through it conversationally: "What did you do today?" → transcribes your answer → confirms → asks about hours, parts, photos, compliance — all hands-free via voice.
+Two changes needed: continuous listening (open mic conversation) and AI speaking its responses aloud.
 
-### Infrastructure needed
+### 1. Continuous Speech Recognition
 
-This requires Lovable Cloud (Supabase) for an edge function that calls the Lovable AI Gateway. No external OpenAI key needed — Lovable AI is built in and free to start. We'll use the browser's Speech Recognition API (already in the app) for voice input, and the Lovable AI Gateway for the conversational logic.
+Change `useSpeechRecognition` hook:
+- Set `recognition.continuous = true` and `recognition.interimResults = true` so the mic stays open
+- Auto-start listening when the dialog opens and the AI finishes speaking
+- Auto-pause listening while the AI is responding (to avoid picking up its own voice)
+- Re-start listening automatically after the AI finishes speaking
+- Use VAD-like behavior: when a final result comes in, send it as a message, then keep listening
+- The mic button becomes a mute/unmute toggle rather than push-to-talk
+- Show a persistent "Listening..." indicator with a pulsing mic icon at the bottom
 
-**Before implementing, we need to enable Lovable Cloud.** This gives us:
-- Edge functions (to call the AI gateway securely)
-- The auto-provisioned `LOVABLE_API_KEY` for AI calls
+### 2. Text-to-Speech (Browser SpeechSynthesis API)
 
-### Design
+Use the browser's built-in `window.speechSynthesis` API (free, no API key needed, works on all modern browsers/mobile):
+- When the AI finishes streaming a response, speak it aloud using `SpeechSynthesisUtterance`
+- Pause speech recognition while speaking to prevent feedback loop
+- Resume listening after speech finishes (`utterance.onend`)
+- Keep responses short (the system prompt already enforces this)
+- Add a mute/speaker button to toggle TTS on/off
 
-**1. New app mode: `"ai-tools"`**
-- Added to `AppModeContext` alongside `work` and `sole-trader`
-- Accessible from the ModePicker: under "Manager / Owner → On the Tools", add a toggle or second option: "AI-Assisted" with a sparkle/bot icon
-- Also accessible from "Employee" path as an alternative
-- Behaves like Work mode (same home, schedule, bottom nav) but the "Finished Job" button opens the AI flow instead of the step-by-step flow
+### 3. Flow Changes in `AICloseOutFlow.tsx`
 
-**2. AI Close-Out Edge Function** (`supabase/functions/ai-closeout/index.ts`)
-- Takes conversation history + job context (job name, address, materials from quote, etc.)
-- System prompt instructs the AI to be a friendly assistant named "Jamie's AI" that walks through: what was done → confirm summary → job complete or coming back → hours worked → parts used (suggests from job quote/history) → purchase order → photos → compliance certs
-- Returns streaming text responses
-- Uses `google/gemini-3-flash-preview` via Lovable AI Gateway
+- On dialog open → start continuous recognition immediately
+- AI response streams in → once complete, speak it via `speechSynthesis`
+- While speaking → pause recognition
+- Speech done → resume recognition
+- User says something → recognition captures it → auto-sends as message → AI responds → cycle continues
+- Mic button becomes a mute toggle (red = muted, green = actively listening)
+- Remove the text input area — make it a small collapsed fallback with a keyboard icon
+- Bottom bar shows: large mic indicator (pulsing when listening), mute button, camera button, speaker toggle
 
-**3. AI Close-Out Dialog** (`src/components/job/AICloseOutFlow.tsx`)
-- Full-screen dialog with a chat-style interface
-- Shows AI messages as speech bubbles
-- User can respond via:
-  - Voice (mic button, using existing Speech Recognition API — already in the codebase)
-  - Text input as fallback
-- AI response streams in token-by-token
-- At key moments, the AI's response triggers structured UI actions:
-  - "Take photos" → shows camera capture buttons inline
-  - "Confirm parts" → shows editable parts list inline
-  - "Confirm hours" → shows hours input inline
-- When the AI says "All done", a final "Submit" button appears
-- All collected data (job sheet text, hours, parts, photos) is stored in component state, same as the existing flows
+### Files to Change
 
-**4. Integration in WorkJobCard**
-- When mode is `ai-tools`, the "Finished Job" / "Finish & Invoice" button opens `AICloseOutFlow` instead of `JobCompletionFlow` / `SoleTraderCloseOutFlow`
-
-### Files to create/change
-
-1. **`src/contexts/AppModeContext.tsx`** — Add `"ai-tools"` to `AppMode` type, update `isWorkMode` to include it, add `isAIMode` flag
-2. **`src/components/ModePicker.tsx`** — Add AI-assisted option in the "On the Tools" sub-flow and as an Employee variant
-3. **`supabase/functions/ai-closeout/index.ts`** — Edge function with system prompt and streaming response via Lovable AI Gateway
-4. **`src/components/job/AICloseOutFlow.tsx`** — New component: conversational AI close-out dialog with voice input, streaming responses, and inline action cards (photos, parts, hours)
-5. **`src/components/job/WorkJobCard.tsx`** — Conditionally open `AICloseOutFlow` when in AI mode
-
-### What the MVP looks like
-
-The user opens a job, taps "Finished Job", and instead of step-by-step forms, they see a chat. The AI says: *"Hey! Let's wrap up [Job Name] at [Address]. What did you get done today?"* The user taps the mic and talks. The AI transcribes, confirms, then walks through hours, parts (suggesting from the job's materials list), photos, and compliance. Everything is voice-first but with text fallback. At the end, the job is marked complete with all data captured.
-
-### Prerequisite
-
-Lovable Cloud must be enabled first so we can deploy the edge function and use the AI gateway. I'll need to enable that before building.
+1. **`src/components/job/AICloseOutFlow.tsx`** — Rewrite speech recognition to continuous mode, add `speechSynthesis` TTS after AI responses, redesign bottom bar to show open-mic state, collapse text input behind a keyboard toggle
+2. **`supabase/functions/ai-closeout/index.ts`** — Add instruction to system prompt: "Keep responses very short and conversational since they will be read aloud"
 
