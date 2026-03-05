@@ -24,7 +24,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a trades job description writer for Australian tradespeople. Given a job title, write a concise professional scope of works description (2-4 sentences). Be specific about what the work involves. Use plain trade language. Do not include pricing. If it's a common trade task, describe the standard process.`,
+            content: `You are a trades job description writer for Australian tradespeople. Given a job title, write a concise professional scope of works description (2-4 sentences). Be specific about what the work involves. Use plain trade language. Do not include pricing. Do not use markdown formatting — write plain text only. Do not include the client name or address in the description. If it's a common trade task, describe the standard process.`,
           },
           {
             role: "user",

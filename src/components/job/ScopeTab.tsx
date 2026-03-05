@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import ReactMarkdown from "react-markdown";
 import type { JobDetail } from "@/data/dummyJobDetails";
 
 interface ScopeTabProps {
@@ -61,9 +62,11 @@ export function ScopeTab({ job }: ScopeTabProps) {
               <span className="text-xs text-muted-foreground">AI-generated description</span>
             </div>
           )}
-          <p className="text-sm text-card-foreground leading-relaxed">
-            {displayDescription || "No scope description available. Tap AI Suggest to generate one."}
-          </p>
+          <div className="text-sm text-card-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none">
+            <ReactMarkdown>
+              {displayDescription || "No scope description available. Tap AI Suggest to generate one."}
+            </ReactMarkdown>
+          </div>
         </CardContent>
       </Card>
 
