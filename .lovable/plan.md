@@ -1,38 +1,25 @@
 
 
-## Plan: Hybrid Local Parser + Faster Speech Recognition
+## Plan: Add AI Suggest to Job Sheet Steps
 
-The review is spot-on. The biggest wins come from two changes:
+The "AI Suggest" button and edge function already exist in the Scope tab but are missing from the two close-out flows where you actually write job notes. The screenshot shows the "Job Sheet" step in the sole trader close-out flow — that's where you need it.
 
-### 1. Local parser for simple steps — skip the LLM entirely
+### What changes
 
-For `status`, `time`, `parts` (confirm), `photos`, and `compliance`, the answers are predictable: yes/no/number/skip. Parse these locally with simple regex/keyword matching. Only call the LLM for `jobsheet` (free-text dictation) and ambiguous `parts` additions.
+**1. `src/components/job/SoleTraderCloseOutFlow.tsx`** — Job Notes step (line ~362)
+- Add an "AI Suggest" button next to the "What was done on this job?" label (or alongside Dictate)
+- On press, call `supabase.functions.invoke("ai-suggest-description", { body: { jobTitle: job.jobName, client: job.client, address: job.address } })`
+- Replace/append the jobSheet textarea content with the AI response
+- Show a loading spinner while generating
 
-This eliminates network latency on 5 of 6 steps — the flow will feel near-instant.
+**2. `src/components/job/JobCompletionFlow.tsx`** — Same change on its jobsheet step (~line 394)
+- Add the same AI Suggest button and logic
 
-**Local parsing rules:**
-- **status**: "yes/yep/done/finished/all done" → finished. "no/nah/coming back/not yet" → coming_back
-- **time**: Extract number from transcript (regex `\d+\.?\d*`). "half a day" → 4, "couple" → 2
-- **parts**: "yes/yep/all good/that's it" → confirm. Otherwise fall through to LLM
-- **photos**: "no/nah/skip" → skip + advance. "yes/yeah" → wait
-- **compliance**: "no/nah/none" → false + advance. "yes" → true, stay
+**3. `supabase/functions/ai-suggest-description/index.ts`** — Update prompt
+- Change from a "scope of works" writer to a "job completion notes" writer
+- Given a job title like "Solar Install", generate practical completion notes like: "Arrived on site. Spoke with customer regarding installation location. Installed solar panel system as per requirements. Tested and commissioned system, confirmed operational. Cleaned up site."
+- Keep it trade-focused, plain text, Australian language
 
-### 2. Faster silence timeout — 800ms instead of 1500ms
-
-Drop from 1500ms to 800ms. One-word answers like "no" will commit in under a second instead of 1.5s.
-
-### 3. Speed up TTS to 1.3x
-
-The user originally asked for 1.3x, current is 1.2x.
-
-### Files to change
-
-**`src/components/job/AICloseOutFlow.tsx`:**
-- Add `tryLocalParse(stepId, transcript)` function that returns `{ speak, actions, advance }` or `null`
-- In `handleSpeech`: call `tryLocalParse` first; if it returns a result, apply actions + advance immediately without calling the edge function
-- Only call `callAI()` if local parse returns `null`
-- Change silence timeout: `1500` → `800`
-- Change TTS rate: `1.2` → `1.3`
-
-No edge function changes needed — it remains as fallback for ambiguous cases.
+### No new files needed
+The edge function already exists and handles the API call. Just need to update the prompt and add the button to the two close-out flows.
 
