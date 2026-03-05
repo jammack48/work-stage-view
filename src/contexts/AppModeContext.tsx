@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-type AppMode = "manage" | "work" | "sole-trader" | "ai-tools" | null;
+type AppMode = "manage" | "work" | "sole-trader" | null;
 
 export interface SoleTraderPrefs {
   vanStock: boolean;
@@ -11,10 +11,9 @@ const DEFAULT_PREFS: SoleTraderPrefs = { vanStock: false, reconcileDocs: false }
 
 interface AppModeContextType {
   mode: AppMode;
-  setMode: (mode: "manage" | "work" | "sole-trader" | "ai-tools") => void;
+  setMode: (mode: "manage" | "work" | "sole-trader") => void;
   isWorkMode: boolean;
   isSoleTrader: boolean;
-  isAIMode: boolean;
   clearMode: () => void;
   soleTraderPrefs: SoleTraderPrefs;
   setSoleTraderPrefs: (prefs: SoleTraderPrefs) => void;
@@ -28,7 +27,7 @@ const PREFS_KEY = "tradie-sole-trader-prefs";
 export function AppModeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<AppMode>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === "manage" || stored === "work" || stored === "sole-trader" || stored === "ai-tools" ? stored : null;
+    return stored === "manage" || stored === "work" || stored === "sole-trader" ? stored : null;
   });
 
   const [soleTraderPrefs, setSoleTraderPrefsState] = useState<SoleTraderPrefs>(() => {
@@ -39,7 +38,7 @@ export function AppModeProvider({ children }: { children: ReactNode }) {
     return DEFAULT_PREFS;
   });
 
-  const setMode = (m: "manage" | "work" | "sole-trader" | "ai-tools") => {
+  const setMode = (m: "manage" | "work" | "sole-trader") => {
     setModeState(m);
     localStorage.setItem(STORAGE_KEY, m);
   };
@@ -58,9 +57,8 @@ export function AppModeProvider({ children }: { children: ReactNode }) {
     <AppModeContext.Provider value={{
       mode,
       setMode,
-      isWorkMode: mode === "work" || mode === "sole-trader" || mode === "ai-tools",
+      isWorkMode: mode === "work" || mode === "sole-trader",
       isSoleTrader: mode === "sole-trader",
-      isAIMode: mode === "ai-tools",
       clearMode,
       soleTraderPrefs,
       setSoleTraderPrefs,

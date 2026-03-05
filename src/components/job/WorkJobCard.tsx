@@ -11,11 +11,10 @@ import { FormsTab } from "@/components/job/FormsTab";
 import { JobCompletionFlow } from "@/components/job/JobCompletionFlow";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { SoleTraderCloseOutFlow } from "@/components/job/SoleTraderCloseOutFlow";
-import { AICloseOutFlow } from "@/components/job/AICloseOutFlow";
 import { ChecklistDialog } from "@/components/job/ChecklistDialog";
 import { cn } from "@/lib/utils";
 import { WORK_JOB_EXTRAS } from "@/config/toolbarTabs";
-import { Plus, CheckCircle2, Receipt, CalendarCheck, X, ClipboardCheck, Sparkles } from "lucide-react";
+import { Plus, CheckCircle2, Receipt, CalendarCheck, X, ClipboardCheck } from "lucide-react";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { Button } from "@/components/ui/button";
@@ -73,15 +72,14 @@ export default function WorkJobCard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { prefix } = useJobPrefix();
-  const { isSoleTrader, isAIMode } = useAppMode();
+  const { isSoleTrader } = useAppMode();
   const [searchParams, setSearchParams] = useSearchParams();
   const locState = location.state as { customer?: string; address?: string; description?: string } | null;
   const [activeTab, setActiveTab] = useState<WorkJobTab>("overview");
   const resumeCompletion = searchParams.get("resumeCompletion") === "true";
-  const [completionOpen, setCompletionOpen] = useState(resumeCompletion && !isSoleTrader && !isAIMode);
+  const [completionOpen, setCompletionOpen] = useState(resumeCompletion && !isSoleTrader);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
   const [unifiedFlowOpen, setUnifiedFlowOpen] = useState(resumeCompletion && isSoleTrader);
-  const [aiFlowOpen, setAiFlowOpen] = useState(resumeCompletion && isAIMode);
 
   // Checklist state
   const [arrivalChecklistOpen, setArrivalChecklistOpen] = useState(false);
@@ -173,15 +171,7 @@ export default function WorkJobCard() {
           >
             <ClipboardCheck className="w-4 h-4 shrink-0" /> Arrived on Site
           </Button>
-          {isAIMode ? (
-            <Button
-              size="lg"
-              className="flex-1 min-w-0 gap-2 h-12 text-sm font-bold truncate bg-violet-600 hover:bg-violet-700"
-              onClick={() => setAiFlowOpen(true)}
-            >
-              <Sparkles className="w-4 h-4 shrink-0" /> AI Close-Out
-            </Button>
-          ) : isSoleTrader ? (
+          {isSoleTrader ? (
             <Button
               size="lg"
               className="flex-1 min-w-0 gap-2 h-12 text-sm font-bold truncate"
@@ -228,13 +218,6 @@ export default function WorkJobCard() {
         />
       )}
 
-      {isAIMode && (
-        <AICloseOutFlow
-          open={aiFlowOpen}
-          onOpenChange={setAiFlowOpen}
-          job={job}
-        />
-      )}
     </>
   );
 }
