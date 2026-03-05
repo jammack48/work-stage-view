@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield, RotateCcw, FileImage, Truck, ShoppingCart, ClipboardList, Mic, MicOff, Maximize2, Minimize2, CheckCircle2, CalendarDays } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield, RotateCcw, FileImage, Truck, ShoppingCart, ClipboardList, Mic, MicOff, Maximize2, Minimize2, CheckCircle2, CalendarDays, Sparkles, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import type { JobDetail, MaterialItem } from "@/data/dummyJobDetails";
 import { checklistTemplates, type CompletedChecklist } from "@/data/dummyChecklists";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface JobCompletionFlowProps {
   open: boolean;
@@ -127,6 +128,7 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
   const [returnNote, setReturnNote] = useState("");
   const [jobSheet, setJobSheet] = useState(job.description || `Completed ${job.jobName} at ${job.address}.`);
   const [jobSheetExpanded, setJobSheetExpanded] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const jobSheetRef = useRef<HTMLTextAreaElement>(null);
   const autoResizeJobSheet = useCallback(() => {
     const el = jobSheetRef.current;
@@ -393,16 +395,29 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
               </div>
               <div className="flex items-center justify-between">
                 <Label>What was done on this job?</Label>
-                <Button
-                  type="button"
-                  variant={isListening ? "default" : "outline"}
-                  size="sm"
-                  onClick={toggleDictation}
-                  className={cn("gap-1.5 h-8", isListening && "animate-pulse")}
-                >
-                  {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                  {isListening ? "Stop" : "Dictate"}
-                </Button>
+                <div className="flex gap-1.5">
+                  <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8" disabled={aiLoading} onClick={async () => {
+                    setAiLoading(true);
+                    try {
+                      const { data, error } = await supabase.functions.invoke("ai-suggest-description", { body: { jobTitle: job.jobName, client: job.client, address: job.address } });
+                      if (error) throw error;
+                      setJobSheet(data.description);
+                    } catch (e: any) { toast({ title: "Couldn't generate notes", description: e.message, variant: "destructive" }); }
+                    finally { setAiLoading(false); }
+                  }}>
+                    {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} AI Suggest
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={isListening ? "default" : "outline"}
+                    size="sm"
+                    onClick={toggleDictation}
+                    className={cn("gap-1.5 h-8", isListening && "animate-pulse")}
+                  >
+                    {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                    {isListening ? "Stop" : "Dictate"}
+                  </Button>
+                </div>
               </div>
               <Textarea
                 ref={jobSheetRef}

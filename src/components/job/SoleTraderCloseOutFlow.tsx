@@ -4,7 +4,7 @@ import {
   Check, ChevronLeft, ChevronRight, Camera, Clock, Package, FileText, Shield,
   Truck, ShoppingCart, ClipboardList, Mic, MicOff, Maximize2, Minimize2,
   DollarSign, Receipt, Send, CheckCircle2, Plus, Trash2, Eye, EyeOff,
-  AlertTriangle, Mail, MessageSquare, CalendarDays, FileCheck,
+  AlertTriangle, Mail, MessageSquare, CalendarDays, FileCheck, Sparkles, Loader2,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import { checklistTemplates, type CompletedChecklist } from "@/data/dummyCheckli
 import { toast } from "@/hooks/use-toast";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { SequenceSelector } from "@/components/quote/SequenceSelector";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   open: boolean;
@@ -159,6 +160,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
   // Job notes state
   const [jobSheet, setJobSheet] = useState(job.description || `Completed ${job.jobName} at ${job.address}.`);
   const [jobSheetExpanded, setJobSheetExpanded] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const jobSheetRef = useRef<HTMLTextAreaElement>(null);
   const autoResize = useCallback(() => {
     const el = jobSheetRef.current;
@@ -376,9 +378,22 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
               </div>
               <div className="flex items-center justify-between">
                 <Label>What was done on this job?</Label>
-                <Button type="button" variant={isListening ? "default" : "outline"} size="sm" onClick={toggleDictation} className={cn("gap-1.5 h-8", isListening && "animate-pulse")}>
-                  {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}{isListening ? "Stop" : "Dictate"}
-                </Button>
+                <div className="flex gap-1.5">
+                  <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8" disabled={aiLoading} onClick={async () => {
+                    setAiLoading(true);
+                    try {
+                      const { data, error } = await supabase.functions.invoke("ai-suggest-description", { body: { jobTitle: job.jobName, client: job.client, address: job.address } });
+                      if (error) throw error;
+                      setJobSheet(data.description);
+                    } catch (e: any) { toast({ title: "Couldn't generate notes", description: e.message, variant: "destructive" }); }
+                    finally { setAiLoading(false); }
+                  }}>
+                    {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} AI Suggest
+                  </Button>
+                  <Button type="button" variant={isListening ? "default" : "outline"} size="sm" onClick={toggleDictation} className={cn("gap-1.5 h-8", isListening && "animate-pulse")}>
+                    {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}{isListening ? "Stop" : "Dictate"}
+                  </Button>
+                </div>
               </div>
               <Textarea ref={jobSheetRef} className={cn("bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400 min-h-[120px] resize-none transition-all", jobSheetExpanded ? "overflow-hidden" : "max-h-[50vh] overflow-y-auto")} value={jobSheet} onChange={(e) => setJobSheet(e.target.value)} placeholder="Describe the work completed..." />
               {jobSheet && jobSheet.length > 100 && (
