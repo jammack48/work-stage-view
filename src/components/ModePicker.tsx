@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Wrench, HardHat, ArrowRight, Building2 } from "lucide-react";
+import { Shield, Wrench, HardHat, ArrowRight, Building2, Sparkles } from "lucide-react";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useTutorial } from "@/contexts/TutorialContext";
 import { Switch } from "@/components/ui/switch";
@@ -101,6 +101,21 @@ export function ModePicker() {
                 <div>
                   <h2 className="text-base font-bold text-card-foreground">On the Tools</h2>
                   <p className="text-sm text-muted-foreground">Log time, track parts, complete jobs & snap photos.</p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => { setTutorialOn(true); setMode("ai-tools"); }}
+              className="group rounded-xl border-2 border-border bg-card p-5 text-left transition-all hover:border-violet-500 hover:shadow-lg hover:shadow-violet-500/10 focus:outline-none focus:ring-2 focus:ring-violet-500"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-violet-500/15 flex items-center justify-center shrink-0 group-hover:bg-violet-500/25 transition-colors">
+                  <Sparkles className="w-6 h-6 text-violet-500" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-card-foreground">AI-Assisted</h2>
+                  <p className="text-sm text-muted-foreground">Voice-powered close-out — talk through jobs hands-free.</p>
                 </div>
               </div>
             </button>
