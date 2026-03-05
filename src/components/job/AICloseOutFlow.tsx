@@ -103,23 +103,27 @@ function useSpeech() {
     let silenceTimer: ReturnType<typeof setTimeout> | null = null;
     let lastInterim = "";
 
+    let alreadySent = false; // guard against double-fire
+
     r.onresult = (e: any) => {
       for (let i = e.resultIndex; i < e.results.length; i++) {
         if (e.results[i].isFinal) {
-          // Clear any pending silence timer — we got a final result
           if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
-          lastInterim = "";
           const t = e.results[i][0].transcript.trim();
-          console.log("[AI CloseOut] Heard (final):", t);
-          if (t && onResultRef.current) onResultRef.current(t);
+          if (t && !alreadySent && onResultRef.current) {
+            alreadySent = true;
+            console.log("[AI CloseOut] Heard (final):", t);
+            onResultRef.current(t);
+          }
+          lastInterim = "";
         } else {
-          // Interim result — start silence timer to auto-finalize short words
           const interim = e.results[i][0].transcript.trim();
           if (interim) {
             lastInterim = interim;
             if (silenceTimer) clearTimeout(silenceTimer);
             silenceTimer = setTimeout(() => {
-              if (lastInterim && onResultRef.current) {
+              if (lastInterim && !alreadySent && onResultRef.current) {
+                alreadySent = true;
                 console.log("[AI CloseOut] Heard (silence timeout):", lastInterim);
                 onResultRef.current(lastInterim);
                 lastInterim = "";
@@ -131,25 +135,35 @@ function useSpeech() {
     };
     r.onend = () => {
       setIsListening(false);
-      // Flush any pending interim
-      if (lastInterim && onResultRef.current) {
+      // Flush any pending interim only if we haven't already sent
+      if (lastInterim && !alreadySent && onResultRef.current) {
+        alreadySent = true;
         console.log("[AI CloseOut] Heard (onend flush):", lastInterim);
         onResultRef.current(lastInterim);
         lastInterim = "";
       }
       if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+      // Auto-restart with a fresh recognition instance to avoid stale state
       if (shouldListenRef.current && !isMutedRef.current) {
         setTimeout(() => {
-          if (shouldListenRef.current && !isMutedRef.current && recognitionRef.current) {
-            try { recognitionRef.current.start(); setIsListening(true); } catch { /* */ }
+          if (shouldListenRef.current && !isMutedRef.current) {
+            const fresh = createRecognition();
+            if (fresh) {
+              recognitionRef.current = fresh;
+              try { fresh.start(); setIsListening(true); } catch { /* */ }
+            }
           }
-        }, 200);
+        }, 300);
       }
     };
     r.onerror = (ev: any) => {
-      if (ev.error !== "no-speech" && ev.error !== "aborted") {
+      if (ev.error === "not-allowed") {
+        console.warn("[AI CloseOut] Mic permission denied");
+        shouldListenRef.current = false;
+      } else if (ev.error !== "no-speech" && ev.error !== "aborted") {
         console.warn("[AI CloseOut] Speech error:", ev.error);
       }
+      // onend will fire after onerror and handle restart
     };
     return r;
   }, []);
@@ -217,7 +231,7 @@ function useTTS() {
     if (!clean) { onEnd?.(); return; }
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(clean);
-    u.rate = 1.35; u.pitch = 1.0; u.lang = "en-AU";
+    u.rate = 1.2; u.pitch = 1.0; u.lang = "en-AU";
     u.onstart = () => setIsSpeaking(true);
     u.onend = () => { setIsSpeaking(false); onEnd?.(); };
     u.onerror = () => { setIsSpeaking(false); onEnd?.(); };
