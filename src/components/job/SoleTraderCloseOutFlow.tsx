@@ -152,13 +152,20 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
   const { soleTraderPrefs } = useAppMode();
   const [step, setStep] = useState(resumeAfterBooking ? 1 : 0);
 
+  const initialJobSheet = useMemo(() => {
+    const existingDescription = job.description?.trim();
+    return existingDescription
+      ? `Job: ${job.jobName}\n${existingDescription}`
+      : `Job: ${job.jobName}\n`;
+  }, [job.description, job.jobName]);
+
   // Status step state
   const [jobFinished, setJobFinished] = useState(true);
   const [invoiceNow, setInvoiceNow] = useState(true);
   const [returnNote, setReturnNote] = useState("");
 
   // Job notes state
-  const [jobSheet, setJobSheet] = useState(job.description || `Completed ${job.jobName} at ${job.address}.`);
+  const [jobSheet, setJobSheet] = useState(initialJobSheet);
   const [jobSheetExpanded, setJobSheetExpanded] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const jobSheetRef = useRef<HTMLTextAreaElement>(null);
@@ -169,6 +176,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
   useEffect(() => { autoResize(); }, [jobSheet, jobSheetExpanded, autoResize]);
   const [selectedPhrases, setSelectedPhrases] = useState<string[]>([]);
   const [isListening, setIsListening] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState("");
   const recognitionRef = useRef<any>(null);
 
   // Time state
@@ -231,11 +239,46 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
     if (!SpeechRecognition) { toast({ title: "Not supported", description: "Voice dictation isn't available in this browser.", duration: 3000 }); return; }
     if (isListening && recognitionRef.current) { recognitionRef.current.stop(); setIsListening(false); return; }
     const recognition = new SpeechRecognition();
-    recognition.continuous = true; recognition.interimResults = false; recognition.lang = "en-AU";
-    recognition.onresult = (event: any) => { let t = ""; for (let i = event.resultIndex; i < event.results.length; i++) { if (event.results[i].isFinal) t += event.results[i][0].transcript; } if (t) setJobSheet((prev) => (prev ? `${prev} ${t.trim()}` : t.trim())); };
+    recognition.continuous = true; recognition.interimResults = true; recognition.lang = "en-AU";
+    recognition.onresult = (event: any) => {
+      let finalTranscript = "";
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+        else interim += event.results[i][0].transcript;
+      }
+      setInterimTranscript(interim.trim());
+      if (finalTranscript) {
+        setJobSheet((prev) => (prev ? `${prev} ${finalTranscript.trim()}` : finalTranscript.trim()));
+        setInterimTranscript("");
+      }
+    };
     recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
+    recognition.onend = () => { setIsListening(false); setInterimTranscript(""); };
     recognitionRef.current = recognition; recognition.start(); setIsListening(true);
+  };
+
+  const isAiCleanupMode = jobSheet.trim().length > 0;
+
+  const handleAiJobSheetAssist = async () => {
+    const shouldCleanUp = jobSheet.trim().length > 0;
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-suggest-description", {
+        body: shouldCleanUp
+          ? { jobTitle: job.jobName, client: job.client, address: job.address, rawNotes: jobSheet }
+          : { jobTitle: job.jobName, client: job.client, address: job.address },
+      });
+      if (error) throw error;
+      setJobSheet(data.description);
+      if (shouldCleanUp) {
+        toast({ title: "Job notes cleaned up ✨", description: "Your notes were rewritten to be clearer and more professional." });
+      }
+    } catch (e: any) {
+      toast({ title: shouldCleanUp ? "Couldn't clean up notes" : "Couldn't generate notes", description: e.message, variant: "destructive" });
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const handlePhotoCapture = (type: "before" | "after") => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -379,22 +422,45 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
               <div className="flex items-center justify-between">
                 <Label>What was done on this job?</Label>
                 <div className="flex gap-1.5">
-                  <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8" disabled={aiLoading} onClick={async () => {
-                    setAiLoading(true);
-                    try {
-                      const { data, error } = await supabase.functions.invoke("ai-suggest-description", { body: { jobTitle: job.jobName, client: job.client, address: job.address } });
-                      if (error) throw error;
-                      setJobSheet(data.description);
-                    } catch (e: any) { toast({ title: "Couldn't generate notes", description: e.message, variant: "destructive" }); }
-                    finally { setAiLoading(false); }
-                  }}>
-                    {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} AI Suggest
+                  <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8" disabled={aiLoading} onClick={handleAiJobSheetAssist}>
+                    {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} {isAiCleanupMode ? "AI Cleanup" : "AI Suggest"}
                   </Button>
                   <Button type="button" variant={isListening ? "default" : "outline"} size="sm" onClick={toggleDictation} className={cn("gap-1.5 h-8", isListening && "animate-pulse")}>
                     {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}{isListening ? "Stop" : "Dictate"}
                   </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-xs"
+                    disabled={!jobSheet.trim()}
+                    onClick={() => {
+                      setJobSheet("");
+                      setSelectedPhrases([]);
+                      setInterimTranscript("");
+                    }}
+                  >
+                    Clear text
+                  </Button>
                 </div>
               </div>
+              {isListening && (
+                <div className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-primary space-y-1">
+                  <div className="flex items-center gap-2 font-medium">
+                    <span className="inline-flex gap-1 items-end h-3" aria-hidden>
+                      {[0, 1, 2, 3].map((bar) => (
+                        <span
+                          key={bar}
+                          className="w-1 rounded-full bg-primary/80 animate-pulse"
+                          style={{ height: `${8 + (bar % 2) * 4}px`, animationDelay: `${bar * 120}ms` }}
+                        />
+                      ))}
+                    </span>
+                    Listening… speak now
+                  </div>
+                  {interimTranscript && <p className="text-primary/80">Heard: “{interimTranscript}”</p>}
+                </div>
+              )}
               <Textarea ref={jobSheetRef} className={cn("bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400 min-h-[120px] resize-none transition-all", jobSheetExpanded ? "overflow-hidden" : "max-h-[50vh] overflow-y-auto")} value={jobSheet} onChange={(e) => setJobSheet(e.target.value)} placeholder="Describe the work completed..." />
               {jobSheet && jobSheet.length > 100 && (
                 <Button type="button" variant="ghost" size="sm" className="gap-1 h-7 text-xs text-muted-foreground" onClick={() => setJobSheetExpanded(!jobSheetExpanded)}>

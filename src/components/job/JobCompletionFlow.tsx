@@ -124,9 +124,16 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
   const [step, setStep] = useState(resumeAfterBooking ? 1 : 0);
   const [jobFinished, setJobFinished] = useState(true);
 
+  const initialJobSheet = useMemo(() => {
+    const existingDescription = job.description?.trim();
+    return existingDescription
+      ? `Job: ${job.jobName}\n${existingDescription}`
+      : `Job: ${job.jobName}\n`;
+  }, [job.description, job.jobName]);
+
   const [returnNeeded, setReturnNeeded] = useState(false);
   const [returnNote, setReturnNote] = useState("");
-  const [jobSheet, setJobSheet] = useState(job.description || `Completed ${job.jobName} at ${job.address}.`);
+  const [jobSheet, setJobSheet] = useState(initialJobSheet);
   const [jobSheetExpanded, setJobSheetExpanded] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const jobSheetRef = useRef<HTMLTextAreaElement>(null);
@@ -155,7 +162,7 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
   const [poConfirmed, setPoConfirmed] = useState(false);
   const [selectedPhrases, setSelectedPhrases] = useState<string[]>([]);
   const [isListening, setIsListening] = useState(false);
-  const [hasDictationText, setHasDictationText] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState("");
   const recognitionRef = useRef<any>(null);
   const beforeInputRef = useRef<HTMLInputElement>(null);
   const afterInputRef = useRef<HTMLInputElement>(null);
@@ -180,16 +187,22 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
     }
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.lang = "en-AU";
     recognition.onresult = (event: any) => {
-      let transcript = "";
+      let finalTranscript = "";
+      let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) transcript += event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interim += event.results[i][0].transcript;
+        }
       }
-      if (transcript) {
-        setJobSheet((prev) => (prev ? `${prev} ${transcript.trim()}` : transcript.trim()));
-        setHasDictationText(true);
+      setInterimTranscript(interim.trim());
+      if (finalTranscript) {
+        setJobSheet((prev) => (prev ? `${prev} ${finalTranscript.trim()}` : finalTranscript.trim()));
+        setInterimTranscript("");
       }
     };
     recognition.onerror = (event: any) => {
@@ -198,7 +211,10 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
         toast({ title: "Dictation issue", description: `Microphone error: ${event.error}.`, duration: 3000 });
       }
     };
-    recognition.onend = () => setIsListening(false);
+    recognition.onend = () => {
+      setIsListening(false);
+      setInterimTranscript("");
+    };
     recognitionRef.current = recognition;
     try {
       recognition.start();
@@ -216,20 +232,21 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
   }, []);
 
   const handleAiJobSheetAssist = async () => {
+    const shouldCleanUp = jobSheet.trim().length > 0;
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("ai-suggest-description", {
-        body: hasDictationText
+        body: shouldCleanUp
           ? { jobTitle: job.jobName, client: job.client, address: job.address, rawNotes: jobSheet }
           : { jobTitle: job.jobName, client: job.client, address: job.address },
       });
       if (error) throw error;
       setJobSheet(data.description);
-      if (hasDictationText) {
+      if (shouldCleanUp) {
         toast({ title: "Job sheet cleaned up ✨", description: "Dictation has been rewritten into clear job notes." });
       }
     } catch (e: any) {
-      toast({ title: hasDictationText ? "Couldn't clean up notes" : "Couldn't generate notes", description: e.message, variant: "destructive" });
+      toast({ title: shouldCleanUp ? "Couldn't clean up notes" : "Couldn't generate notes", description: e.message, variant: "destructive" });
     } finally {
       setAiLoading(false);
     }
@@ -277,6 +294,7 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
   const currentStep = activeSteps[step];
   const canNext = step < activeSteps.length - 1;
   const canPrev = step > 0;
+  const isAiCleanupMode = jobSheet.trim().length > 0;
 
   function handleAddExtra() {
     if (!extraPartName.trim()) return;
@@ -442,7 +460,7 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
                 <Label>What was done on this job?</Label>
                 <div className="flex gap-1.5">
                   <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8" disabled={aiLoading} onClick={handleAiJobSheetAssist}>
-                    {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} {hasDictationText ? "AI Clean Up" : "AI Suggest"}
+                    {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} {isAiCleanupMode ? "AI Cleanup" : "AI Suggest"}
                   </Button>
                   <Button
                     type="button"
@@ -454,8 +472,39 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
                     {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
                     {isListening ? "Stop" : "Dictate"}
                   </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-xs"
+                    disabled={!jobSheet.trim()}
+                    onClick={() => {
+                      setJobSheet("");
+                      setSelectedPhrases([]);
+                      setInterimTranscript("");
+                    }}
+                  >
+                    Clear text
+                  </Button>
                 </div>
               </div>
+              {isListening && (
+                <div className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-primary space-y-1">
+                  <div className="flex items-center gap-2 font-medium">
+                    <span className="inline-flex gap-1 items-end h-3" aria-hidden>
+                      {[0, 1, 2, 3].map((bar) => (
+                        <span
+                          key={bar}
+                          className="w-1 rounded-full bg-primary/80 animate-pulse"
+                          style={{ height: `${8 + (bar % 2) * 4}px`, animationDelay: `${bar * 120}ms` }}
+                        />
+                      ))}
+                    </span>
+                    Listening… speak now
+                  </div>
+                  {interimTranscript && <p className="text-primary/80">Heard: “{interimTranscript}”</p>}
+                </div>
+              )}
               <Textarea
                 ref={jobSheetRef}
                 className={cn(
