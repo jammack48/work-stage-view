@@ -1,42 +1,38 @@
 
 
-## Fix: Faster, Briefer, Better at Short Words
+## Plan: Hybrid Local Parser + Faster Speech Recognition
 
-Three issues to fix:
+The review is spot-on. The biggest wins come from two changes:
 
-### 1. Speech recognition can't pick up single words ("yes", "no")
+### 1. Local parser for simple steps — skip the LLM entirely
 
-`continuous = true` with `interimResults = false` waits for a long pause before finalizing. Single words get swallowed or ignored.
+For `status`, `time`, `parts` (confirm), `photos`, and `compliance`, the answers are predictable: yes/no/number/skip. Parse these locally with simple regex/keyword matching. Only call the LLM for `jobsheet` (free-text dictation) and ambiguous `parts` additions.
 
-**Fix:** Set `interimResults = true` and add a silence timeout. When we get an interim result, start a 1.5s timer. If no new speech comes in, treat the interim as final and send it. This catches "yes", "no", "nah", "skip" immediately instead of waiting for the recognition engine to decide it's done.
+This eliminates network latency on 5 of 6 steps — the flow will feel near-instant.
 
-### 2. AI responses too verbose — "G'day!", "Got it mate"
+**Local parsing rules:**
+- **status**: "yes/yep/done/finished/all done" → finished. "no/nah/coming back/not yet" → coming_back
+- **time**: Extract number from transcript (regex `\d+\.?\d*`). "half a day" → 4, "couple" → 2
+- **parts**: "yes/yep/all good/that's it" → confirm. Otherwise fall through to LLM
+- **photos**: "no/nah/skip" → skip + advance. "yes/yeah" → wait
+- **compliance**: "no/nah/none" → false + advance. "yes" → true, stay
 
-The system prompt says "casual/mate tone" and the step questions say "G'day!" — wastes time.
+### 2. Faster silence timeout — 800ms instead of 1500ms
 
-**Fix in edge function prompt:**
-- Change rule to: "Keep speak under 6 words. No greetings, no filler. Just confirm and move."
-- Example: instead of `"Got it, 6 hours mate. Moving on to parts."` → `"6 hours. Next."`
+Drop from 1500ms to 800ms. One-word answers like "no" will commit in under a second instead of 1.5s.
 
-**Fix step questions** (the initial TTS prompts):
-- `status`: "Job finished or coming back?" (not "G'day! Is this job finished...")
-- `jobsheet`: "What'd you do?" (not "What did you get done at 123 Smith St?")
-- `time`: "How many hours?"
-- `parts`: "These parts right?" / "Any parts used?"
-- `photos`: "Any photos?"
-- `compliance`: "Any compliance certs?"
+### 3. Speed up TTS to 1.3x
 
-### 3. TTS voice too slow
-
-**Fix:** Change `u.rate = 1.05` → `u.rate = 1.35` in the `useTTS` hook.
+The user originally asked for 1.3x, current is 1.2x.
 
 ### Files to change
 
-1. **`src/components/job/AICloseOutFlow.tsx`**
-   - `useSpeech`: enable `interimResults = true`, add silence timeout (1.5s) to auto-finalize short utterances
-   - `STEP_QUESTIONS`: shorten all prompts to bare minimum
-   - `useTTS`: set `u.rate = 1.35`
+**`src/components/job/AICloseOutFlow.tsx`:**
+- Add `tryLocalParse(stepId, transcript)` function that returns `{ speak, actions, advance }` or `null`
+- In `handleSpeech`: call `tryLocalParse` first; if it returns a result, apply actions + advance immediately without calling the edge function
+- Only call `callAI()` if local parse returns `null`
+- Change silence timeout: `1500` → `800`
+- Change TTS rate: `1.2` → `1.3`
 
-2. **`supabase/functions/ai-closeout/index.ts`**
-   - Update system prompt: "Keep speak under 6 words. No greetings, no pleasantries, no filler. Just confirm the action and state what's next."
+No edge function changes needed — it remains as fallback for ambiguous cases.
 
