@@ -128,7 +128,7 @@ function useSpeech() {
                 onResultRef.current(lastInterim);
                 lastInterim = "";
               }
-            }, 1500);
+            }, 800);
           }
         }
       }
@@ -231,7 +231,7 @@ function useTTS() {
     if (!clean) { onEnd?.(); return; }
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(clean);
-    u.rate = 1.2; u.pitch = 1.0; u.lang = "en-AU";
+    u.rate = 1.3; u.pitch = 1.0; u.lang = "en-AU";
     u.onstart = () => setIsSpeaking(true);
     u.onend = () => { setIsSpeaking(false); onEnd?.(); };
     u.onerror = () => { setIsSpeaking(false); onEnd?.(); };
@@ -242,6 +242,76 @@ function useTTS() {
   const toggle = useCallback(() => setEnabled(p => { if (p) { window.speechSynthesis.cancel(); setIsSpeaking(false); } return !p; }), []);
 
   return { isSpeaking, enabled, speak, cancel, toggle };
+}
+
+// ── Local parser — skip LLM for simple yes/no/number answers ──
+
+function tryLocalParse(
+  stepId: StepId,
+  transcript: string
+): { speak: string; actions: { type: string; value?: any }[]; advance: boolean } | null {
+  const t = transcript.toLowerCase().trim();
+
+  if (stepId === "status") {
+    if (/\b(yes|yep|yeah|done|finished|all done|complete|completed)\b/.test(t)) {
+      return { speak: "Finished.", actions: [{ type: "set_status", value: "finished" }], advance: true };
+    }
+    if (/\b(no|nah|nope|coming back|not yet|not done|return)\b/.test(t)) {
+      return { speak: "Coming back.", actions: [{ type: "set_status", value: "coming_back" }], advance: true };
+    }
+    return null;
+  }
+
+  if (stepId === "time") {
+    if (/\b(half a day|half day)\b/.test(t)) {
+      return { speak: "4 hours.", actions: [{ type: "set_hours", value: 4 }], advance: true };
+    }
+    if (/\b(couple|couple of)\b/.test(t)) {
+      return { speak: "2 hours.", actions: [{ type: "set_hours", value: 2 }], advance: true };
+    }
+    if (/\b(full day|whole day)\b/.test(t)) {
+      return { speak: "8 hours.", actions: [{ type: "set_hours", value: 8 }], advance: true };
+    }
+    const numMatch = t.match(/(\d+\.?\d*)/);
+    if (numMatch) {
+      const hrs = parseFloat(numMatch[1]);
+      if (hrs > 0 && hrs <= 24) {
+        return { speak: `${hrs} hours.`, actions: [{ type: "set_hours", value: hrs }], advance: true };
+      }
+    }
+    return null;
+  }
+
+  if (stepId === "parts") {
+    if (/\b(yes|yep|yeah|that's it|all good|correct|confirmed)\b/.test(t)) {
+      return { speak: "Parts confirmed.", actions: [{ type: "confirm_parts" }], advance: true };
+    }
+    // Fall through to LLM for add/remove
+    return null;
+  }
+
+  if (stepId === "photos") {
+    if (/\b(no|nah|nope|skip|none)\b/.test(t)) {
+      return { speak: "Skipped.", actions: [{ type: "skip_photos" }], advance: true };
+    }
+    if (/\b(yes|yeah|yep|one sec|hang on)\b/.test(t)) {
+      return { speak: "Tap camera when ready.", actions: [{ type: "wait_photos" }], advance: false };
+    }
+    return null;
+  }
+
+  if (stepId === "compliance") {
+    if (/\b(no|nah|nope|none|nothing)\b/.test(t)) {
+      return { speak: "No certs.", actions: [{ type: "set_compliance", value: false }], advance: true };
+    }
+    if (/\b(yes|yeah|yep)\b/.test(t)) {
+      return { speak: "Enter cert number.", actions: [{ type: "set_compliance", value: true }], advance: false };
+    }
+    return null;
+  }
+
+  // jobsheet — always use LLM
+  return null;
 }
 
 // ── Main Component ──
@@ -330,9 +400,32 @@ export function AICloseOutFlow({ open, onOpenChange, job }: AICloseOutFlowProps)
   // Process user speech for current step
   const handleSpeech = useCallback(async (transcript: string) => {
     setProcessing(true);
-    setVoiceStatus("thinking");
     speech.pause();
 
+    // Try local parse first — instant, no network
+    const local = tryLocalParse(currentStep.id, transcript);
+    if (local) {
+      console.log("[AI CloseOut] Local parse hit:", currentStep.id, transcript);
+      applyActions(local.actions);
+      setVoiceStatus("speaking");
+      setLastSpoken(local.speak);
+      tts.speak(local.speak, () => {
+        setVoiceStatus("listening");
+        if (local.advance) {
+          if (step < STEPS.length - 1) {
+            setStep(s => s + 1);
+          } else {
+            handleSubmit();
+          }
+        }
+        speech.resume();
+      });
+      setProcessing(false);
+      return;
+    }
+
+    // Fall through to LLM for complex inputs
+    setVoiceStatus("thinking");
     try {
       const result = await callAI({
         step: currentStep.id,
@@ -345,20 +438,15 @@ export function AICloseOutFlow({ open, onOpenChange, job }: AICloseOutFlowProps)
         },
       });
 
-      // Apply the actions to form state
       applyActions(result.actions || []);
-
-      // Speak the response
       setVoiceStatus("speaking");
       setLastSpoken(result.speak);
       tts.speak(result.speak, () => {
         setVoiceStatus("listening");
-        // Advance if told to
         if (result.advance) {
           if (step < STEPS.length - 1) {
             setStep(s => s + 1);
           } else {
-            // Final step — submit
             handleSubmit();
           }
         }
