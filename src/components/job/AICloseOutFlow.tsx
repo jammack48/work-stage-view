@@ -21,6 +21,8 @@ async function streamChat({
   onDelta: (deltaText: string) => void;
   onDone: (fullText: string) => void;
 }) {
+  console.log("[AI CloseOut] Sending request with", messages.length, "messages");
+
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: {
@@ -97,15 +99,11 @@ async function streamChat({
     }
   }
 
+  console.log("[AI CloseOut] Stream complete, total length:", fullText.length);
   onDone(fullText);
 }
 
 // ── Speech Recognition hook (continuous / open-mic) ──
-
-interface SpeechRecognitionEvent {
-  results: SpeechRecognitionResultList;
-  resultIndex: number;
-}
 
 function useContinuousSpeech() {
   const [isListening, setIsListening] = useState(false);
@@ -113,6 +111,12 @@ function useContinuousSpeech() {
   const recognitionRef = useRef<any>(null);
   const onResultRef = useRef<((text: string) => void) | null>(null);
   const shouldBeListeningRef = useRef(false);
+  const isMutedRef = useRef(false);
+
+  // Keep muted ref in sync
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
 
   const createRecognition = useCallback(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -127,6 +131,7 @@ function useContinuousSpeech() {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
           const transcript = event.results[i][0].transcript.trim();
+          console.log("[AI CloseOut] Speech recognized:", transcript);
           if (transcript && onResultRef.current) {
             onResultRef.current(transcript);
           }
@@ -135,29 +140,36 @@ function useContinuousSpeech() {
     };
 
     recognition.onend = () => {
+      console.log("[AI CloseOut] Recognition onend, shouldBe:", shouldBeListeningRef.current, "muted:", isMutedRef.current);
       setIsListening(false);
       // Auto-restart if we should still be listening
-      if (shouldBeListeningRef.current && !isMuted) {
-        try {
-          setTimeout(() => {
-            if (shouldBeListeningRef.current && recognitionRef.current) {
-              recognitionRef.current.start();
-              setIsListening(true);
+      if (shouldBeListeningRef.current && !isMutedRef.current) {
+        setTimeout(() => {
+          if (shouldBeListeningRef.current && !isMutedRef.current) {
+            try {
+              if (recognitionRef.current) {
+                recognitionRef.current.start();
+                setIsListening(true);
+                console.log("[AI CloseOut] Auto-restarted recognition");
+              }
+            } catch (e) {
+              console.warn("[AI CloseOut] Auto-restart failed:", e);
             }
-          }, 200);
-        } catch { /* ignore */ }
+          }
+        }, 300);
       }
     };
 
     recognition.onerror = (e: any) => {
       if (e.error === "no-speech" || e.error === "aborted") return;
-      console.warn("Speech recognition error:", e.error);
+      console.warn("[AI CloseOut] Speech recognition error:", e.error);
     };
 
     return recognition;
-  }, [isMuted]);
+  }, []);
 
   const startListening = useCallback((onResult: (text: string) => void) => {
+    console.log("[AI CloseOut] startListening called");
     onResultRef.current = onResult;
     shouldBeListeningRef.current = true;
 
@@ -175,10 +187,18 @@ function useContinuousSpeech() {
     try {
       recognition.start();
       setIsListening(true);
-    } catch { /* */ }
+      console.log("[AI CloseOut] Recognition started successfully");
+    } catch (e) {
+      console.warn("[AI CloseOut] Recognition start failed:", e);
+    }
   }, [createRecognition]);
 
+  const updateCallback = useCallback((onResult: (text: string) => void) => {
+    onResultRef.current = onResult;
+  }, []);
+
   const pauseListening = useCallback(() => {
+    console.log("[AI CloseOut] pauseListening");
     shouldBeListeningRef.current = false;
     if (recognitionRef.current) {
       try { recognitionRef.current.stop(); } catch { /* */ }
@@ -187,14 +207,18 @@ function useContinuousSpeech() {
   }, []);
 
   const resumeListening = useCallback(() => {
-    if (isMuted) return;
+    if (isMutedRef.current) return;
+    console.log("[AI CloseOut] resumeListening");
     shouldBeListeningRef.current = true;
+
     if (recognitionRef.current) {
       try {
         recognitionRef.current.start();
         setIsListening(true);
+        console.log("[AI CloseOut] Resumed existing recognition");
       } catch {
         // Recreate if needed
+        console.log("[AI CloseOut] Recreating recognition for resume");
         const recognition = createRecognition();
         if (recognition) {
           recognitionRef.current = recognition;
@@ -202,12 +226,26 @@ function useContinuousSpeech() {
           setIsListening(true);
         }
       }
+    } else {
+      // No existing recognition — create fresh one
+      console.log("[AI CloseOut] No recognition instance, creating new one for resume");
+      const recognition = createRecognition();
+      if (recognition) {
+        recognitionRef.current = recognition;
+        try {
+          recognition.start();
+          setIsListening(true);
+        } catch (e) {
+          console.warn("[AI CloseOut] Resume start failed:", e);
+        }
+      }
     }
-  }, [isMuted, createRecognition]);
+  }, [createRecognition]);
 
   const toggleMute = useCallback(() => {
     setIsMuted(prev => {
       const newMuted = !prev;
+      console.log("[AI CloseOut] toggleMute →", newMuted);
       if (newMuted) {
         shouldBeListeningRef.current = false;
         if (recognitionRef.current) {
@@ -220,6 +258,7 @@ function useContinuousSpeech() {
   }, []);
 
   const stopCompletely = useCallback(() => {
+    console.log("[AI CloseOut] stopCompletely");
     shouldBeListeningRef.current = false;
     onResultRef.current = null;
     if (recognitionRef.current) {
@@ -229,7 +268,7 @@ function useContinuousSpeech() {
     setIsListening(false);
   }, []);
 
-  return { isListening, isMuted, startListening, pauseListening, resumeListening, toggleMute, stopCompletely };
+  return { isListening, isMuted, startListening, updateCallback, pauseListening, resumeListening, toggleMute, stopCompletely };
 }
 
 // ── Text-to-Speech hook ──
@@ -237,15 +276,14 @@ function useContinuousSpeech() {
 function useTTS() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const speak = useCallback((text: string, onEnd?: () => void) => {
     if (!ttsEnabled || !window.speechSynthesis) {
+      console.log("[AI CloseOut] TTS skipped (disabled or unsupported)");
       onEnd?.();
       return;
     }
 
-    // Strip markdown for cleaner speech
     const cleanText = text
       .replace(/[#*_`~>\[\]()!]/g, "")
       .replace(/\n+/g, ". ")
@@ -263,14 +301,18 @@ function useTTS() {
     utterance.rate = 1.05;
     utterance.pitch = 1.0;
     utterance.lang = "en-AU";
-    utteranceRef.current = utterance;
 
-    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onstart = () => {
+      console.log("[AI CloseOut] TTS started");
+      setIsSpeaking(true);
+    };
     utterance.onend = () => {
+      console.log("[AI CloseOut] TTS ended");
       setIsSpeaking(false);
       onEnd?.();
     };
     utterance.onerror = () => {
+      console.log("[AI CloseOut] TTS error");
       setIsSpeaking(false);
       onEnd?.();
     };
@@ -306,6 +348,7 @@ interface AICloseOutFlowProps {
 
 export function AICloseOutFlow({ open, onOpenChange, job }: AICloseOutFlowProps) {
   const [messages, setMessages] = useState<Msg[]>([]);
+  const messagesRef = useRef<Msg[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
@@ -317,6 +360,11 @@ export function AICloseOutFlow({ open, onOpenChange, job }: AICloseOutFlowProps)
   const speech = useContinuousSpeech();
   const tts = useTTS();
 
+  // Keep messagesRef in sync
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   // Auto-scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
@@ -324,10 +372,105 @@ export function AICloseOutFlow({ open, onOpenChange, job }: AICloseOutFlowProps)
     }
   }, [messages]);
 
+  // Stable sendMessage that reads from ref
+  const sendMessage = useCallback(async (msg: Msg, isInitial = false) => {
+    const currentMessages = messagesRef.current;
+    const newMessages = [...currentMessages, msg];
+
+    // Update state and ref immediately
+    if (!msg.content.startsWith("[JOB CONTEXT")) {
+      setMessages(newMessages);
+    } else {
+      // Still update ref for context messages
+      messagesRef.current = newMessages;
+    }
+
+    setIsLoading(true);
+    speech.pauseListening();
+
+    console.log("[AI CloseOut] sendMessage called, history length:", newMessages.length, "isInitial:", isInitial);
+
+    let assistantSoFar = "";
+    const upsertAssistant = (nextChunk: string) => {
+      assistantSoFar += nextChunk;
+      setMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant") {
+          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
+        }
+        return [...prev, { role: "assistant", content: assistantSoFar }];
+      });
+    };
+
+    try {
+      await streamChat({
+        messages: newMessages,
+        onDelta: (chunk) => upsertAssistant(chunk),
+        onDone: (fullText) => {
+          setIsLoading(false);
+          console.log("[AI CloseOut] AI response complete, length:", fullText.length);
+
+          if (fullText.includes("✅") && fullText.toLowerCase().includes("all done")) {
+            setIsComplete(true);
+          }
+
+          // Speak the response, then resume listening
+          tts.speak(fullText, () => {
+            console.log("[AI CloseOut] TTS finished, resuming mic");
+            if (isInitial) {
+              // First time: use startListening to properly initialize
+              speech.startListening((transcript: string) => {
+                console.log("[AI CloseOut] Speech callback fired:", transcript);
+                if (transcript.trim()) {
+                  // Read latest messages from ref
+                  const userMsg: Msg = { role: "user", content: transcript };
+                  sendMessage(userMsg);
+                }
+              });
+            } else {
+              speech.resumeListening();
+            }
+          });
+
+          // If TTS is disabled and this is initial, start mic immediately
+          if (isInitial && !tts.ttsEnabled) {
+            setTimeout(() => {
+              speech.startListening((transcript: string) => {
+                console.log("[AI CloseOut] Speech callback fired:", transcript);
+                if (transcript.trim()) {
+                  const userMsg: Msg = { role: "user", content: transcript };
+                  sendMessage(userMsg);
+                }
+              });
+            }, 500);
+          }
+        },
+      });
+    } catch (e: any) {
+      console.error("[AI CloseOut] AI error:", e);
+      setIsLoading(false);
+      speech.resumeListening();
+      toast({ title: "AI Error", description: e.message || "Something went wrong.", variant: "destructive" });
+    }
+  }, [speech, tts]);
+
+  // Update the speech callback ref whenever sendMessage changes
+  useEffect(() => {
+    speech.updateCallback((transcript: string) => {
+      console.log("[AI CloseOut] Updated speech callback fired:", transcript);
+      if (transcript.trim()) {
+        const userMsg: Msg = { role: "user", content: transcript };
+        sendMessage(userMsg);
+      }
+    });
+  }, [sendMessage, speech.updateCallback]);
+
   // Send initial context when dialog opens
   useEffect(() => {
     if (open && messages.length === 0 && !hasInitialized.current) {
       hasInitialized.current = true;
+      console.log("[AI CloseOut] Dialog opened, sending initial context");
+
       const materialsText = job.materials.length > 0
         ? `Materials from quote: ${job.materials.map(m => `${m.name} (${m.quantity} ${m.unit})`).join(", ")}`
         : "No materials listed on the quote.";
@@ -352,6 +495,7 @@ Start the close-out conversation now.`,
   useEffect(() => {
     if (!open) {
       setMessages([]);
+      messagesRef.current = [];
       setInput("");
       setIsComplete(false);
       setPhotoCount(0);
@@ -361,79 +505,6 @@ Start the close-out conversation now.`,
       tts.stopSpeaking();
     }
   }, [open]);
-
-  // Start listening after speech recognition callback
-  const handleSpeechResult = useCallback((transcript: string) => {
-    if (transcript.trim()) {
-      sendMessage({ role: "user", content: transcript });
-    }
-  }, [messages]);
-
-  const startOpenMic = useCallback(() => {
-    speech.startListening(handleSpeechResult);
-  }, [speech.startListening, handleSpeechResult]);
-
-  const sendMessage = async (msg: Msg, isInitial = false) => {
-    const newMessages = [...messages, msg];
-    if (!msg.content.startsWith("[JOB CONTEXT")) {
-      setMessages(newMessages);
-    }
-    setIsLoading(true);
-
-    // Pause listening while AI responds
-    speech.pauseListening();
-
-    let assistantSoFar = "";
-    const upsertAssistant = (nextChunk: string) => {
-      assistantSoFar += nextChunk;
-      setMessages((prev) => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant") {
-          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
-        }
-        return [...prev, { role: "assistant", content: assistantSoFar }];
-      });
-    };
-
-    try {
-      await streamChat({
-        messages: newMessages,
-        onDelta: (chunk) => upsertAssistant(chunk),
-        onDone: (fullText) => {
-          setIsLoading(false);
-
-          if (fullText.includes("✅") && fullText.toLowerCase().includes("all done")) {
-            setIsComplete(true);
-          }
-
-          // Speak the response, then resume listening
-          tts.speak(fullText, () => {
-            if (!speech.isMuted) {
-              speech.resumeListening();
-            }
-          });
-
-          // If initial message and mic not started yet, start after TTS
-          if (isInitial) {
-            const startAfterTTS = () => {
-              if (!speech.isMuted) {
-                startOpenMic();
-              }
-            };
-            // If TTS is disabled, start immediately
-            if (!tts.ttsEnabled) {
-              setTimeout(startAfterTTS, 500);
-            }
-          }
-        },
-      });
-    } catch (e: any) {
-      console.error("AI closeout error:", e);
-      setIsLoading(false);
-      speech.resumeListening();
-      toast({ title: "AI Error", description: e.message || "Something went wrong.", variant: "destructive" });
-    }
-  };
 
   const handleSend = () => {
     const text = input.trim();
@@ -541,7 +612,6 @@ Start the close-out conversation now.`,
           {/* Action row */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              {/* Mic mute toggle */}
               <Button
                 variant={speech.isMuted ? "outline" : "default"}
                 size="icon"
@@ -556,7 +626,6 @@ Start the close-out conversation now.`,
                 {speech.isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
               </Button>
 
-              {/* TTS toggle */}
               <Button
                 variant="outline"
                 size="icon"
@@ -566,7 +635,6 @@ Start the close-out conversation now.`,
                 {tts.ttsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
               </Button>
 
-              {/* Camera */}
               <Button variant="outline" size="icon" className="h-10 w-10 rounded-full" onClick={handlePhotoCapture}>
                 <Camera className="w-4 h-4" />
               </Button>
@@ -574,7 +642,6 @@ Start the close-out conversation now.`,
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Keyboard toggle */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -584,7 +651,6 @@ Start the close-out conversation now.`,
                 <Keyboard className="w-4 h-4" />
               </Button>
 
-              {/* Submit when complete */}
               {isComplete && (
                 <Button size="sm" className="gap-1.5 bg-green-600 hover:bg-green-700" onClick={handleSubmit}>
                   <CheckCircle2 className="w-3.5 h-3.5" /> Submit
@@ -593,7 +659,6 @@ Start the close-out conversation now.`,
             </div>
           </div>
 
-          {/* Collapsible text input */}
           {showKeyboard && (
             <div className="flex gap-2 items-end pt-1">
               <Textarea
