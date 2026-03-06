@@ -213,9 +213,12 @@ const SchedulePage = () => {
         )}>
           <TimeGrid3Day
             dates={visibleDates}
-            staffFilter={selectedStaff.length === 1 ? selectedStaff[0] : undefined}
+            jobs={filteredJobs}
             selectedDate={selectedDate}
             onSwipe={handleSwipe}
+            onSlotClick={returnJobId ? handleSlotClick : undefined}
+            activeSlot={bookedSlot}
+            activeDuration={returnDuration}
           />
         </div>
       </div>
