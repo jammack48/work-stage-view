@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Home, StickyNote, MessageCircle, FolderOpen, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { INITIAL_NOTES } from "@/data/dummyTeamChat";
+import { useAppMode } from "@/contexts/AppModeContext";
 
 const NAV_ITEMS = [
   { id: "home", icon: Home, label: "Schedule", path: "/" },
@@ -9,6 +10,11 @@ const NAV_ITEMS = [
   { id: "time", icon: Clock, label: "Timesheet", path: "/timesheet" },
   { id: "chat", icon: MessageCircle, label: "Chat", path: "/work-chat" },
   { id: "hub", icon: FolderOpen, label: "Hub", path: "/work-hub" },
+];
+
+const TIMESHEET_NAV_ITEMS = [
+  { id: "home", icon: Home, label: "My Week", path: "/" },
+  { id: "time", icon: Clock, label: "Timesheet", path: "/timesheet" },
 ];
 
 // Count urgent alerts assigned to current user (Dave)
@@ -20,11 +26,14 @@ const getUrgentCount = () =>
 export function WorkBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isTimesheetOnlyMode } = useAppMode();
   const urgentCount = getUrgentCount();
+  const items = isTimesheetOnlyMode ? TIMESHEET_NAV_ITEMS : NAV_ITEMS;
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-sm safe-area-bottom">
       <div className="flex items-center justify-around max-w-lg mx-auto h-14">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const active = item.path ? location.pathname === item.path : false;
           return (
             <button

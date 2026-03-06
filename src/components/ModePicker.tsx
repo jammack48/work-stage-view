@@ -153,7 +153,22 @@ export function ModePicker() {
               </div>
               <div>
                 <h2 className="text-base font-bold text-card-foreground">Employee</h2>
-                <p className="text-sm text-muted-foreground">You work for someone — schedule, time, photos & chat.</p>
+                <p className="text-sm text-muted-foreground">Standard worker tools — schedule, time, notes, photos & chat.</p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => { setTutorialOn(false); setMode("timesheet"); }}
+            className="group rounded-xl border-2 border-border bg-card p-5 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">
+                <Shield className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-card-foreground">Timesheet Mode</h2>
+                <p className="text-sm text-muted-foreground">Timesheet-only access for field workers.</p>
               </div>
             </div>
           </button>

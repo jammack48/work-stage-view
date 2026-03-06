@@ -19,7 +19,9 @@ import Hub from "./pages/Hub";
 import Index from "./pages/Index";
 import JobCard from "./pages/JobCard";
 import WorkHome from "./pages/WorkHome";
+import TimesheetHome from "./pages/TimesheetHome";
 import WorkJobCard from "./components/job/WorkJobCard";
+import TimesheetOnlyJobCard from "./components/job/TimesheetOnlyJobCard";
 import WorkNewJob from "./pages/WorkNewJob";
 import Customers from "./pages/Customers";
 import CustomerCard from "./pages/CustomerCard";
@@ -41,7 +43,7 @@ import SplashPage from "./pages/SplashPage";
 const queryClient = new QueryClient();
 
 function AppLayout() {
-  const { mode, isWorkMode } = useAppMode();
+  const { mode, isWorkMode, isTimesheetOnlyMode } = useAppMode();
   const [splashDismissed, setSplashDismissed] = useState(false);
 
   if (!splashDismissed) {
@@ -58,18 +60,29 @@ function AppLayout() {
       <div className={isWorkMode ? "pb-16" : ""}>
         <Routes>
           {isWorkMode ? (
-            <>
-              <Route path="/" element={<WorkHome />} />
-              <Route path="/hub" element={<WorkHome />} />
-              <Route path="/job/:id" element={<WorkJobCard />} />
-              <Route path="/new-job" element={<WorkNewJob />} />
-              <Route path="/work-notes" element={<WorkNotes />} />
-              <Route path="/work-chat" element={<WorkChat />} />
-              <Route path="/work-hub" element={<WorkHub />} />
-              <Route path="/timesheet" element={<WorkTimesheet />} />
-              <Route path="/schedule" element={<SchedulePage />} />
-              <Route path="*" element={<WorkHome />} />
-            </>
+            isTimesheetOnlyMode ? (
+              <>
+                <Route path="/" element={<TimesheetHome />} />
+                <Route path="/hub" element={<TimesheetHome />} />
+                <Route path="/job/:id" element={<TimesheetOnlyJobCard />} />
+                <Route path="/timesheet" element={<TimesheetHome />} />
+                <Route path="/schedule" element={<TimesheetHome />} />
+                <Route path="*" element={<TimesheetHome />} />
+              </>
+            ) : (
+              <>
+                <Route path="/" element={<WorkHome />} />
+                <Route path="/hub" element={<WorkHome />} />
+                <Route path="/job/:id" element={<WorkJobCard />} />
+                <Route path="/new-job" element={<WorkNewJob />} />
+                <Route path="/work-notes" element={<WorkNotes />} />
+                <Route path="/work-chat" element={<WorkChat />} />
+                <Route path="/work-hub" element={<WorkHub />} />
+                <Route path="/timesheet" element={<WorkTimesheet />} />
+                <Route path="/schedule" element={<SchedulePage />} />
+                <Route path="*" element={<WorkHome />} />
+              </>
+            )
           ) : (
             <>
               <Route path="/" element={<Index />} />
