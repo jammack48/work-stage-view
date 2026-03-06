@@ -5,12 +5,15 @@ import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_DESKTOP, formatTime, gen
 import { ScheduleJobCard } from "./ScheduleJobCard";
 
 interface TimeGrid3DayProps {
-  /** The dates to display (commonly 3 or 5 days) */
   dates: Date[];
-  /** Staff filter (e.g. "Dave") */
   staffFilter?: string;
   selectedDate?: Date;
   onSwipe?: (direction: "left" | "right") => void;
+  /** Optional external jobs list — if provided, skips internal generateWeekJobs */
+  jobs?: ScheduleJob[];
+  onSlotClick?: (dayOffset: number, hour: number) => void;
+  activeSlot?: { dayOffset: number; startHour: number } | null;
+  activeDuration?: number;
 }
 
 function computeOverlapLayout(jobs: ScheduleJob[]) {
@@ -39,7 +42,7 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
   return layout;
 }
 
-export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe }: TimeGrid3DayProps) {
+export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe, jobs: externalJobs, onSlotClick, activeSlot, activeDuration }: TimeGrid3DayProps) {
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
   const totalHeight = hours.length * HOUR_HEIGHT_DESKTOP;
 
@@ -57,9 +60,19 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe }: Time
     }
   }, [onSwipe]);
 
-  // Get jobs for each date, handling cross-week boundaries
+  // Get jobs for each date
   const dayLayouts = useMemo(() => {
-    // Cache weeks we've generated
+    if (externalJobs) {
+      // Use external jobs — match by date
+      return dates.map(date => {
+        const ws = startOfWeek(date, { weekStartsOn: 1 });
+        const dayOffset = differenceInCalendarDays(date, ws);
+        const dayJobs = externalJobs.filter(j => j.dayOffset === dayOffset);
+        return computeOverlapLayout(dayJobs);
+      });
+    }
+
+    // Internal generation with cache
     const weekCache = new Map<string, ScheduleJob[]>();
     const getWeekJobs = (date: Date) => {
       const ws = startOfWeek(date, { weekStartsOn: 1 });
@@ -69,7 +82,7 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe }: Time
         if (staffFilter) jobs = jobs.filter(j => j.assignedTo === staffFilter);
         weekCache.set(key, jobs);
       }
-      return { weekStart: startOfWeek(date, { weekStartsOn: 1 }), jobs: weekCache.get(key)! };
+      return { weekStart: ws, jobs: weekCache.get(key)! };
     };
 
     return dates.map(date => {
@@ -78,7 +91,7 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe }: Time
       const dayJobs = jobs.filter(j => j.dayOffset === dayOffset);
       return computeOverlapLayout(dayJobs);
     });
-  }, [dates, staffFilter]);
+  }, [dates, staffFilter, externalJobs]);
 
   return (
     <div className="overflow-hidden touch-pan-y" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
@@ -116,6 +129,9 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe }: Time
         {/* Day columns */}
         {dates.map((d, i) => {
           const isSelected = selectedDate && d.toDateString() === selectedDate.toDateString();
+          const ws = startOfWeek(d, { weekStartsOn: 1 });
+          const colDayOffset = differenceInCalendarDays(d, ws);
+
           return (
             <div
               key={i}
@@ -125,13 +141,22 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe }: Time
                 !isSelected && isToday(d) && "bg-primary/5"
               )}
             >
-              {hours.map((_, hi) => (
-                <div
-                  key={hi}
-                  className="absolute left-0 right-0 border-t border-border/50"
-                  style={{ top: hi * HOUR_HEIGHT_DESKTOP, height: HOUR_HEIGHT_DESKTOP }}
-                />
-              ))}
+              {hours.map((h, hi) => {
+                const isActiveSlot = activeSlot && activeSlot.dayOffset === colDayOffset;
+                const isInActive = isActiveSlot && activeDuration && h >= activeSlot!.startHour && h < activeSlot!.startHour + activeDuration;
+                return (
+                  <div
+                    key={hi}
+                    className={cn(
+                      "absolute left-0 right-0 border-t border-border/50",
+                      onSlotClick && "cursor-pointer hover:bg-primary/10",
+                      isInActive && "bg-primary/20"
+                    )}
+                    style={{ top: hi * HOUR_HEIGHT_DESKTOP, height: HOUR_HEIGHT_DESKTOP }}
+                    onClick={onSlotClick ? () => onSlotClick(colDayOffset, h) : undefined}
+                  />
+                );
+              })}
 
               {dayLayouts[i]?.map(({ job, col, totalCols }) => {
                 const top = (job.startHour - WORK_START) * HOUR_HEIGHT_DESKTOP;
