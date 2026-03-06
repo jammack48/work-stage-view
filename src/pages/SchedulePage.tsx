@@ -6,13 +6,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PageToolbar } from "@/components/PageToolbar";
 import { StaffFilterBar } from "@/components/schedule/StaffFilterBar";
 import { DayStrip } from "@/components/schedule/DayStrip";
-import { TimeGridDesktop } from "@/components/schedule/TimeGridDesktop";
-import { TimeGridMobile } from "@/components/schedule/TimeGridMobile";
+import { DayViewToggle } from "@/components/schedule/DayViewToggle";
+import { TimeGrid3Day } from "@/components/schedule/TimeGrid3Day";
 import { generateWeekJobs, formatTime } from "@/components/schedule/scheduleData";
 import { SCHEDULE_EXTRAS, handleCommonTab } from "@/config/toolbarTabs";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
 import { getJobDetail } from "@/data/dummyJobDetails";
+import { cn } from "@/lib/utils";
 
 const SchedulePage = () => {
   const navigate = useNavigate();
@@ -20,7 +20,6 @@ const SchedulePage = () => {
   const isMobile = useIsMobile();
   const returnJobId = searchParams.get("returnJob");
 
-  // Build return booking context from query params first, fallback to getJobDetail
   const returnBookingJob = useMemo(() => {
     if (!returnJobId) return null;
     const qpName = searchParams.get("returnJobName");
@@ -35,7 +34,7 @@ const SchedulePage = () => {
   }, [returnJobId, searchParams]);
 
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
-  // In booking mode (Work/sole-trader), lock to logged-in user's calendar
+  const [viewDays, setViewDays] = useState<1 | 3 | 5>(5);
   const isBookingMode = !!returnJobId;
   const [selectedStaff, setSelectedStaff] = useState<string[]>(isBookingMode ? ["Dave"] : []);
   const [selectedDay, setSelectedDay] = useState(() => {
@@ -45,9 +44,16 @@ const SchedulePage = () => {
     return diff >= 0 && diff <= 6 ? diff : 0;
   });
 
-  // Return visit booking state
   const [bookedSlot, setBookedSlot] = useState<{ dayOffset: number; startHour: number } | null>(null);
   const [returnDuration, setReturnDuration] = useState(2);
+
+  const selectedDate = addDays(weekStart, selectedDay);
+
+  const visibleDates = useMemo(() => {
+    if (viewDays === 1) return [selectedDate];
+    const offset = Math.floor(viewDays / 2);
+    return Array.from({ length: viewDays }, (_, i) => addDays(selectedDate, i - offset));
+  }, [selectedDate, viewDays]);
 
   const weekJobs = useMemo(() => generateWeekJobs(weekStart), [weekStart]);
 
@@ -91,6 +97,20 @@ const SchedulePage = () => {
 
   const handleCancelReturn = () => {
     navigate(-1);
+  };
+
+  const handleSwipe = (dir: "left" | "right") => {
+    const delta = dir === "right" ? viewDays : -viewDays;
+    const newSelected = selectedDay + delta;
+    if (newSelected > 6) {
+      setWeekStart(addWeeks(weekStart, 1));
+      setSelectedDay(newSelected - 7);
+    } else if (newSelected < 0) {
+      setWeekStart(subWeeks(weekStart, 1));
+      setSelectedDay(newSelected + 7);
+    } else {
+      setSelectedDay(newSelected);
+    }
   };
 
   const handleTabChange = (id: string) => {
@@ -161,39 +181,17 @@ const SchedulePage = () => {
         </div>
       )}
 
-      {isMobile ? (
-        <div className="flex flex-col overflow-x-hidden" style={{ height: returnJobId ? 'calc(100dvh - 48px - 44px - 52px - 80px)' : 'calc(100dvh - 48px - 44px - 52px)' }}>
-          <div className="shrink-0 space-y-3">
-            <DayStrip
-              weekStart={weekStart}
-              selectedDay={selectedDay}
-              onSelectDay={setSelectedDay}
-              onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
-              onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
-              onJumpToToday={() => {
-                const today = new Date();
-                setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
-                const diff = Math.min(6, Math.max(0, today.getDay() === 0 ? 6 : today.getDay() - 1));
-                setSelectedDay(diff);
-              }}
-            />
-            {!isBookingMode && <StaffFilterBar selectedStaff={selectedStaff} onSelectionChange={setSelectedStaff} />}
+      <div className={cn(
+        "flex flex-col",
+        isMobile && "overflow-x-hidden",
+        isMobile && (returnJobId
+          ? "h-[calc(100dvh-48px-44px-52px-80px)]"
+          : "h-[calc(100dvh-48px-44px-52px)]")
+      )}>
+        <div className="shrink-0 space-y-3">
+          <div className="flex items-center justify-between">
+            <DayViewToggle value={viewDays} onChange={setViewDays} />
           </div>
-          <div className="flex-1 overflow-y-auto overflow-x-hidden mt-3">
-            <TimeGridMobile
-              jobs={filteredJobs}
-              dayOffset={selectedDay}
-              onDayChange={setSelectedDay}
-              onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
-              onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
-              onSlotClick={returnJobId ? handleSlotClick : undefined}
-              activeSlot={bookedSlot}
-              activeDuration={returnDuration}
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-3">
           <DayStrip
             weekStart={weekStart}
             selectedDay={selectedDay}
@@ -208,16 +206,22 @@ const SchedulePage = () => {
             }}
           />
           {!isBookingMode && <StaffFilterBar selectedStaff={selectedStaff} onSelectionChange={setSelectedStaff} />}
-          <TimeGridDesktop
-            weekStart={weekStart}
+        </div>
+        <div className={cn(
+          "flex-1 overflow-y-auto overflow-x-hidden mt-3",
+          isMobile && "px-0"
+        )}>
+          <TimeGrid3Day
+            dates={visibleDates}
             jobs={filteredJobs}
-            selectedDay={selectedDay}
+            selectedDate={selectedDate}
+            onSwipe={handleSwipe}
             onSlotClick={returnJobId ? handleSlotClick : undefined}
             activeSlot={bookedSlot}
             activeDuration={returnDuration}
           />
         </div>
-      )}
+      </div>
     </PageToolbar>
   );
 };

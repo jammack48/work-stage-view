@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { startOfWeek, addWeeks, subWeeks, addDays, format, isToday } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DayStrip } from "@/components/schedule/DayStrip";
+import { DayViewToggle } from "@/components/schedule/DayViewToggle";
 import { TimeGrid3Day } from "@/components/schedule/TimeGrid3Day";
 import { generateWeekJobs } from "@/components/schedule/scheduleData";
 import { Package, ChevronUp, ChevronDown, Plus } from "lucide-react";
@@ -20,6 +21,7 @@ export default function WorkHome() {
   const isMobile = useIsMobile();
   const [materialsOpen, setMaterialsOpen] = useState(false);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [viewDays, setViewDays] = useState<1 | 3 | 5>(3);
   const [selectedDay, setSelectedDay] = useState(() => {
     const today = new Date();
     const start = startOfWeek(today, { weekStartsOn: 1 });
@@ -28,6 +30,14 @@ export default function WorkHome() {
   });
 
   const selectedDate = addDays(weekStart, selectedDay);
+
+  // Build visible dates array from selectedDate
+  const visibleDates = useMemo(() => {
+    if (viewDays === 1) return [selectedDate];
+    // Center the window: for 3 days show selected ± 1, for 5 show selected ± 2
+    const offset = Math.floor(viewDays / 2);
+    return Array.from({ length: viewDays }, (_, i) => addDays(selectedDate, i - offset));
+  }, [selectedDate, viewDays]);
 
   // Filter to only current staff's jobs
   const weekJobs = useMemo(() => generateWeekJobs(weekStart), [weekStart]);
@@ -51,6 +61,20 @@ export default function WorkHome() {
     return Array.from(map.values());
   }, [dayJobs]);
 
+  const handleSwipe = (dir: "left" | "right") => {
+    const delta = dir === "right" ? viewDays : -viewDays;
+    const newSelected = selectedDay + delta;
+    if (newSelected > 6) {
+      setWeekStart(addWeeks(weekStart, 1));
+      setSelectedDay(newSelected - 7);
+    } else if (newSelected < 0) {
+      setWeekStart(subWeeks(weekStart, 1));
+      setSelectedDay(newSelected + 7);
+    } else {
+      setSelectedDay(newSelected);
+    }
+  };
+
   return (
     <div className={cn(
       "max-w-5xl mx-auto flex flex-col",
@@ -59,12 +83,15 @@ export default function WorkHome() {
       <TutorialBanner overrideKey="work-home" />
       {/* Fixed controls section */}
       <div className={cn("shrink-0 space-y-3", isMobile ? "px-3 pt-4" : "") }>
-        <div>
-          <h2 className="text-lg font-bold text-foreground">G'day, {CURRENT_STAFF} 👋</h2>
-          <p className="text-sm text-muted-foreground">
-            {format(weekStart, "d MMM")} – {format(addDays(weekStart, 4), "d MMM")}
-            {isToday(selectedDate) ? " — Today" : ""}
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-foreground">G'day, {CURRENT_STAFF} 👋</h2>
+            <p className="text-sm text-muted-foreground">
+              {format(weekStart, "d MMM")} – {format(addDays(weekStart, 6), "d MMM")}
+              {isToday(selectedDate) ? " — Today" : ""}
+            </p>
+          </div>
+          <DayViewToggle value={viewDays} onChange={setViewDays} />
         </div>
 
         {/* Day strip */}
@@ -117,16 +144,10 @@ export default function WorkHome() {
         isMobile ? "flex-1 overflow-y-auto overflow-x-hidden px-3 pb-4 mt-3" : ""
       )}>
         <TimeGrid3Day
-          dates={[0, 1, 2, 3, 4].map((offset) => addDays(weekStart, offset))}
+          dates={visibleDates}
           staffFilter={CURRENT_STAFF}
           selectedDate={selectedDate}
-          onSwipe={(dir) => {
-            if (dir === "right") {
-              setWeekStart(addWeeks(weekStart, 1));
-            } else {
-              setWeekStart(subWeeks(weekStart, 1));
-            }
-          }}
+          onSwipe={handleSwipe}
         />
       </div>
 

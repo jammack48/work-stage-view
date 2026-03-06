@@ -1,68 +1,90 @@
-import { useMemo, useState } from "react";
-import { addDays, format, startOfWeek } from "date-fns";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, Clock3, Briefcase } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { DEMO_JOBS } from "@/components/schedule/scheduleData";
-import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { startOfWeek, addWeeks, subWeeks, addDays, format, isToday } from "date-fns";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { DayStrip } from "@/components/schedule/DayStrip";
+import { DayViewToggle } from "@/components/schedule/DayViewToggle";
+import { TimeGrid3Day } from "@/components/schedule/TimeGrid3Day";
+import { generateWeekJobs } from "@/components/schedule/scheduleData";
+import { cn } from "@/lib/utils";
 
 const CURRENT_WORKER = "Dave";
 
 export default function TimesheetHome() {
-  const navigate = useNavigate();
-  const { prefix } = useJobPrefix();
+  const isMobile = useIsMobile();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [viewDays, setViewDays] = useState<1 | 3 | 5>(3);
+  const [selectedDay, setSelectedDay] = useState(() => {
+    const today = new Date();
+    const start = startOfWeek(today, { weekStartsOn: 1 });
+    const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return diff >= 0 && diff <= 6 ? diff : 0;
+  });
 
-  const workerJobs = useMemo(
-    () => DEMO_JOBS.filter((job) => job.assignedTo === CURRENT_WORKER).sort((a, b) => a.dayOffset - b.dayOffset || a.startHour - b.startHour),
-    []
-  );
+  const selectedDate = addDays(weekStart, selectedDay);
+
+  const visibleDates = useMemo(() => {
+    if (viewDays === 1) return [selectedDate];
+    const offset = Math.floor(viewDays / 2);
+    return Array.from({ length: viewDays }, (_, i) => addDays(selectedDate, i - offset));
+  }, [selectedDate, viewDays]);
+
+  const handleSwipe = (dir: "left" | "right") => {
+    const delta = dir === "right" ? viewDays : -viewDays;
+    const newSelected = selectedDay + delta;
+    if (newSelected > 6) {
+      setWeekStart(addWeeks(weekStart, 1));
+      setSelectedDay(newSelected - 7);
+    } else if (newSelected < 0) {
+      setWeekStart(subWeeks(weekStart, 1));
+      setSelectedDay(newSelected + 7);
+    } else {
+      setSelectedDay(newSelected);
+    }
+  };
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 max-w-3xl mx-auto">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <CalendarDays className="w-4 h-4" /> My Week
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="text-sm text-muted-foreground">
-            {format(weekStart, "d MMM")} - {format(addDays(weekStart, 6), "d MMM yyyy")}
+    <div className={cn(
+      "max-w-5xl mx-auto flex flex-col",
+      isMobile ? "h-[calc(100dvh-48px-56px)] overflow-x-hidden" : "px-6 py-4 space-y-3 pb-24"
+    )}>
+      <div className={cn("shrink-0 space-y-3", isMobile ? "px-3 pt-4" : "")}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-foreground">G'day, {CURRENT_WORKER} 👋</h2>
+            <p className="text-sm text-muted-foreground">
+              {format(weekStart, "d MMM")} – {format(addDays(weekStart, 6), "d MMM")}
+              {isToday(selectedDate) ? " — Today" : ""}
+            </p>
           </div>
-          <div className="grid gap-2">
-            {workerJobs.map((job) => {
-              const dayDate = addDays(weekStart, job.dayOffset);
-              const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
-              return (
-                <button
-                  key={job.id}
-                  onClick={() => navigate(`/job/${job.id}`)}
-                  className="text-left rounded-lg border border-border bg-card p-3 hover:bg-accent/40 transition-colors"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">{job.jobName}</p>
-                      <p className="text-xs text-muted-foreground truncate">{job.client} • {job.address}</p>
-                    </div>
-                    <Badge variant="secondary" className="text-[10px]">{job.status}</Badge>
-                  </div>
-                  <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Briefcase className="w-3.5 h-3.5" /> {displayId}</span>
-                    <span className="flex items-center gap-1"><Clock3 className="w-3.5 h-3.5" /> {format(dayDate, "EEE")} {job.startHour}:00</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setWeekStart((d) => addDays(d, -7))}>Previous Week</Button>
-            <Button variant="outline" size="sm" onClick={() => setWeekStart((d) => addDays(d, 7))}>Next Week</Button>
-          </div>
-        </CardContent>
-      </Card>
+          <DayViewToggle value={viewDays} onChange={setViewDays} />
+        </div>
+
+        <DayStrip
+          weekStart={weekStart}
+          selectedDay={selectedDay}
+          onSelectDay={setSelectedDay}
+          onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
+          onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
+          onJumpToToday={() => {
+            const today = new Date();
+            setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
+            const diff = Math.min(6, Math.max(0, today.getDay() === 0 ? 6 : today.getDay() - 1));
+            setSelectedDay(diff);
+          }}
+        />
+      </div>
+
+      <div className={cn(
+        isMobile ? "flex-1 overflow-y-auto overflow-x-hidden px-3 pb-4 mt-3" : ""
+      )}>
+        <TimeGrid3Day
+          dates={visibleDates}
+          staffFilter={CURRENT_WORKER}
+          selectedDate={selectedDate}
+          onSwipe={handleSwipe}
+        />
+      </div>
     </div>
   );
 }
