@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { TimeEntry } from "@/data/dummyJobDetails";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface TimeTabProps {
   timeEntries: TimeEntry[];
@@ -13,6 +13,21 @@ export function TimeTab({ timeEntries }: TimeTabProps) {
   const [timerRunning, setTimerRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const totalHours = timeEntries.reduce((s, t) => s + t.hours, 0);
+
+  useEffect(() => {
+    if (!timerRunning) return;
+    const intervalId = window.setInterval(() => {
+      setElapsed((prev) => prev + 1);
+    }, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [timerRunning]);
+
+  const timerLabel = useMemo(() => {
+    const hours = Math.floor(elapsed / 3600);
+    const minutes = Math.floor((elapsed % 3600) / 60);
+    const seconds = elapsed % 60;
+    return [hours, minutes, seconds].map((v) => String(v).padStart(2, "0")).join(":");
+  }, [elapsed]);
 
   return (
     <div className="space-y-4">
@@ -34,7 +49,7 @@ export function TimeTab({ timeEntries }: TimeTabProps) {
           {timerRunning && (
             <div className="flex items-center gap-2 text-lg font-mono text-card-foreground">
               <Clock className="w-5 h-5 text-primary animate-pulse" />
-              0:00:00
+              {timerLabel}
             </div>
           )}
         </CardContent>
