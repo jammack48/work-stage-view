@@ -1,13 +1,11 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { startOfWeek, addWeeks, subWeeks, addDays, subDays, format, isToday } from "date-fns";
+import { startOfWeek, addWeeks, subWeeks, addDays, format, isToday } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DayStrip } from "@/components/schedule/DayStrip";
-import { TimeGridDesktop } from "@/components/schedule/TimeGridDesktop";
 import { TimeGrid3Day } from "@/components/schedule/TimeGrid3Day";
-import { TimeGridMobile } from "@/components/schedule/TimeGridMobile";
 import { generateWeekJobs } from "@/components/schedule/scheduleData";
-import { Package, ChevronUp, ChevronDown, CalendarDays, LayoutList, Plus } from "lucide-react";
+import { Package, ChevronUp, ChevronDown, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,12 +15,9 @@ import { TutorialBanner } from "@/components/TutorialBanner";
 
 const CURRENT_STAFF = "Dave";
 
-type ViewMode = "day" | "week";
-
 export default function WorkHome() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [viewMode, setViewMode] = useState<ViewMode>("day");
   const [materialsOpen, setMaterialsOpen] = useState(false);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [selectedDay, setSelectedDay] = useState(() => {
@@ -31,14 +26,8 @@ export default function WorkHome() {
     const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
     return diff >= 0 && diff <= 6 ? diff : 0;
   });
-  // 5-day window: track the absolute start date
-  const [workWeekStart, setWorkWeekStart] = useState(() => {
-    const today = new Date();
-    return startOfWeek(today, { weekStartsOn: 1 });
-  });
 
   const selectedDate = addDays(weekStart, selectedDay);
-  const weekEnd = addDays(weekStart, 6);
 
   // Filter to only current staff's jobs
   const weekJobs = useMemo(() => generateWeekJobs(weekStart), [weekStart]);
@@ -69,69 +58,32 @@ export default function WorkHome() {
     )}>
       <TutorialBanner overrideKey="work-home" />
       {/* Fixed controls section */}
-      <div className={cn("shrink-0 space-y-3", isMobile ? "px-3 pt-4" : "")}>
-        {/* Greeting + view toggle */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-foreground">G'day, {CURRENT_STAFF} 👋</h2>
-            <p className="text-sm text-muted-foreground">
-              {viewMode === "day"
-                ? `${format(selectedDate, "EEEE, d MMMM")}${isToday(selectedDate) ? " — Today" : ""}`
-                : `${format(workWeekStart, "d MMM")} – ${format(addDays(workWeekStart, 4), "d MMM")}`}
-            </p>
-          </div>
-          <div className="flex gap-1 bg-muted rounded-lg p-0.5">
-            <button
-              onClick={() => setViewMode("day")}
-              className={cn(
-                "flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
-                viewMode === "day" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-              )}
-            >
-              <LayoutList className="w-3.5 h-3.5" /> Day
-            </button>
-            <button
-              onClick={() => setViewMode("week")}
-              className={cn(
-                "flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
-                viewMode === "week" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-              )}
-            >
-              <CalendarDays className="w-3.5 h-3.5" /> 5 Days
-            </button>
-          </div>
+      <div className={cn("shrink-0 space-y-3", isMobile ? "px-3 pt-4" : "") }>
+        <div>
+          <h2 className="text-lg font-bold text-foreground">G'day, {CURRENT_STAFF} 👋</h2>
+          <p className="text-sm text-muted-foreground">
+            {format(weekStart, "d MMM")} – {format(addDays(weekStart, 4), "d MMM")}
+            {isToday(selectedDate) ? " — Today" : ""}
+          </p>
         </div>
 
         {/* Day strip */}
         <DayStrip
           weekStart={weekStart}
           selectedDay={selectedDay}
-          onSelectDay={(d) => {
-            setSelectedDay(d);
-            // Keep 5-day window aligned to week start
-            if (isMobile && viewMode === "week") {
-              setWorkWeekStart(weekStart);
-            }
-          }}
-          onPrevWeek={() => {
-            setWeekStart(subWeeks(weekStart, 1));
-            setWorkWeekStart(subWeeks(workWeekStart, 1));
-          }}
-          onNextWeek={() => {
-            setWeekStart(addWeeks(weekStart, 1));
-            setWorkWeekStart(addWeeks(workWeekStart, 1));
-          }}
+          onSelectDay={setSelectedDay}
+          onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
+          onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
           onJumpToToday={() => {
             const today = new Date();
             setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
-            setWorkWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
             const diff = Math.min(6, Math.max(0, today.getDay() === 0 ? 6 : today.getDay() - 1));
             setSelectedDay(diff);
           }}
         />
 
-        {/* Materials pickup list (day view only) */}
-        {viewMode === "day" && materialsNeeded.length > 0 && (
+        {/* Materials pickup list */}
+        {materialsNeeded.length > 0 && (
           <Collapsible open={materialsOpen} onOpenChange={setMaterialsOpen}>
             <CollapsibleTrigger asChild>
               <Button variant="outline" className="w-full justify-between h-auto py-2.5 px-3">
@@ -164,32 +116,18 @@ export default function WorkHome() {
       <div className={cn(
         isMobile ? "flex-1 overflow-y-auto overflow-x-hidden px-3 pb-4 mt-3" : ""
       )}>
-        {viewMode === "day" ? (
-          <TimeGridMobile jobs={myJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))} onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))} />
-        ) : isMobile ? (
-          <TimeGrid3Day
-            dates={[0, 1, 2, 3, 4].map((offset) => addDays(workWeekStart, offset))}
-            staffFilter="Dave"
-            selectedDate={selectedDate}
-            onSwipe={(dir) => {
-              if (dir === "right") {
-                const next = addDays(workWeekStart, 5);
-                setWorkWeekStart(next);
-                setWeekStart(startOfWeek(next, { weekStartsOn: 1 }));
-              } else {
-                const prev = subDays(workWeekStart, 5);
-                setWorkWeekStart(prev);
-                setWeekStart(startOfWeek(prev, { weekStartsOn: 1 }));
-              }
-            }}
-          />
-        ) : (
-          <TimeGridDesktop
-            weekStart={weekStart}
-            jobs={myJobs}
-            selectedDay={selectedDay}
-          />
-        )}
+        <TimeGrid3Day
+          dates={[0, 1, 2, 3, 4].map((offset) => addDays(weekStart, offset))}
+          staffFilter={CURRENT_STAFF}
+          selectedDate={selectedDate}
+          onSwipe={(dir) => {
+            if (dir === "right") {
+              setWeekStart(addWeeks(weekStart, 1));
+            } else {
+              setWeekStart(subWeeks(weekStart, 1));
+            }
+          }}
+        />
       </div>
 
       {/* Floating New Job button */}
