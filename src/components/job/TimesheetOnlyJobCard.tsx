@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Camera, ClipboardCheck, Pause, Play, Square, Upload, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { DEMO_JOBS } from "@/components/schedule/scheduleData";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { toast } from "@/hooks/use-toast";
 
-const REQUIRED_FORMS = ["Site induction", "Health & safety", "Compliance checklist"];
+const OPTIONAL_FORMS = ["Site induction", "Take 5", "Compliance checklist"];
 
 export default function TimesheetOnlyJobCard() {
   const { id } = useParams<{ id: string }>();
@@ -21,11 +22,20 @@ export default function TimesheetOnlyJobCard() {
 
   const [timerRunning, setTimerRunning] = useState(false);
   const [breakOn, setBreakOn] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [manualHours, setManualHours] = useState("");
   const [notes, setNotes] = useState("");
   const [forms, setForms] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(REQUIRED_FORMS.map((item) => [item, false]))
+    Object.fromEntries(OPTIONAL_FORMS.map((item) => [item, false]))
   );
+
+  useEffect(() => {
+    if (!timerRunning || breakOn) return;
+    const intervalId = window.setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [timerRunning, breakOn]);
 
   if (!job) {
     return (
@@ -35,11 +45,25 @@ export default function TimesheetOnlyJobCard() {
     );
   }
 
-  const allFormsComplete = REQUIRED_FORMS.every((form) => forms[form]);
   const manualHoursValue = Number(manualHours);
   const manualHoursValid = manualHours === "" || (!Number.isNaN(manualHoursValue) && manualHoursValue >= 0 && manualHoursValue <= 24);
-  const canSubmit = allFormsComplete && manualHoursValid;
+  const canSubmit = manualHoursValid;
   const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
+  const elapsedHours = elapsedSeconds / 3600;
+  const totalHours = manualHours === "" ? elapsedHours : manualHoursValue;
+  const formatElapsed = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return [hours, minutes, secs].map((v) => String(v).padStart(2, "0")).join(":");
+  };
+
+  const handleSubmit = () => {
+    toast({
+      title: "Timesheet submitted",
+      description: `${displayId} • ${totalHours.toFixed(2)}h logged${notes ? " with notes" : ""}.`,
+    });
+  };
 
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto space-y-4">
@@ -64,10 +88,18 @@ export default function TimesheetOnlyJobCard() {
           <Button
             className="gap-2"
             variant={timerRunning ? "destructive" : "default"}
-            onClick={() => setTimerRunning((s) => !s)}
+            onClick={() => {
+              setTimerRunning((running) => {
+                if (running) {
+                  setBreakOn(false);
+                }
+                return !running;
+              });
+            }}
           >
             {timerRunning ? <><Square className="w-4 h-4" /> Stop timer</> : <><Play className="w-4 h-4" /> Start timer</>}
           </Button>
+          <p className="text-sm font-mono text-card-foreground">Stopwatch: {formatElapsed(elapsedSeconds)}</p>
           <div className="space-y-1.5">
             <Label htmlFor="manual-hours">Manual hours</Label>
             <Input
@@ -88,16 +120,17 @@ export default function TimesheetOnlyJobCard() {
       <Card>
         <CardHeader><CardTitle className="text-base">2. Break</CardTitle></CardHeader>
         <CardContent>
-          <Button variant="outline" className="gap-2" onClick={() => setBreakOn((s) => !s)}>
+          <Button variant="outline" className="gap-2" disabled={!timerRunning} onClick={() => setBreakOn((s) => !s)}>
             {breakOn ? <><Play className="w-4 h-4" /> Resume</> : <><Pause className="w-4 h-4" /> Take break</>}
           </Button>
+          {!timerRunning && <p className="mt-2 text-xs text-muted-foreground">Start the timer to enable break tracking.</p>}
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">3. Required Forms</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">3. Site Forms (Optional)</CardTitle></CardHeader>
         <CardContent className="space-y-2">
-          {REQUIRED_FORMS.map((form) => (
+          {OPTIONAL_FORMS.map((form) => (
             <label key={form} className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
@@ -107,6 +140,9 @@ export default function TimesheetOnlyJobCard() {
               <ClipboardCheck className="w-4 h-4 text-muted-foreground" /> {form}
             </label>
           ))}
+          <p className="text-xs text-muted-foreground">
+            Tutorial note: these forms are optional in Timesheet Mode. A manager can choose to make forms like Take 5 compulsory for selected staff members.
+          </p>
         </CardContent>
       </Card>
 
@@ -132,10 +168,10 @@ export default function TimesheetOnlyJobCard() {
       <Card>
         <CardHeader><CardTitle className="text-base">6. Submit</CardTitle></CardHeader>
         <CardContent>
-          <Button disabled={!canSubmit} className="w-full gap-2">
+          <Button disabled={!canSubmit} className="w-full gap-2" onClick={handleSubmit}>
             <CheckCircle2 className="w-4 h-4" /> Submit
           </Button>
-          {!allFormsComplete && <p className="mt-2 text-xs text-muted-foreground">Complete all required forms before submit.</p>}
+          <p className="mt-2 text-xs text-muted-foreground">Forms do not block submission in Timesheet Mode.</p>
         </CardContent>
       </Card>
     </div>

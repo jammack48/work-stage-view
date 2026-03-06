@@ -31,14 +31,10 @@ export default function WorkHome() {
     const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
     return diff >= 0 && diff <= 6 ? diff : 0;
   });
-  // 3-day window: track the absolute start date
-  const [threeDayStart, setThreeDayStart] = useState(() => {
+  // 5-day window: track the absolute start date
+  const [workWeekStart, setWorkWeekStart] = useState(() => {
     const today = new Date();
-    // Snap to nearest 3-day block: Mon, Thu, Sun
-    const ws = startOfWeek(today, { weekStartsOn: 1 });
-    const dayInWeek = Math.floor((today.getTime() - ws.getTime()) / (1000 * 60 * 60 * 24));
-    const blockStart = Math.floor(dayInWeek / 3) * 3;
-    return addDays(ws, blockStart);
+    return startOfWeek(today, { weekStartsOn: 1 });
   });
 
   const selectedDate = addDays(weekStart, selectedDay);
@@ -81,7 +77,7 @@ export default function WorkHome() {
             <p className="text-sm text-muted-foreground">
               {viewMode === "day"
                 ? `${format(selectedDate, "EEEE, d MMMM")}${isToday(selectedDate) ? " — Today" : ""}`
-                : `${format(threeDayStart, "d MMM")} – ${format(addDays(threeDayStart, 2), "d MMM")}`}
+                : `${format(workWeekStart, "d MMM")} – ${format(addDays(workWeekStart, 4), "d MMM")}`}
             </p>
           </div>
           <div className="flex gap-1 bg-muted rounded-lg p-0.5">
@@ -101,7 +97,7 @@ export default function WorkHome() {
                 viewMode === "week" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
               )}
             >
-              <CalendarDays className="w-3.5 h-3.5" /> 3 Days
+              <CalendarDays className="w-3.5 h-3.5" /> 5 Days
             </button>
           </div>
         </div>
@@ -112,17 +108,23 @@ export default function WorkHome() {
           selectedDay={selectedDay}
           onSelectDay={(d) => {
             setSelectedDay(d);
-            // Snap the 3-day window to include the selected day
+            // Keep 5-day window aligned to week start
             if (isMobile && viewMode === "week") {
-              const blockStart = Math.floor(d / 3) * 3;
-              setThreeDayStart(addDays(weekStart, blockStart));
+              setWorkWeekStart(weekStart);
             }
           }}
-          onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))}
-          onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))}
+          onPrevWeek={() => {
+            setWeekStart(subWeeks(weekStart, 1));
+            setWorkWeekStart(subWeeks(workWeekStart, 1));
+          }}
+          onNextWeek={() => {
+            setWeekStart(addWeeks(weekStart, 1));
+            setWorkWeekStart(addWeeks(workWeekStart, 1));
+          }}
           onJumpToToday={() => {
             const today = new Date();
             setWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
+            setWorkWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
             const diff = Math.min(6, Math.max(0, today.getDay() === 0 ? 6 : today.getDay() - 1));
             setSelectedDay(diff);
           }}
@@ -166,14 +168,18 @@ export default function WorkHome() {
           <TimeGridMobile jobs={myJobs} dayOffset={selectedDay} onDayChange={setSelectedDay} onNextWeek={() => setWeekStart(addWeeks(weekStart, 1))} onPrevWeek={() => setWeekStart(subWeeks(weekStart, 1))} />
         ) : isMobile ? (
           <TimeGrid3Day
-            dates={[threeDayStart, addDays(threeDayStart, 1), addDays(threeDayStart, 2)] as [Date, Date, Date]}
+            dates={[0, 1, 2, 3, 4].map((offset) => addDays(workWeekStart, offset))}
             staffFilter="Dave"
             selectedDate={selectedDate}
             onSwipe={(dir) => {
               if (dir === "right") {
-                setThreeDayStart(addDays(threeDayStart, 3));
+                const next = addDays(workWeekStart, 5);
+                setWorkWeekStart(next);
+                setWeekStart(startOfWeek(next, { weekStartsOn: 1 }));
               } else {
-                setThreeDayStart(subDays(threeDayStart, 3));
+                const prev = subDays(workWeekStart, 5);
+                setWorkWeekStart(prev);
+                setWeekStart(startOfWeek(prev, { weekStartsOn: 1 }));
               }
             }}
           />

@@ -5,8 +5,8 @@ import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_DESKTOP, formatTime, gen
 import { ScheduleJobCard } from "./ScheduleJobCard";
 
 interface TimeGrid3DayProps {
-  /** The 3 dates to display */
-  dates: [Date, Date, Date];
+  /** The dates to display (commonly 3 or 5 days) */
+  dates: Date[];
   /** Staff filter (e.g. "Dave") */
   staffFilter?: string;
   selectedDate?: Date;
@@ -83,7 +83,7 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe }: Time
   return (
     <div className="overflow-hidden touch-pan-y" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       {/* Day headers */}
-      <div className="grid grid-cols-[40px_repeat(3,1fr)] border-b border-border">
+      <div className="grid border-b border-border" style={{ gridTemplateColumns: `40px repeat(${dates.length}, minmax(0, 1fr))` }}>
         <div />
         {dates.map((d, i) => (
           <div
@@ -99,7 +99,7 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe }: Time
       </div>
 
       {/* Time grid */}
-      <div className="grid grid-cols-[40px_repeat(3,1fr)]" style={{ height: totalHeight }}>
+      <div className="grid" style={{ height: totalHeight, gridTemplateColumns: `40px repeat(${dates.length}, minmax(0, 1fr))` }}>
         {/* Time labels */}
         <div className="relative">
           {hours.map((h, i) => (
