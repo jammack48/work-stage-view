@@ -62,7 +62,7 @@ export default function WorkHome() {
   }, [dayJobs]);
 
   const handleSwipe = (dir: "left" | "right") => {
-    const delta = dir === "right" ? viewDays : -viewDays;
+    const delta = dir === "right" ? 1 : -1;
     const newSelected = selectedDay + delta;
     if (newSelected > 6) {
       setWeekStart(addWeeks(weekStart, 1));
