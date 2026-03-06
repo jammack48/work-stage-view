@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-type AppMode = "manage" | "work" | "sole-trader" | null;
+type AppMode = "manage" | "work" | "sole-trader" | "timesheet" | null;
 
 export interface SoleTraderPrefs {
   vanStock: boolean;
@@ -11,9 +11,10 @@ const DEFAULT_PREFS: SoleTraderPrefs = { vanStock: false, reconcileDocs: false }
 
 interface AppModeContextType {
   mode: AppMode;
-  setMode: (mode: "manage" | "work" | "sole-trader") => void;
+  setMode: (mode: "manage" | "work" | "sole-trader" | "timesheet") => void;
   isWorkMode: boolean;
   isSoleTrader: boolean;
+  isTimesheetOnlyMode: boolean;
   clearMode: () => void;
   soleTraderPrefs: SoleTraderPrefs;
   setSoleTraderPrefs: (prefs: SoleTraderPrefs) => void;
@@ -27,7 +28,7 @@ const PREFS_KEY = "tradie-sole-trader-prefs";
 export function AppModeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<AppMode>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === "manage" || stored === "work" || stored === "sole-trader" ? stored : null;
+    return stored === "manage" || stored === "work" || stored === "sole-trader" || stored === "timesheet" ? stored : null;
   });
 
   const [soleTraderPrefs, setSoleTraderPrefsState] = useState<SoleTraderPrefs>(() => {
@@ -38,7 +39,7 @@ export function AppModeProvider({ children }: { children: ReactNode }) {
     return DEFAULT_PREFS;
   });
 
-  const setMode = (m: "manage" | "work" | "sole-trader") => {
+  const setMode = (m: "manage" | "work" | "sole-trader" | "timesheet") => {
     setModeState(m);
     localStorage.setItem(STORAGE_KEY, m);
   };
@@ -57,8 +58,9 @@ export function AppModeProvider({ children }: { children: ReactNode }) {
     <AppModeContext.Provider value={{
       mode,
       setMode,
-      isWorkMode: mode === "work" || mode === "sole-trader",
+      isWorkMode: mode === "work" || mode === "sole-trader" || mode === "timesheet",
       isSoleTrader: mode === "sole-trader",
+      isTimesheetOnlyMode: mode === "timesheet",
       clearMode,
       soleTraderPrefs,
       setSoleTraderPrefs,
