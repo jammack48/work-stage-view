@@ -138,7 +138,7 @@ export function ModePicker() {
               </div>
               <div>
                 <h2 className="text-base font-bold text-card-foreground">Manager / Owner</h2>
-                <p className="text-sm text-muted-foreground">You run the business — office, on-site, or both.</p>
+                <p className="text-sm text-muted-foreground">You run the business and can invoice from On the Tools in the app.</p>
               </div>
             </div>
           </button>
@@ -153,7 +153,7 @@ export function ModePicker() {
               </div>
               <div>
                 <h2 className="text-base font-bold text-card-foreground">Employee</h2>
-                <p className="text-sm text-muted-foreground">Standard worker tools — schedule, time, notes, photos & chat.</p>
+                <p className="text-sm text-muted-foreground">Can&apos;t invoice or see prices. Great for subcontractors when you don&apos;t want them to know customer information — no materials.</p>
               </div>
             </div>
           </button>
@@ -168,7 +168,7 @@ export function ModePicker() {
               </div>
               <div>
                 <h2 className="text-base font-bold text-card-foreground">Timesheet Mode</h2>
-                <p className="text-sm text-muted-foreground">Timesheet-only access for field workers.</p>
+                <p className="text-sm text-muted-foreground">Timesheet-only access for field workers and subcontractors.</p>
               </div>
             </div>
           </button>

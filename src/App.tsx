@@ -65,7 +65,7 @@ function AppLayout() {
                 <Route path="/" element={<TimesheetHome />} />
                 <Route path="/hub" element={<TimesheetHome />} />
                 <Route path="/job/:id" element={<TimesheetOnlyJobCard />} />
-                <Route path="/timesheet" element={<TimesheetHome />} />
+                <Route path="/timesheet" element={<WorkTimesheet />} />
                 <Route path="/schedule" element={<TimesheetHome />} />
                 <Route path="*" element={<TimesheetHome />} />
               </>

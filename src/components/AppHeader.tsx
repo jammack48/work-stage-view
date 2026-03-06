@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Wrench, Settings as SettingsIcon, GraduationCap, Shield, ArrowLeftRight, LayoutGrid } from "lucide-react";
+import { Wrench, Settings as SettingsIcon, GraduationCap, Shield, LayoutGrid, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ThemePicker } from "@/components/ThemePicker";
@@ -8,12 +8,18 @@ import { useAppMode } from "@/contexts/AppModeContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToolbarPosition } from "@/contexts/ToolbarPositionContext";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const { tutorialOn, setTutorialOn } = useTutorial();
-  const { isWorkMode, isSoleTrader, isTimesheetOnlyMode, clearMode } = useAppMode();
+  const { isWorkMode, isSoleTrader, isTimesheetOnlyMode, clearMode, setMode } = useAppMode();
   const isMobile = useIsMobile();
   const { position, cyclePosition } = useToolbarPosition();
 
@@ -32,20 +38,36 @@ export function AppHeader() {
         </h1>
       </button>
       <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
-        {/* Mode switch */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            clearMode();
-            navigate("/");
-          }}
-          className="h-9 rounded-lg gap-1.5 text-muted-foreground hover:bg-accent"
-          title="Switch mode"
-        >
-          <ArrowLeftRight className="w-4 h-4" />
-          {!isMobile && <span className="text-xs font-medium">Switch</span>}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 rounded-lg gap-1.5 text-muted-foreground hover:bg-accent"
+              title="Mode selector"
+            >
+              <span className="text-xs font-medium">Mode</span>
+              <ChevronDown className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => { setMode("manage"); navigate("/"); }}>
+              Manager
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { setMode("sole-trader"); navigate("/"); }}>
+              On the Tools
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { setTutorialOn(true); setMode("work"); navigate("/"); }}>
+              Employee
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { setTutorialOn(false); setMode("timesheet"); navigate("/"); }}>
+              Timesheet Only
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { clearMode(); navigate("/"); }}>
+              Main Menu
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {(!isWorkMode || location.pathname.startsWith("/job/")) && (
           <Tooltip>
