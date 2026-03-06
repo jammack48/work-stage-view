@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { DEMO_JOBS } from "@/components/schedule/scheduleData";
+import { DEMO_JOBS, generateWeekJobs } from "@/components/schedule/scheduleData";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { startOfWeek } from "date-fns";
 import { toast } from "@/hooks/use-toast";
 
 const OPTIONAL_FORMS = ["Site induction", "Take 5", "Compliance checklist"];
@@ -18,7 +19,15 @@ export default function TimesheetOnlyJobCard() {
   const navigate = useNavigate();
   const { prefix } = useJobPrefix();
 
-  const job = useMemo(() => DEMO_JOBS.find((item) => item.id === id), [id]);
+  const job = useMemo(() => {
+    if (!id) return undefined;
+
+    const fromDemo = DEMO_JOBS.find((item) => item.id === id);
+    if (fromDemo) return fromDemo;
+
+    const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    return generateWeekJobs(currentWeekStart).find((item) => item.id === id);
+  }, [id]);
 
   const [timerRunning, setTimerRunning] = useState(false);
   const [breakOn, setBreakOn] = useState(false);
