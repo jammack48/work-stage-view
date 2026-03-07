@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { getJobDetail, getNewJobDetail, type BundleTemplate } from "@/data/dummyJobDetails";
 import { toast } from "@/hooks/use-toast";
@@ -13,6 +13,8 @@ import { SequencesTab } from "@/components/SequencesTab";
 import { MessagesTab } from "@/components/job/MessagesTab";
 import { cn } from "@/lib/utils";
 import { QUOTE_EXTRAS } from "@/config/toolbarTabs";
+import { useDemoData } from "@/contexts/DemoDataContext";
+import { stageForPipelineEvent, stageFromQuoteStatus } from "@/services/pipelineTransitions";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
@@ -46,6 +48,7 @@ export default function QuotePage() {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
+  const { jobs, updateJobStage } = useDemoData();
 
   const isNew = id === "new";
 
@@ -122,6 +125,8 @@ export default function QuotePage() {
     );
   }
 
+  const liveJob = useMemo(() => jobs.find((item) => item.id === id), [jobs, id]);
+
   const job = isNew
     ? {
         ...getNewJobDetail("To Quote"),
@@ -132,7 +137,20 @@ export default function QuotePage() {
         address: funnelData?.address || "",
         description: funnelData?.description || "",
       }
-    : getJobDetail(id || "");
+    : (() => {
+        const detail = getJobDetail(id || "");
+        if (!detail) return null;
+        if (!liveJob) return detail;
+        return {
+          ...detail,
+          stage: liveJob.stage,
+          client: liveJob.client,
+          jobName: liveJob.jobName,
+          value: liveJob.value,
+          ageDays: liveJob.ageDays,
+          urgent: liveJob.urgent,
+        };
+      })();
 
   if (!job) {
     return (
@@ -145,7 +163,22 @@ export default function QuotePage() {
 
   const cycleStatus = () => {
     const next: Record<QuoteStatus, QuoteStatus> = { Draft: "Sent", Sent: "Approved", Approved: "Draft" };
-    setStatus(next[status]);
+    const nextStatus = next[status];
+    setStatus(nextStatus);
+
+    if (job && !isNew) {
+      const nextStage = stageFromQuoteStatus(nextStatus);
+      if (nextStage) {
+        updateJobStage(job.id, nextStage);
+      }
+    }
+  };
+
+  const handleSendQuote = () => {
+    if (job && !isNew) {
+      updateJobStage(job.id, stageForPipelineEvent("quote_sent"));
+      setStatus("Sent");
+    }
   };
 
   const tabContent: Record<QuotePageTab, React.ReactNode> = {
@@ -153,7 +186,7 @@ export default function QuotePage() {
     messages: <MessagesTab recordType="quote" recordId={job.id} showPipelineLink pipelinePath="/" />,
     "line-items": (
       <div className="space-y-4">
-        <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} initialDescription={funnelData?.description || undefined} beforeActions={
+        <QuoteTab job={job} onSendQuote={handleSendQuote} initialBundle={funnelData?.bundle || undefined} initialDescription={funnelData?.description || undefined} beforeActions={
           <SequenceSelector category="quotes" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
         } />
       </div>

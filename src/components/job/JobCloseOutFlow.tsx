@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import type { JobDetail } from "@/data/dummyJobDetails";
 import { toast } from "@/hooks/use-toast";
 import { useDemoData } from "@/contexts/DemoDataContext";
+import { stageForPipelineEvent } from "@/services/pipelineTransitions";
 
 interface JobCloseOutFlowProps {
   open: boolean;
@@ -183,7 +184,7 @@ export function JobCloseOutFlow({ open, onOpenChange, job }: JobCloseOutFlowProp
       description: `$${invoiceTotal.toFixed(2)} invoice sent to ${job.client}. Job moved to Invoiced.`,
       duration: 4000,
     });
-    updateJobStage(job.id, "Invoiced");
+    updateJobStage(job.id, stageForPipelineEvent("invoice_sent"));
     onOpenChange(false);
   }
 

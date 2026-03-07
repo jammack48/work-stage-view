@@ -5,6 +5,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useDemoData } from "@/contexts/DemoDataContext";
+import { stageForPipelineEvent } from "@/services/pipelineTransitions";
 import type { Job } from "@/data/dummyJobs";
 
 interface LeadActionMenuProps {
@@ -15,6 +17,7 @@ interface LeadActionMenuProps {
 }
 
 const ACTIONS = [
+  { id: "move-to-quote", label: "Move to Quote", tip: "Move this lead into the quote bucket", icon: MoreHorizontal, color: "text-[hsl(var(--status-green))]" },
   { id: "quote", label: "Create Quote", tip: "Build a quote for this lead", icon: FileText, color: "text-[hsl(var(--status-green))]" },
   { id: "schedule", label: "Schedule Site Visit", tip: "Book a time to visit", icon: CalendarPlus, color: "text-primary" },
   { id: "call", label: "Call Customer", tip: "Give them a ring", icon: Phone, color: "text-primary" },
@@ -28,11 +31,17 @@ export function LeadActionMenu({ job, children, align = "start", side = "bottom"
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { updateJobStage } = useDemoData();
 
   const handleAction = (id: string) => {
     setOpen(false);
     switch (id) {
+      case "move-to-quote":
+        updateJobStage(job.id, stageForPipelineEvent("move_to_quote"));
+        toast({ title: `${job.client} moved to To Quote` });
+        break;
       case "quote":
+        updateJobStage(job.id, stageForPipelineEvent("quote_created"));
         navigate(`/quote/${job.id}`);
         break;
       case "schedule":
