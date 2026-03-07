@@ -6,10 +6,10 @@ import type { DemoDataset } from "@/types/demoData";
 import { isDemoDatasetInitialized, readDemoDataset, writeDemoDataset } from "@/demo/demoStorage";
 
 const seedDataset: DemoDataset = {
-  jobs: jobsSeed,
-  customers: customersSeed,
-  materials: materialsSeed,
-  schedule: scheduleSeed,
+  jobs: jobsSeed as unknown as DemoJob[],
+  customers: customersSeed as unknown as DemoCustomer[],
+  materials: materialsSeed as DemoMaterial[],
+  schedule: scheduleSeed as DemoScheduleItem[],
 };
 
 export function loadDemoDataset(storage: Storage = sessionStorage): DemoDataset {
