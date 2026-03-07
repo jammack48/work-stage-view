@@ -26,6 +26,11 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     setDataset(next);
   };
 
+  const addCustomer = (customer: Omit<DemoCustomer, "id">) => {
+    const next = dataService.addCustomer(customer);
+    setDataset(next);
+  };
+
   const resetDemo = () => {
     resetDemoDataset();
     const seeded = loadDemoDataset();
