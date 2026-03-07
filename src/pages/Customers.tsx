@@ -225,6 +225,7 @@ export default function Customers() {
       <BulkMessageDialog open={smsOpen} onOpenChange={setSmsOpen} channel="sms" customerCount={selected.size} />
       <BulkMessageDialog open={emailOpen} onOpenChange={setEmailOpen} channel="email" customerCount={selected.size} />
       <ScheduleReminderDialog open={reminderOpen} onOpenChange={setReminderOpen} customerCount={selected.size} />
+      <NewCustomerDialog open={newCustOpen} onOpenChange={setNewCustOpen} />
     </>
   );
 }
