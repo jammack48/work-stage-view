@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
 import { toast } from "@/hooks/use-toast";
@@ -13,6 +13,8 @@ import { SequenceSelector } from "@/components/quote/SequenceSelector";
 import { SequencesTab } from "@/components/SequencesTab";
 import { cn } from "@/lib/utils";
 import { INVOICE_EXTRAS } from "@/config/toolbarTabs";
+import { useDemoData } from "@/contexts/DemoDataContext";
+import { stageFromInvoiceStatus, stageForPipelineEvent } from "@/services/pipelineTransitions";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
@@ -42,6 +44,7 @@ export default function InvoicePage() {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
+  const { jobs, updateJobStage } = useDemoData();
 
   const isNew = id === "new";
 
@@ -116,6 +119,8 @@ export default function InvoicePage() {
     );
   }
 
+  const liveJob = useMemo(() => jobs.find((item) => item.id === id), [jobs, id]);
+
   const job = isNew
     ? {
         ...getNewJobDetail("To Invoice"),
@@ -126,7 +131,20 @@ export default function InvoicePage() {
         address: funnelData?.address || "",
         description: funnelData?.description || "",
       }
-    : getJobDetail(id || "");
+    : (() => {
+        const detail = getJobDetail(id || "");
+        if (!detail) return null;
+        if (!liveJob) return detail;
+        return {
+          ...detail,
+          stage: liveJob.stage,
+          client: liveJob.client,
+          jobName: liveJob.jobName,
+          value: liveJob.value,
+          ageDays: liveJob.ageDays,
+          urgent: liveJob.urgent,
+        };
+      })();
 
   if (!job) {
     return (
@@ -142,7 +160,22 @@ export default function InvoicePage() {
 
   const cycleStatus = () => {
     const next: Record<InvoiceStatus, InvoiceStatus> = { Draft: "Sent", Sent: "Paid", Paid: "Draft" };
-    setStatus(next[status]);
+    const nextStatus = next[status];
+    setStatus(nextStatus);
+
+    if (job && !isNew) {
+      const nextStage = stageFromInvoiceStatus(nextStatus);
+      if (nextStage) {
+        updateJobStage(job.id, nextStage);
+      }
+    }
+  };
+
+  const handleSendInvoice = () => {
+    if (job && !isNew) {
+      updateJobStage(job.id, stageForPipelineEvent("invoice_sent"));
+      setStatus("Sent");
+    }
   };
 
   const tabContent: Record<InvoiceTab, React.ReactNode> = {
@@ -157,7 +190,7 @@ export default function InvoicePage() {
             className="min-h-[60px] border-0 bg-transparent p-0 focus-visible:ring-0 text-sm resize-none"
           />
         </div>
-        <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} beforeActions={
+        <QuoteTab job={job} onSendQuote={handleSendInvoice} initialBundle={funnelData?.bundle || undefined} beforeActions={
           <SequenceSelector category="invoices" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
         } />
       </div>

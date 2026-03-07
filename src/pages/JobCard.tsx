@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
 
@@ -17,6 +17,7 @@ import { MessagesTab } from "@/components/job/MessagesTab";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { cn } from "@/lib/utils";
 import { JOB_EXTRAS } from "@/config/toolbarTabs";
+import { useDemoData } from "@/contexts/DemoDataContext";
 
 type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences" | "messages";
 
@@ -37,11 +38,27 @@ export default function JobCard() {
   const [activeTab, setActiveTab] = useState<JobTab>(initialTab);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
   const actionParam = searchParams.get("action");
+  const { jobs } = useDemoData();
 
   const scheduleState = location.state as { jobName?: string; client?: string; address?: string; status?: string } | undefined;
+  const liveJob = useMemo(() => jobs.find((item) => item.id === id), [jobs, id]);
+
   const job = id === "new"
     ? getNewJobDetail(searchParams.get("stage") || "Lead")
-    : getJobDetail(id || "", scheduleState ? { client: scheduleState.client, address: scheduleState.address, description: scheduleState.jobName } : undefined);
+    : (() => {
+        const detail = getJobDetail(id || "", scheduleState ? { client: scheduleState.client, address: scheduleState.address, description: scheduleState.jobName } : undefined);
+        if (!detail) return null;
+        if (!liveJob) return detail;
+        return {
+          ...detail,
+          stage: liveJob.stage,
+          client: liveJob.client,
+          jobName: liveJob.jobName,
+          value: liveJob.value,
+          ageDays: liveJob.ageDays,
+          urgent: liveJob.urgent,
+        };
+      })();
 
   const isToInvoice = job?.stage === "To Invoice";
 

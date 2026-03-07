@@ -18,9 +18,46 @@ export function setDemoDataset(dataset: DemoDataset, storage: Storage = sessionS
 
 export function updateDemoJobStage(jobId: string, stage: Stage, storage: Storage = sessionStorage): DemoDataset {
   const dataset = current(storage);
+  const targetJob = dataset.jobs.find((job) => job.id === jobId);
   const next = {
     ...dataset,
     jobs: dataset.jobs.map((job) => (job.id === jobId ? { ...job, stage } : job)),
+    customers: dataset.customers.map((customer) => {
+      const hasLinkedHistory = customer.jobHistory.some((history) => history.id === jobId);
+      const isOwnedByCustomer = targetJob ? targetJob.client === customer.name : false;
+
+      const jobHistory = customer.jobHistory.map((history) => (
+        history.id === jobId ? { ...history, stage } : history
+      ));
+
+      const jobsForCustomer = dataset.jobs
+        .map((job) => (job.id === jobId ? { ...job, stage } : job))
+        .filter((job) => job.client === customer.name);
+
+      const jobsCount = jobsForCustomer.length;
+      const totalSpend = jobsForCustomer
+        .filter((job) => job.stage === "Invoice Paid")
+        .reduce((sum, job) => sum + job.value, 0);
+
+      const hasOpenLead = jobsForCustomer.some((job) => ["Lead", "To Quote"].includes(job.stage));
+      const status = jobsCount === 0
+        ? "archived"
+        : hasOpenLead
+          ? "leads"
+          : "active";
+
+      if (!hasLinkedHistory && !isOwnedByCustomer) {
+        return customer;
+      }
+
+      return {
+        ...customer,
+        jobHistory,
+        jobs: jobsCount,
+        totalSpend,
+        status,
+      };
+    }),
   };
   writeDemoDataset(next, storage);
   return next;
