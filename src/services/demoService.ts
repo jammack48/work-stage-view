@@ -1,6 +1,6 @@
 import { loadDemoDataset } from "@/demo/demoLoader";
 import { readDemoDataset, writeDemoDataset } from "@/demo/demoStorage";
-import type { DemoDataset } from "@/types/demoData";
+import type { DemoCustomer, DemoDataset } from "@/types/demoData";
 import type { Stage } from "@/data/dummyJobs";
 
 function current(storage: Storage = sessionStorage): DemoDataset {
