@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef, type PointerEvent } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { STAGES, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
@@ -50,6 +50,59 @@ const Index = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeView, setActiveView] = useState<HomeView>(managerState?.fromManager ? "manager" : "pipeline");
   const [inboxOpen, setInboxOpen] = useState(false);
+  const horizontalScrollRef = useRef<HTMLDivElement | null>(null);
+  const dragPointerIdRef = useRef<number | null>(null);
+  const dragStartXRef = useRef(0);
+  const dragStartScrollLeftRef = useRef(0);
+  const [isDraggingHorizontal, setIsDraggingHorizontal] = useState(false);
+
+  const isInteractiveTarget = (target: EventTarget | null) => {
+    if (!(target instanceof Element)) return false;
+    return Boolean(target.closest("button, input, textarea, select, option, a, [role='button'], [data-no-drag]"));
+  };
+
+  const stopHorizontalDrag = useCallback((pointerId?: number) => {
+    const container = horizontalScrollRef.current;
+    if (container && pointerId !== undefined && container.hasPointerCapture(pointerId)) {
+      container.releasePointerCapture(pointerId);
+    }
+    dragPointerIdRef.current = null;
+    setIsDraggingHorizontal(false);
+  }, []);
+
+  const handleHorizontalPointerDown = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (isMobile || event.pointerType === "touch" || isInteractiveTarget(event.target)) return;
+
+    const container = horizontalScrollRef.current;
+    if (!container) return;
+
+    dragPointerIdRef.current = event.pointerId;
+    dragStartXRef.current = event.clientX;
+    dragStartScrollLeftRef.current = container.scrollLeft;
+    setIsDraggingHorizontal(true);
+    container.setPointerCapture(event.pointerId);
+  }, [isMobile]);
+
+  const handleHorizontalPointerMove = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingHorizontal || dragPointerIdRef.current !== event.pointerId) return;
+
+    const container = horizontalScrollRef.current;
+    if (!container) return;
+
+    const deltaX = event.clientX - dragStartXRef.current;
+    container.scrollLeft = dragStartScrollLeftRef.current - deltaX;
+  }, [isDraggingHorizontal]);
+
+  const handleHorizontalPointerUp = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (dragPointerIdRef.current !== event.pointerId) return;
+    stopHorizontalDrag(event.pointerId);
+  }, [stopHorizontalDrag]);
+
+  const handleHorizontalPointerLeave = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (dragPointerIdRef.current !== event.pointerId) return;
+    stopHorizontalDrag(event.pointerId);
+  }, [stopHorizontalDrag]);
+
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setCurrentSlide(emblaApi.selectedScrollSnap());
@@ -196,7 +249,17 @@ const Index = () => {
         ) : layout === "horizontal" ? (
           <div className="space-y-0">
             <PipelineFlowBanner activeStage={expandedStage} />
-            <div className="flex gap-2 overflow-x-auto pb-2 pt-2">
+            <div
+              ref={horizontalScrollRef}
+              className={cn(
+                "flex gap-2 overflow-x-auto pb-2 pt-2",
+                !isMobile && (isDraggingHorizontal ? "cursor-grabbing select-none" : "cursor-grab")
+              )}
+              onPointerDown={handleHorizontalPointerDown}
+              onPointerMove={handleHorizontalPointerMove}
+              onPointerUp={handleHorizontalPointerUp}
+              onPointerLeave={handleHorizontalPointerLeave}
+            >
               {STAGES.map((stage) => (
                 <div key={stage} className="min-w-[200px] w-[200px] flex-shrink-0 flex flex-col gap-2">
                   <StageColumn stage={stage} jobs={jobsByStage(stage)} isExpanded={expandedStage === stage} onToggle={() => handleToggle(stage)} layout="horizontal" />
