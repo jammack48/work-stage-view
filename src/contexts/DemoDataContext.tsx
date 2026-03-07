@@ -44,6 +44,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     schedule: dataset.schedule,
     jobsByStage: (stage) => dataset.jobs.filter((job) => job.stage === stage),
     updateJobStage,
+    addCustomer,
     resetDemo,
   }), [dataset]);
 

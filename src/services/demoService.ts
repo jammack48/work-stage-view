@@ -16,6 +16,17 @@ export function setDemoDataset(dataset: DemoDataset, storage: Storage = sessionS
   return dataset;
 }
 
+export function addDemoCustomer(customer: Omit<DemoCustomer, "id">, storage: Storage = sessionStorage): DemoDataset {
+  const dataset = current(storage);
+  const maxId = dataset.customers.reduce((max, c) => Math.max(max, c.id), 0);
+  const next: DemoDataset = {
+    ...dataset,
+    customers: [...dataset.customers, { ...customer, id: maxId + 1 } as DemoCustomer],
+  };
+  writeDemoDataset(next, storage);
+  return next;
+}
+
 export function updateDemoJobStage(jobId: string, stage: Stage, storage: Storage = sessionStorage): DemoDataset {
   const dataset = current(storage);
   const targetJob = dataset.jobs.find((job) => job.id === jobId);
