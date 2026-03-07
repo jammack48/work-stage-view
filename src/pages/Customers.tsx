@@ -17,6 +17,7 @@ import { BulkActionBar } from "@/components/customer/BulkActionBar";
 import { BulkMessageDialog, ScheduleReminderDialog } from "@/components/customer/BulkMessageDialog";
 import { QuickKeywords } from "@/components/customer/QuickKeywords";
 import { FilterPresets, type FilterPreset } from "@/components/customer/FilterPresets";
+import { NewCustomerDialog } from "@/components/customer/NewCustomerDialog";
 
 type CustomerTab = "all" | "leads" | "active" | "archived";
 
