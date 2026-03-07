@@ -1,20 +1,11 @@
 import { Home, Users, DollarSign, FileText, Settings, Columns, LayoutGrid } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { jobs } from "@/data/dummyJobs";
+import { useDemoData } from "@/contexts/DemoDataContext";
 
 export type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings";
 
-const UNREAD_COUNT = jobs.filter(j => j.hasUnread).length;
-
-const TABS: { id: HomeView; label: string; icon: React.ElementType; path?: string; badge?: number }[] = [
-  { id: "pipeline", label: "Pipeline", icon: Home, badge: UNREAD_COUNT > 0 ? UNREAD_COUNT : undefined },
-  { id: "customers", label: "Customers", icon: Users, path: "/customers" },
-  { id: "quotes", label: "Quotes", icon: DollarSign },
-  { id: "invoices", label: "Invoices", icon: FileText },
-  { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
-];
 
 interface HomeSidebarProps {
   activeView: HomeView;
@@ -26,8 +17,18 @@ interface HomeSidebarProps {
 export function HomeSidebar({ activeView, onViewChange, mobileLayout, onMobileLayoutChange }: HomeSidebarProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { jobs } = useDemoData();
+  const unreadCount = jobs.filter((j) => j.hasUnread).length;
 
-  const handleClick = (tab: typeof TABS[number]) => {
+  const tabs: { id: HomeView; label: string; icon: React.ElementType; path?: string; badge?: number }[] = [
+    { id: "pipeline", label: "Pipeline", icon: Home, badge: unreadCount > 0 ? unreadCount : undefined },
+    { id: "customers", label: "Customers", icon: Users, path: "/customers" },
+    { id: "quotes", label: "Quotes", icon: DollarSign },
+    { id: "invoices", label: "Invoices", icon: FileText },
+    { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
+  ];
+
+  const handleClick = (tab: (typeof tabs)[number]) => {
     if (tab.path) {
       navigate(tab.path);
     } else {
@@ -39,7 +40,7 @@ export function HomeSidebar({ activeView, onViewChange, mobileLayout, onMobileLa
   if (!isMobile) {
     return (
       <nav className="w-[200px] shrink-0 flex flex-col gap-1 py-2">
-        {TABS.map(({ id, label, icon: Icon, path, badge }) => (
+        {tabs.map(({ id, label, icon: Icon, path, badge }) => (
           <button
             key={id}
             onClick={() => handleClick({ id, label, icon: Icon, path })}
@@ -76,7 +77,7 @@ export function HomeSidebar({ activeView, onViewChange, mobileLayout, onMobileLa
         >
           <Columns className="w-4 h-4" />
         </button>
-        {TABS.map(({ id, label, icon: Icon, path, badge }) => (
+        {tabs.map(({ id, label, icon: Icon, path, badge }) => (
           <button
             key={id}
             onClick={() => handleClick({ id, label, icon: Icon, path })}
@@ -111,7 +112,7 @@ export function HomeSidebar({ activeView, onViewChange, mobileLayout, onMobileLa
       >
         <LayoutGrid className="w-4 h-4" />
       </button>
-      {TABS.map(({ id, label, icon: Icon, path, badge }) => (
+      {tabs.map(({ id, label, icon: Icon, path, badge }) => (
         <button
           key={id}
           onClick={() => handleClick({ id, label, icon: Icon, path })}

@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import type { JobDetail, MaterialItem } from "@/data/dummyJobDetails";
 import { checklistTemplates, type CompletedChecklist } from "@/data/dummyChecklists";
 import { toast } from "@/hooks/use-toast";
+import { useDemoData } from "@/contexts/DemoDataContext";
 import { supabase } from "@/integrations/supabase/client";
 
 interface JobCompletionFlowProps {
@@ -331,6 +332,7 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
       }, 500);
     }
 
+    if (jobFinished) updateJobStage(job.id, "To Invoice");
     onOpenChange(false);
     navigate("/");
   }

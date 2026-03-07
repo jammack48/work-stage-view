@@ -1,7 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, UserPlus, Phone, Mail, MapPin, CheckSquare, Filter, ChevronDown } from "lucide-react";
-import { UNREAD_CLIENTS } from "@/data/dummyJobs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -9,7 +8,8 @@ import { toast } from "@/hooks/use-toast";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { DUMMY_CUSTOMERS, type Customer } from "@/data/dummyCustomers";
+import type { DemoCustomer as Customer } from "@/types/demoData";
+import { useDemoData } from "@/contexts/DemoDataContext";
 import { CUSTOMER_LIST_EXTRAS } from "@/config/toolbarTabs";
 import { CustomerSearchBar } from "@/components/customer/CustomerSearchBar";
 import { CustomerFilters, type SortOption } from "@/components/customer/CustomerFilters";
@@ -35,6 +35,8 @@ function customerMatchesQuery(c: Customer, q: string): boolean {
 export default function Customers() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<CustomerTab>("all");
+  const { customers, jobs } = useDemoData();
+  const unreadClients = useMemo(() => new Set(jobs.filter((j) => j.hasUnread).map((j) => j.client)), [jobs]);
   const isMobile = useIsMobile();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,7 +55,7 @@ export default function Customers() {
   const handleSearch = useCallback((q: string) => setSearchQuery(q), []);
 
   const filtered = useMemo(() => {
-    let list = activeTab === "all" ? DUMMY_CUSTOMERS : DUMMY_CUSTOMERS.filter((c) => c.status === activeTab);
+    let list = activeTab === "all" ? customers : customers.filter((c) => c.status === activeTab);
     list = list.filter((c) => customerMatchesQuery(c, searchQuery));
     if (minSpend > 0) list = list.filter((c) => c.totalSpend >= minSpend);
     if (minJobs > 0) list = list.filter((c) => c.jobs >= minJobs);
@@ -63,7 +65,7 @@ export default function Customers() {
       return a.name.localeCompare(b.name);
     });
     return list;
-  }, [activeTab, searchQuery, sortBy, minSpend, minJobs]);
+  }, [activeTab, customers, searchQuery, sortBy, minSpend, minJobs]);
 
   const toggleSelect = (id: number) => {
     setSelected((prev) => {
@@ -180,7 +182,7 @@ export default function Customers() {
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-sm text-card-foreground truncate flex items-center gap-1.5">
                   {c.name}
-                  {UNREAD_CLIENTS.has(c.name) && (
+                  {unreadClients.has(c.name) && (
                     <>
                       <span className="relative flex h-2.5 w-2.5 shrink-0">
                         <span className="animate-glow-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />

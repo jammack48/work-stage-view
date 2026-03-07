@@ -1,0 +1,54 @@
+[
+  {
+    "id": 1,
+    "name": "Dave Thompson",
+    "phone": "021 555 1234",
+    "email": "dave@example.com",
+    "address": "12 Queen St, Auckland",
+    "jobs": 3,
+    "status": "active",
+    "totalSpend": 12400,
+    "notes": ["Prefers morning appointments", "Has a dog - keep gate closed"],
+    "contacts": [{ "name": "Dave Thompson", "role": "Owner", "phone": "021 555 1234", "email": "dave@example.com" }],
+    "jobHistory": [{ "id": "TB-0101", "name": "Hot Water Cylinder Replace", "value": 4200, "stage": "Invoice Paid", "date": "2025-11-15" }]
+  },
+  {
+    "id": 2,
+    "name": "Sarah Mitchell",
+    "phone": "027 555 5678",
+    "email": "sarah@example.com",
+    "address": "45 Cuba St, Wellington",
+    "jobs": 5,
+    "status": "active",
+    "totalSpend": 28500,
+    "notes": ["Key account - high-value property portfolio"],
+    "contacts": [{ "name": "Sarah Mitchell", "role": "Property Manager", "phone": "027 555 5678", "email": "sarah@example.com" }],
+    "jobHistory": [{ "id": "TB-0102", "name": "Bathroom Reno", "value": 8500, "stage": "Invoice Paid", "date": "2025-08-01" }]
+  },
+  {
+    "id": 3,
+    "name": "Mike O'Brien",
+    "phone": "022 555 9012",
+    "email": "mike@example.com",
+    "address": "8 Riccarton Rd, Christchurch",
+    "jobs": 1,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": ["Enquired about full house rewire"],
+    "contacts": [{ "name": "Mike O'Brien", "role": "Homeowner", "phone": "022 555 9012", "email": "mike@example.com" }],
+    "jobHistory": [{ "id": "TB-0103", "name": "Rewire", "value": 12000, "stage": "Lead", "date": "2026-02-18" }]
+  },
+  {
+    "id": 4,
+    "name": "Jenny Wu",
+    "phone": "021 555 3456",
+    "email": "jenny@example.com",
+    "address": "23 Devonport Rd, Tauranga",
+    "jobs": 0,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": ["New build project"],
+    "contacts": [{ "name": "Jenny Wu", "role": "Homeowner", "phone": "021 555 3456", "email": "jenny@example.com" }],
+    "jobHistory": []
+  }
+]

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { STAGES, jobsByStage, type Stage, type Job } from "@/data/dummyJobs";
+import { STAGES, type Stage } from "@/data/dummyJobs";
+import type { DemoJob as Job } from "@/types/demoData";
 import { useThresholds } from "@/contexts/ThresholdContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +15,7 @@ import {
   LayoutList, GalleryHorizontal,
 } from "lucide-react";
 import { dummySequences } from "@/data/dummySequences";
+import { useDemoData } from "@/contexts/DemoDataContext";
 
 type PriorityColor = "red" | "orange" | "green";
 
@@ -184,6 +186,7 @@ function JobCard({ job, activeStage, activePriority, note, setNote, onAction, on
   onSaveNote: (job: Job) => void;
 }) {
   const navigate = useNavigate();
+  const { jobs, jobsByStage, updateJobStage } = useDemoData();
   const history = generateHistory(job, activeStage);
   const sequence = generateSequence(activeStage, job);
   const actions = STAGE_ACTIONS[activeStage] || [];
@@ -310,6 +313,7 @@ interface ManagerModeProps {
 
 export function ManagerMode({ initialStage, initialPriority, initialIndex }: ManagerModeProps = {}) {
   const navigate = useNavigate();
+  const { jobs, jobsByStage, updateJobStage } = useDemoData();
   const { getThresholds, getLabel } = useThresholds();
   const [activeStage, setActiveStage] = useState<Stage>(initialStage || "Lead");
   const [activePriority, setActivePriority] = useState<PriorityColor>(initialPriority || "red");
@@ -369,9 +373,23 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
       });
       return;
     }
+    const stageMap: Record<string, Stage> = {
+      accepted: "Quote Accepted",
+      completed: "To Invoice",
+      invoiced: "Invoiced",
+      paid: "Invoice Paid",
+      converted: "To Quote",
+      scheduled: "In Progress",
+    };
+
+    const nextStage = stageMap[action];
+    if (nextStage) {
+      updateJobStage(job.id, nextStage);
+    }
+
     toast({
       title: `${action.charAt(0).toUpperCase() + action.slice(1)}`,
-      description: `${job.client} — ${job.jobName} has been ${action}.${actionDef.requiresNote ? ` Note: ${jobNote}` : ""}`,
+      description: `${job.client} — ${job.jobName} has been ${action}.${nextStage ? ` Moved to ${nextStage}.` : ""}${actionDef.requiresNote ? ` Note: ${jobNote}` : ""}`,
     });
     if (actionDef.requiresNote) setNotes(prev => ({ ...prev, [job.id]: "" }));
   };
