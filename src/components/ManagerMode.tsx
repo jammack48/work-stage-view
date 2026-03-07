@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { STAGES, type Stage } from "@/data/dummyJobs";
+import { STAGE_LABELS, STAGES, type Stage } from "@/data/dummyJobs";
 import type { DemoJob as Job } from "@/types/demoData";
 import { useThresholds } from "@/contexts/ThresholdContext";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -194,11 +195,16 @@ function JobCard({ job, activeStage, activePriority, note, setNote, onAction, on
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-4">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2">
-          <div>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-2 min-w-0">
+          <div className="min-w-0">
             <p className="font-semibold text-card-foreground">{job.client}</p>
-            <p className="text-sm text-muted-foreground">{job.jobName}</p>
+            <div className="mt-0.5 flex flex-wrap items-center gap-1">
+              <p className="text-sm text-muted-foreground truncate">{job.jobName}</p>
+              <Badge variant="secondary" className="h-4 px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wide">
+                {(STAGE_LABELS[activeStage] ?? [activeStage])[0]}
+              </Badge>
+            </div>
           </div>
           {job.hasUnread && (
             <button

@@ -9,6 +9,7 @@ import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
 import { TutorialTip } from "@/components/TutorialTip";
 import { LeadActionMenu } from "@/components/LeadActionMenu";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { Badge } from "@/components/ui/badge";
 
 function countByStatus(jobs: Job[], greenMax: number, orangeMax: number) {
   let red = 0, orange = 0, green = 0;
@@ -35,12 +36,18 @@ function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse
   const { prefix } = useJobPrefix();
   const navigate = useNavigate();
   const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
+  const stageLabel = (STAGE_LABELS[job.stage as keyof typeof STAGE_LABELS] ?? [job.stage])[0];
   return (
     <div className={cn(
       "mt-1 text-[11px] text-white/80 leading-tight rounded px-1 -mx-1 transition-all",
       job.hasUnread && notifStyle === "pulse" && "animate-card-pulse bg-white/10"
     )}>
       <div className="font-semibold truncate">{job.client}</div>
+      <div className="mt-0.5">
+        <Badge className="h-4 px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wide border-white/35 bg-black/25 text-white shadow-sm">
+          {stageLabel}
+        </Badge>
+      </div>
       <div className="truncate opacity-75">{displayId} · {job.jobName}</div>
       {job.hasUnread && (
         <button
