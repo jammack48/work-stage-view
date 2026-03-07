@@ -21,7 +21,7 @@ export function updateDemoJobStage(jobId: string, stage: Stage, storage: Storage
   const targetJob = dataset.jobs.find((job) => job.id === jobId);
   const next = {
     ...dataset,
-    jobs: dataset.jobs.map((job) => (job.id === jobId ? { ...job, stage } : job)),
+    jobs: dataset.jobs.map((job) => (job.id === jobId ? { ...job, stage, ageDays: 0 } : job)),
     customers: dataset.customers.map((customer) => {
       const hasLinkedHistory = customer.jobHistory.some((history) => history.id === jobId);
       const isOwnedByCustomer = targetJob ? targetJob.client === customer.name : false;

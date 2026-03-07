@@ -123,6 +123,7 @@ function ChecklistStepInline({ category, onComplete }: { category: "arrival" | "
 
 export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking, onChecklistComplete }: JobCompletionFlowProps) {
   const navigate = useNavigate();
+  const { updateJobStage } = useDemoData();
   const [step, setStep] = useState(resumeAfterBooking ? 1 : 0);
   const [jobFinished, setJobFinished] = useState(true);
 
