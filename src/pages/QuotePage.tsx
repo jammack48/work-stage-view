@@ -55,6 +55,7 @@ export default function QuotePage() {
   const { jobs, updateJobStage } = useDemoData();
 
   const isNew = id === "new";
+  const liveJob = useMemo(() => jobs.find((item) => item.id === id), [jobs, id]);
 
   const handleTabChange = (tabId: string) => {
     if (tabId === "back") { managerState?.fromManager ? navigate("/", { state: managerState }) : navigate("/"); return; }
@@ -128,8 +129,6 @@ export default function QuotePage() {
       </>
     );
   }
-
-  const liveJob = useMemo(() => jobs.find((item) => item.id === id), [jobs, id]);
 
   const job = isNew
     ? {
