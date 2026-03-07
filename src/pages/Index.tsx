@@ -1,18 +1,18 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
+import { STAGES, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
 import { ManagerMode } from "@/components/ManagerMode";
 import { UnreadInbox } from "@/components/UnreadInbox";
 import { ChevronLeft, ChevronRight, LayoutGrid, Columns, Plus, Bell } from "lucide-react";
-import { jobs } from "@/data/dummyJobs";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TutorialTip } from "@/components/TutorialTip";
+import { useDemoData } from "@/contexts/DemoDataContext";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import useEmblaCarousel from "embla-carousel-react";
@@ -41,6 +41,7 @@ const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const managerState = location.state as { fromManager?: boolean; stage?: string; priority?: string; slideIndex?: number } | null;
+  const { jobs, jobsByStage } = useDemoData();
 
   const [expandedStage, setExpandedStage] = useState<Stage | null>(null);
   const [layout, setLayout] = useState<Layout>("horizontal");

@@ -17,6 +17,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { cn } from "@/lib/utils";
 import type { JobDetail } from "@/data/dummyJobDetails";
 import { toast } from "@/hooks/use-toast";
+import { useDemoData } from "@/contexts/DemoDataContext";
 
 interface JobCloseOutFlowProps {
   open: boolean;
@@ -113,6 +114,7 @@ function buildInvoiceLines(costLines: CostLine[]): InvoiceLine[] {
 
 export function JobCloseOutFlow({ open, onOpenChange, job }: JobCloseOutFlowProps) {
   const navigate = useNavigate();
+  const { updateJobStage } = useDemoData();
   const [step, setStep] = useState(0);
   const [sendMethod, setSendMethod] = useState<"email" | "sms" | "both">("email");
   const [invoiceNote, setInvoiceNote] = useState("");
@@ -181,6 +183,7 @@ export function JobCloseOutFlow({ open, onOpenChange, job }: JobCloseOutFlowProp
       description: `$${invoiceTotal.toFixed(2)} invoice sent to ${job.client}. Job moved to Invoiced.`,
       duration: 4000,
     });
+    updateJobStage(job.id, "Invoiced");
     onOpenChange(false);
   }
 

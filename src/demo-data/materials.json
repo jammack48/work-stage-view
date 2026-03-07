@@ -1,0 +1,5 @@
+[
+  {"id":"mat-001","name":"20mm Copper Elbow","unit":"pcs","unitPrice":8.5},
+  {"id":"mat-002","name":"32A MCB","unit":"pcs","unitPrice":24.0},
+  {"id":"mat-003","name":"PEX 16mm Pipe","unit":"m","unitPrice":3.6}
+]

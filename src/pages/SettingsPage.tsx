@@ -10,6 +10,8 @@ import { SETTINGS_EXTRAS } from "@/config/toolbarTabs";
 import { dummyTemplates } from "@/data/dummyTemplates";
 import { NotificationStyleSettings } from "@/components/NotificationStyleSettings";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { useDemoData } from "@/contexts/DemoDataContext";
+import { toast } from "@/hooks/use-toast";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations" | "documents";
 
@@ -17,6 +19,7 @@ type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "te
 
 function SettingsContent({ tab }: { tab: SettingsTab }) {
   const { prefix, nextNumber, setPrefix, setNextNumber, formatJobId } = useJobPrefix();
+  const { resetDemo } = useDemoData();
 
   const sections: Record<SettingsTab, React.ReactNode> = {
     business: (
@@ -58,6 +61,15 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
               className="text-sm font-mono w-24"
               min={1}
             />
+          </div>
+        </div>
+        <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+          <div className="text-xs text-muted-foreground">Demo Session Data</div>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-card-foreground">Reset demo jobs/customers for this session</p>
+            <Button size="sm" variant="outline" onClick={() => { resetDemo(); toast({ title: "Demo reset", description: "Demo data was reset for this session." }); }}>
+              Reset Demo
+            </Button>
           </div>
         </div>
         <div className="p-3 rounded-lg bg-muted border border-border">
