@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { getCustomer } from "@/data/dummyCustomers";
+import { useDemoData } from "@/contexts/DemoDataContext";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import { cn } from "@/lib/utils";
