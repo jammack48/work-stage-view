@@ -3,13 +3,14 @@ import { Search, ArrowLeft, ArrowRight, Wrench, Zap, Settings, Hammer, Bath, Pen
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { DUMMY_CUSTOMERS, type Customer } from "@/data/dummyCustomers";
+import { useDemoData } from "@/contexts/DemoDataContext";
 import { bundleTemplates, type BundleTemplate } from "@/data/dummyJobDetails";
 import { Command, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup } from "@/components/ui/command";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import type { DemoCustomer } from "@/types/demoData";
 
 export interface FunnelResult {
-  customer: Customer | null;
+  customer: DemoCustomer | null;
   address: string;
   bundle: BundleTemplate | null;
   description: string;
@@ -19,7 +20,7 @@ interface QuoteFunnelProps {
   onComplete: (data: FunnelResult) => void;
   onStepChange?: (step: number) => void;
   label?: string;
-  initialCustomer?: Customer;
+  initialCustomer?: DemoCustomer | null;
 }
 
 const BUNDLE_ICONS: Record<string, React.ElementType> = {
@@ -60,19 +61,19 @@ export function StepIndicator({ current }: { current: number }) {
 }
 
 /* ── Step 1: Select Customer ───────────────────────────── */
-function StepCustomer({ onSelect, onSkip, label = "quote" }: { onSelect: (c: Customer) => void; onSkip: () => void; label?: string }) {
+function StepCustomer({ onSelect, onSkip, label = "quote", customers }: { onSelect: (c: DemoCustomer) => void; onSkip: () => void; label?: string; customers: DemoCustomer[] }) {
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return DUMMY_CUSTOMERS;
+    if (!search.trim()) return customers;
     const q = search.toLowerCase();
-    return DUMMY_CUSTOMERS.filter(
+    return customers.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
         c.phone.includes(q) ||
         c.address.toLowerCase().includes(q)
     );
-  }, [search]);
+  }, [customers, search]);
 
   return (
     <div className="space-y-4">
@@ -313,13 +314,14 @@ function StepBundle({
 
 /* ── Main Funnel (pure content, no page shell) ─────────── */
 export function QuoteFunnel({ onComplete, onStepChange, label = "quote", initialCustomer }: QuoteFunnelProps) {
+  const { customers } = useDemoData();
   const startStep = initialCustomer ? 2 : 1;
   const [step, _setStep] = useState(startStep);
   const setStep = (s: number) => { _setStep(s); onStepChange?.(s); };
-  const [customer, setCustomer] = useState<Customer | null>(initialCustomer || null);
+  const [customer, setCustomer] = useState<DemoCustomer | null>(initialCustomer || null);
   const [address, setAddress] = useState(initialCustomer?.address || "");
 
-  const handleSelectCustomer = (c: Customer) => {
+  const handleSelectCustomer = (c: DemoCustomer) => {
     setCustomer(c);
     setAddress(c.address);
     setStep(2);
@@ -342,7 +344,7 @@ export function QuoteFunnel({ onComplete, onStepChange, label = "quote", initial
   return (
     <div className="max-w-lg mx-auto">
       {step === 1 && (
-        <StepCustomer onSelect={handleSelectCustomer} onSkip={handleSkipCustomer} label={label} />
+        <StepCustomer onSelect={handleSelectCustomer} onSkip={handleSkipCustomer} label={label} customers={customers} />
       )}
       {step === 2 && (
         <StepAddress

@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { QUOTE_EXTRAS } from "@/config/toolbarTabs";
 import { useDemoData } from "@/contexts/DemoDataContext";
 import { stageForPipelineEvent, stageFromQuoteStatus } from "@/services/pipelineTransitions";
+import type { DemoCustomer } from "@/types/demoData";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
@@ -22,7 +23,10 @@ import {
 
 type QuotePageTab = "overview" | "messages" | "line-items" | "sequences" | "notes" | "history";
 
-
+interface QuotePageLocationState {
+  customer?: DemoCustomer | null;
+  fromManager?: boolean;
+}
 
 type QuoteStatus = "Draft" | "Sent" | "Approved";
 
@@ -36,8 +40,8 @@ export default function QuotePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const managerState = (location.state as any);
-  const initialCustomer = managerState?.customer || null;
+  const managerState = (location.state as QuotePageLocationState | null) ?? null;
+  const initialCustomer = managerState?.customer ?? null;
   const [searchParams] = useSearchParams();
   const initialTab = (searchParams.get("tab") as QuotePageTab) || "line-items";
   const [activeTab, setActiveTab] = useState<QuotePageTab>(initialTab);
@@ -97,7 +101,7 @@ export default function QuotePage() {
         >
           <QuoteFunnel
             onComplete={(data) => {
-            setFunnelData(data);
+              setFunnelData(data);
               // Only pre-fill scope for custom descriptions, not bundle defaults
               setFunnelComplete(true);
             }}
