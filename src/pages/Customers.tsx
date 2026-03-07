@@ -17,6 +17,7 @@ import { BulkActionBar } from "@/components/customer/BulkActionBar";
 import { BulkMessageDialog, ScheduleReminderDialog } from "@/components/customer/BulkMessageDialog";
 import { QuickKeywords } from "@/components/customer/QuickKeywords";
 import { FilterPresets, type FilterPreset } from "@/components/customer/FilterPresets";
+import { NewCustomerDialog } from "@/components/customer/NewCustomerDialog";
 
 type CustomerTab = "all" | "leads" | "active" | "archived";
 
@@ -51,6 +52,7 @@ export default function Customers() {
   const [smsOpen, setSmsOpen] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
   const [reminderOpen, setReminderOpen] = useState(false);
+  const [newCustOpen, setNewCustOpen] = useState(false);
 
   const handleSearch = useCallback((q: string) => setSearchQuery(q), []);
 
@@ -155,7 +157,7 @@ export default function Customers() {
               </Button>
             )}
           </div>
-          <Button size="sm" className="gap-1.5" onClick={() => toast({ title: "Coming soon", description: "New customer form is under development." })}>
+          <Button size="sm" className="gap-1.5" onClick={() => setNewCustOpen(true)}>
             <UserPlus className="w-4 h-4" />Add Customer
           </Button>
         </div>
@@ -223,6 +225,7 @@ export default function Customers() {
       <BulkMessageDialog open={smsOpen} onOpenChange={setSmsOpen} channel="sms" customerCount={selected.size} />
       <BulkMessageDialog open={emailOpen} onOpenChange={setEmailOpen} channel="email" customerCount={selected.size} />
       <ScheduleReminderDialog open={reminderOpen} onOpenChange={setReminderOpen} customerCount={selected.size} />
+      <NewCustomerDialog open={newCustOpen} onOpenChange={setNewCustOpen} />
     </>
   );
 }

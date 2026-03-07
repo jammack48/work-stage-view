@@ -1,9 +1,8 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
 import type { DemoCustomer, DemoDataset, DemoJob, DemoMaterial, DemoScheduleItem } from "@/types/demoData";
 import type { Stage } from "@/data/dummyJobs";
-import { dataService } from "@/services/dataService";
+import { ensureSession, fetchDataset, dbUpdateJobStage, dbAddCustomer, dbResetSession } from "@/services/dbDemoService";
 import { loadDemoDataset } from "@/demo/demoLoader";
-import { resetDemoDataset } from "@/demo/demoReset";
 
 interface DemoDataContextType {
   jobs: DemoJob[];
@@ -12,24 +11,62 @@ interface DemoDataContextType {
   schedule: DemoScheduleItem[];
   jobsByStage: (stage: Stage) => DemoJob[];
   updateJobStage: (jobId: string, stage: Stage) => void;
+  addCustomer: (customer: Omit<DemoCustomer, "id">) => void;
   resetDemo: () => void;
+  loading: boolean;
 }
 
 const DemoDataContext = createContext<DemoDataContextType | undefined>(undefined);
 
 export function DemoDataProvider({ children }: { children: ReactNode }) {
   const [dataset, setDataset] = useState<DemoDataset>(() => loadDemoDataset());
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const updateJobStage = (jobId: string, stage: Stage) => {
-    const next = dataService.updateJobStage(jobId, stage);
-    setDataset(next);
-  };
+  // Initialize session on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const sid = await ensureSession();
+        if (cancelled) return;
+        setSessionId(sid);
+        const data = await fetchDataset(sid);
+        if (cancelled) return;
+        setDataset(data);
+      } catch (err) {
+        console.error("Failed to init demo session:", err);
+        // Fall back to local seed data (already loaded)
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-  const resetDemo = () => {
-    resetDemoDataset();
-    const seeded = loadDemoDataset();
-    setDataset(seeded);
-  };
+  const updateJobStage = useCallback((jobId: string, stage: Stage) => {
+    if (!sessionId) return;
+    // Optimistic: update local immediately
+    setDataset((prev) => ({
+      ...prev,
+      jobs: prev.jobs.map((j) => (j.id === jobId ? { ...j, stage, ageDays: 0 } : j)),
+    }));
+    // Then sync to DB
+    dbUpdateJobStage(sessionId, jobId, stage).then(setDataset).catch(console.error);
+  }, [sessionId]);
+
+  const addCustomer = useCallback((customer: Omit<DemoCustomer, "id">) => {
+    if (!sessionId) return;
+    dbAddCustomer(sessionId, customer).then(setDataset).catch(console.error);
+  }, [sessionId]);
+
+  const resetDemo = useCallback(() => {
+    if (!sessionId) return;
+    setLoading(true);
+    dbResetSession(sessionId)
+      .then((data) => { setDataset(data); setLoading(false); })
+      .catch((err) => { console.error(err); setLoading(false); });
+  }, [sessionId]);
 
   const value = useMemo<DemoDataContextType>(() => ({
     jobs: dataset.jobs,
@@ -38,8 +75,10 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     schedule: dataset.schedule,
     jobsByStage: (stage) => dataset.jobs.filter((job) => job.stage === stage),
     updateJobStage,
+    addCustomer,
     resetDemo,
-  }), [dataset]);
+    loading,
+  }), [dataset, updateJobStage, addCustomer, resetDemo, loading]);
 
   return <DemoDataContext.Provider value={value}>{children}</DemoDataContext.Provider>;
 }
