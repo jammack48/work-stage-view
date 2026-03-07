@@ -78,6 +78,21 @@ const Index = () => {
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
+  const handleStageAction = (stage: Stage) => {
+    if (stage === "Lead") {
+      navigate("/customers?new=1");
+      return;
+    }
+
+    navigate(
+      stage === "Quote Sent"
+        ? "/quote/new"
+        : stage === "To Invoice"
+          ? "/invoice/new"
+          : `/job/new?stage=${encodeURIComponent(stage)}`,
+    );
+  };
+
   return (
     <>
 
@@ -179,7 +194,7 @@ const Index = () => {
                     <StageColumn stage={stage} jobs={jobsByStage(stage)} isExpanded={expandedStage === stage} onToggle={() => handleToggle(stage)} onNext={scrollNext} layout="horizontal" />
                     {ACTION_BOXES[stage] && (
                       <TutorialTip tip={ACTION_TIPS[stage] || ""} side="bottom">
-                        <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(stage === "Lead" ? "/customers" : stage === "Quote Sent" ? "/quote/new" : stage === "To Invoice" ? "/invoice/new" : `/job/new?stage=${encodeURIComponent(stage)}`)}>
+                        <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => handleStageAction(stage)}>
                           <Plus className="w-5 h-5" />
                           <span className="text-xs font-medium">{ACTION_BOXES[stage]}</span>
                         </button>
@@ -202,7 +217,7 @@ const Index = () => {
                   <StageColumn stage={stage} jobs={jobsByStage(stage)} isExpanded={expandedStage === stage} onToggle={() => handleToggle(stage)} layout="horizontal" />
                   {ACTION_BOXES[stage] && (
                     <TutorialTip tip={ACTION_TIPS[stage] || ""} side="bottom">
-                      <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(stage === "Lead" ? "/customers" : stage === "Quote Sent" ? "/quote/new" : stage === "To Invoice" ? "/invoice/new" : `/job/new?stage=${encodeURIComponent(stage)}`)}>
+                      <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => handleStageAction(stage)}>
                         <Plus className="w-5 h-5" />
                         <span className="text-xs font-medium">{ACTION_BOXES[stage]}</span>
                       </button>

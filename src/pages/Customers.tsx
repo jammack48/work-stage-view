@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Users, UserPlus, Phone, Mail, MapPin, CheckSquare, Filter, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,6 +35,7 @@ function customerMatchesQuery(c: Customer, q: string): boolean {
 
 export default function Customers() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<CustomerTab>("all");
   const { customers, jobs } = useDemoData();
   const unreadClients = useMemo(() => new Set(jobs.filter((j) => j.hasUnread).map((j) => j.client)), [jobs]);
@@ -53,6 +54,31 @@ export default function Customers() {
   const [emailOpen, setEmailOpen] = useState(false);
   const [reminderOpen, setReminderOpen] = useState(false);
   const [newCustOpen, setNewCustOpen] = useState(false);
+
+  const shouldOpenNewCustomer = useMemo(() => {
+    const routeState = location.state as { openNewCustomer?: boolean } | null;
+    const params = new URLSearchParams(location.search);
+    return params.get("new") === "1" || Boolean(routeState?.openNewCustomer);
+  }, [location.search, location.state]);
+
+  useEffect(() => {
+    if (!shouldOpenNewCustomer) return;
+
+    setNewCustOpen(true);
+
+    const params = new URLSearchParams(location.search);
+    if (params.get("new") === "1") {
+      params.delete("new");
+      const nextSearch = params.toString();
+      navigate(
+        {
+          pathname: location.pathname,
+          search: nextSearch ? `?${nextSearch}` : "",
+        },
+        { replace: true, state: location.state },
+      );
+    }
+  }, [shouldOpenNewCustomer, location.pathname, location.search, location.state, navigate]);
 
   const handleSearch = useCallback((q: string) => setSearchQuery(q), []);
 
