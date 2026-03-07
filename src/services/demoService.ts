@@ -40,7 +40,7 @@ export function updateDemoJobStage(jobId: string, stage: Stage, storage: Storage
         .reduce((sum, job) => sum + job.value, 0);
 
       const hasOpenLead = jobsForCustomer.some((job) => ["Lead", "To Quote"].includes(job.stage));
-      const status = jobsCount === 0
+      const status: DemoCustomer["status"] = jobsCount === 0
         ? "archived"
         : hasOpenLead
           ? "leads"
