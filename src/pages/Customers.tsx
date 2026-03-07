@@ -52,6 +52,7 @@ export default function Customers() {
   const [smsOpen, setSmsOpen] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
   const [reminderOpen, setReminderOpen] = useState(false);
+  const [newCustOpen, setNewCustOpen] = useState(false);
 
   const handleSearch = useCallback((q: string) => setSearchQuery(q), []);
 
