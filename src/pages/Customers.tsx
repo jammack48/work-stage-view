@@ -157,7 +157,7 @@ export default function Customers() {
               </Button>
             )}
           </div>
-          <Button size="sm" className="gap-1.5" onClick={() => toast({ title: "Coming soon", description: "New customer form is under development." })}>
+          <Button size="sm" className="gap-1.5" onClick={() => setNewCustOpen(true)}>
             <UserPlus className="w-4 h-4" />Add Customer
           </Button>
         </div>
