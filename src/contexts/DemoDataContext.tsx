@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
 import type { DemoCustomer, DemoDataset, DemoJob, DemoMaterial, DemoScheduleItem } from "@/types/demoData";
 import type { Stage } from "@/data/dummyJobs";
-import { ensureSession, fetchDataset, dbUpdateJobStage, dbAddCustomer, dbResetSession } from "@/services/dbDemoService";
+import { ensureSession, fetchDataset, dbUpdateJobStage, dbAddCustomer, dbAddJob, dbResetSession } from "@/services/dbDemoService";
 import { loadDemoDataset } from "@/demo/demoLoader";
 
 interface DemoDataContextType {
@@ -12,6 +12,7 @@ interface DemoDataContextType {
   jobsByStage: (stage: Stage) => DemoJob[];
   updateJobStage: (jobId: string, stage: Stage) => void;
   addCustomer: (customer: Omit<DemoCustomer, "id">) => void;
+  addJob: (job: { client: string; jobName: string; value: number; stage: Stage }) => void;
   resetDemo: () => void;
   loading: boolean;
 }
@@ -60,6 +61,15 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     dbAddCustomer(sessionId, customer).then(setDataset).catch(console.error);
   }, [sessionId]);
 
+  const addJob = useCallback((job: { client: string; jobName: string; value: number; stage: Stage }) => {
+    if (!sessionId) return;
+    // Optimistic: add locally
+    const tempId = `JOB-${Date.now()}`;
+    const newJob: DemoJob = { id: tempId, client: job.client, jobName: job.jobName, value: job.value, ageDays: 0, urgent: false, stage: job.stage };
+    setDataset((prev) => ({ ...prev, jobs: [...prev.jobs, newJob] }));
+    dbAddJob(sessionId, job).then(setDataset).catch(console.error);
+  }, [sessionId]);
+
   const resetDemo = useCallback(() => {
     if (!sessionId) return;
     setLoading(true);
@@ -76,9 +86,10 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     jobsByStage: (stage) => dataset.jobs.filter((job) => job.stage === stage),
     updateJobStage,
     addCustomer,
+    addJob,
     resetDemo,
     loading,
-  }), [dataset, updateJobStage, addCustomer, resetDemo, loading]);
+  }), [dataset, updateJobStage, addCustomer, addJob, resetDemo, loading]);
 
   return <DemoDataContext.Provider value={value}>{children}</DemoDataContext.Provider>;
 }

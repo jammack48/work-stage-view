@@ -14,6 +14,8 @@ import { CustomerPhotosTab } from "@/components/customer/CustomerPhotosTab";
 import { DocumentsTab } from "@/components/customer/DocumentsTab";
 import { QuotesTab } from "@/components/customer/QuotesTab";
 import { InvoicesTab } from "@/components/customer/InvoicesTab";
+import { NewJobDialog } from "@/components/customer/NewJobDialog";
+import type { Stage } from "@/data/dummyJobs";
 
 type CustTab = "overview" | "messages" | "jobs" | "contacts" | "notes" | "spend" | "add-job" | "history" | "photos" | "documents" | "quotes" | "invoices";
 
@@ -24,7 +26,7 @@ export default function CustomerCard() {
   const initialTab = (searchParams.get("tab") as CustTab) || "overview";
   const [activeTab, setActiveTab] = useState<CustTab>(initialTab);
 
-  const { customers } = useDemoData();
+  const { customers, addJob } = useDemoData();
   const customer = useMemo(() => customers.find((c) => c.id === Number(id)), [customers, id]);
 
   if (!customer) {
@@ -135,9 +137,12 @@ export default function CustomerCard() {
 
         {/* Quick Actions */}
         <div className="rounded-lg bg-card border border-border p-3 flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" className="justify-start gap-2" onClick={() => setActiveTab("add-job")}>
-            <Plus className="w-4 h-4" /> New Job
-          </Button>
+          <NewJobDialog
+            customerName={customer.name}
+            customerAddress={customer.address}
+            onCreateJob={(job) => addJob({ client: customer.name, jobName: job.jobName, value: job.value, stage: job.stage })}
+            trigger={<Button size="sm" variant="outline" className="justify-start gap-2"><Plus className="w-4 h-4" /> New Job</Button>}
+          />
           <Button size="sm" variant="outline" className="justify-start gap-2" onClick={() => navigate("/quote/new", { state: { customer } })}>
             <Plus className="w-4 h-4" /> New Quote
           </Button>
@@ -152,7 +157,12 @@ export default function CustomerCard() {
       <div className="space-y-2">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-card-foreground">Jobs ({customer.jobHistory.length})</h2>
-          <Button size="sm" className="gap-1.5" onClick={() => setActiveTab("add-job")}><Plus className="w-4 h-4" /> New Job</Button>
+          <NewJobDialog
+            customerName={customer.name}
+            customerAddress={customer.address}
+            onCreateJob={(job) => addJob({ client: customer.name, jobName: job.jobName, value: job.value, stage: job.stage })}
+            trigger={<Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> New Job</Button>}
+          />
         </div>
         {customer.jobHistory.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center">No jobs yet</div>
@@ -246,8 +256,12 @@ export default function CustomerCard() {
     "add-job": (
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-card-foreground">Create New Job for {customer.name}</h2>
-        <p className="text-sm text-muted-foreground">This would open the new job form pre-filled with this customer's details.</p>
-        <Button onClick={() => navigate(`/job/new?stage=Lead&customer=${id}`)} className="gap-1.5"><Plus className="w-4 h-4" /> Create Job</Button>
+        <NewJobDialog
+          customerName={customer.name}
+          customerAddress={customer.address}
+          onCreateJob={(job) => addJob({ client: customer.name, jobName: job.jobName, value: job.value, stage: job.stage })}
+          trigger={<Button className="gap-1.5"><Plus className="w-4 h-4" /> Create Job</Button>}
+        />
       </div>
     ),
     messages: <MessagesTab recordType="customer" customerId={customer.id} showPipelineLink pipelinePath="/" />,
