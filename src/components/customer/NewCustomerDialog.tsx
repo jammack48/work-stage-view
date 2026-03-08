@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,8 @@ interface NewCustomerDialogProps {
 }
 
 export function NewCustomerDialog({ open, onOpenChange }: NewCustomerDialogProps) {
-  const { addCustomer } = useDemoData();
+  const navigate = useNavigate();
+  const { addCustomer, customers } = useDemoData();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -38,8 +40,13 @@ export function NewCustomerDialog({ open, onOpenChange }: NewCustomerDialogProps
 
     addCustomer(newCustomer);
     toast({ title: "Customer added", description: `${name.trim()} has been created.` });
-    setName(""); setPhone(""); setEmail(""); setAddress("");
     onOpenChange(false);
+    // Navigate to the new customer's card after a brief delay to let state update
+    setTimeout(() => {
+      const maxId = customers.reduce((max, c) => Math.max(max, c.id), 0);
+      navigate(`/customer/${maxId + 1}`);
+    }, 300);
+    setName(""); setPhone(""); setEmail(""); setAddress("");
   };
 
   return (
