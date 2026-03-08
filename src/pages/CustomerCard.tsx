@@ -256,8 +256,12 @@ export default function CustomerCard() {
     "add-job": (
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-card-foreground">Create New Job for {customer.name}</h2>
-        <p className="text-sm text-muted-foreground">This would open the new job form pre-filled with this customer's details.</p>
-        <Button onClick={() => navigate(`/job/new?stage=Lead&customer=${id}`)} className="gap-1.5"><Plus className="w-4 h-4" /> Create Job</Button>
+        <NewJobDialog
+          customerName={customer.name}
+          customerAddress={customer.address}
+          onCreateJob={(job) => addJob({ client: customer.name, jobName: job.jobName, value: job.value, stage: job.stage })}
+          trigger={<Button className="gap-1.5"><Plus className="w-4 h-4" /> Create Job</Button>}
+        />
       </div>
     ),
     messages: <MessagesTab recordType="customer" customerId={customer.id} showPipelineLink pipelinePath="/" />,
