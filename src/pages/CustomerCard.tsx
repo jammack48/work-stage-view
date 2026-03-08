@@ -157,7 +157,12 @@ export default function CustomerCard() {
       <div className="space-y-2">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-card-foreground">Jobs ({customer.jobHistory.length})</h2>
-          <Button size="sm" className="gap-1.5" onClick={() => setActiveTab("add-job")}><Plus className="w-4 h-4" /> New Job</Button>
+          <NewJobDialog
+            customerName={customer.name}
+            customerAddress={customer.address}
+            onCreateJob={(job) => addJob({ client: customer.name, jobName: job.jobName, value: job.value, stage: job.stage })}
+            trigger={<Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> New Job</Button>}
+          />
         </div>
         {customer.jobHistory.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center">No jobs yet</div>
