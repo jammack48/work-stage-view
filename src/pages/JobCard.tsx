@@ -122,7 +122,8 @@ export default function JobCard() {
             if (activeTab !== "overview") {
               setActiveTab("overview");
             } else {
-              managerState?.fromManager ? navigate("/", { state: managerState }) : navigate("/");
+              const returnState = managerState?.fromManager ? managerState : managerState?.fromStage ? { fromStage: managerState.fromStage } : undefined;
+              navigate("/", { state: returnState });
             }
             return;
           }

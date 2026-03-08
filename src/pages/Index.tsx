@@ -40,14 +40,20 @@ const ACTION_TIPS: Record<string, string> = {
 const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const managerState = location.state as { fromManager?: boolean; stage?: string; priority?: string; slideIndex?: number } | null;
+  const managerState = location.state as { fromManager?: boolean; stage?: string; priority?: string; slideIndex?: number; fromStage?: string } | null;
   const { jobs, jobsByStage } = useDemoData();
 
   const [expandedStage, setExpandedStage] = useState<Stage | null>(null);
   const [layout, setLayout] = useState<Layout>("horizontal");
   const isMobile = useIsMobile();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "center" });
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(() => {
+    if (managerState?.fromStage) {
+      const idx = STAGES.indexOf(managerState.fromStage as Stage);
+      return idx >= 0 ? idx : 0;
+    }
+    return 0;
+  });
   const [activeView, setActiveView] = useState<HomeView>(managerState?.fromManager ? "manager" : "pipeline");
   const [inboxOpen, setInboxOpen] = useState(false);
   const horizontalScrollRef = useRef<HTMLDivElement | null>(null);
@@ -129,8 +135,29 @@ const Index = () => {
     if (!emblaApi) return;
     emblaApi.on("select", onSelect);
     onSelect();
+    // Restore slide position when returning from a job/quote
+    if (managerState?.fromStage) {
+      const idx = STAGES.indexOf(managerState.fromStage as Stage);
+      if (idx >= 0) emblaApi.scrollTo(idx, true);
+    }
     return () => { emblaApi.off("select", onSelect); };
   }, [emblaApi, onSelect]);
+  // Restore horizontal scroll position on desktop when returning from a job
+  useEffect(() => {
+    if (!managerState?.fromStage || isMobile) return;
+    const idx = STAGES.indexOf(managerState.fromStage as Stage);
+    if (idx <= 0) return;
+    const container = horizontalScrollRef.current;
+    if (!container) return;
+    // Each column is 200px + 8px gap
+    container.scrollLeft = idx * 208;
+  }, [managerState?.fromStage, isMobile]);
+
+  // Restore vertical layout expanded stage
+  useEffect(() => {
+    if (!managerState?.fromStage) return;
+    setExpandedStage(managerState.fromStage as Stage);
+  }, []);
 
   const handleTabChange = (id: string) => {
     if (id === "pipeline") {

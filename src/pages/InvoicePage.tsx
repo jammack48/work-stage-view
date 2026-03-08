@@ -49,7 +49,11 @@ export default function InvoicePage() {
   const isNew = id === "new";
 
   const handleTabChange = (tabId: string) => {
-    if (tabId === "back") { managerState?.fromManager ? navigate("/", { state: managerState }) : navigate("/"); return; }
+    if (tabId === "back") {
+      const returnState = managerState?.fromManager ? managerState : managerState?.fromStage ? { fromStage: managerState.fromStage } : undefined;
+      navigate("/", { state: returnState });
+      return;
+    }
     if (isNew && !funnelComplete) {
       setPendingNavId(tabId);
       setShowLeaveDialog(true);
