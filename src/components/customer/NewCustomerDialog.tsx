@@ -14,7 +14,8 @@ interface NewCustomerDialogProps {
 }
 
 export function NewCustomerDialog({ open, onOpenChange }: NewCustomerDialogProps) {
-  const { addCustomer } = useDemoData();
+  const navigate = useNavigate();
+  const { addCustomer, customers } = useDemoData();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
