@@ -209,6 +209,52 @@ export async function dbAddCustomer(sessionId: string, customer: Omit<DemoCustom
   return fetchDataset(sessionId);
 }
 
+/** Add a new job to the DB */
+export async function dbAddJob(sessionId: string, job: { client: string; jobName: string; value: number; stage: Stage }): Promise<DemoDataset> {
+  // Generate a unique job_id
+  const { data: existing } = await supabase
+    .from("demo_jobs")
+    .select("job_id")
+    .eq("session_id", sessionId)
+    .order("id", { ascending: false })
+    .limit(1);
+
+  const lastNum = existing?.[0]?.job_id ? parseInt(existing[0].job_id.replace(/\D/g, ""), 10) : 0;
+  const jobId = `JOB-${String(lastNum + 1).padStart(4, "0")}`;
+
+  await supabase.from("demo_jobs").insert({
+    session_id: sessionId,
+    job_id: jobId,
+    client: job.client,
+    job_name: job.jobName,
+    value: job.value,
+    age_days: 0,
+    urgent: false,
+    stage: job.stage,
+    has_unread: false,
+  });
+
+  // Also update the customer's job_history
+  const { data: custRow } = await supabase
+    .from("demo_customers")
+    .select("*")
+    .eq("session_id", sessionId)
+    .eq("name", job.client)
+    .maybeSingle();
+
+  if (custRow) {
+    const history = (custRow.job_history as any[]) || [];
+    history.push({ id: jobId, name: job.jobName, value: job.value, stage: job.stage, date: new Date().toLocaleDateString("en-AU") });
+    await supabase
+      .from("demo_customers")
+      .update({ job_history: history, jobs: (custRow.jobs || 0) + 1 })
+      .eq("session_id", sessionId)
+      .eq("customer_id", custRow.customer_id);
+  }
+
+  return fetchDataset(sessionId);
+}
+
 /** Reset a session — delete all data and re-seed */
 export async function dbResetSession(sessionId: string): Promise<DemoDataset> {
   // Delete old data
