@@ -14,6 +14,8 @@ import { CustomerPhotosTab } from "@/components/customer/CustomerPhotosTab";
 import { DocumentsTab } from "@/components/customer/DocumentsTab";
 import { QuotesTab } from "@/components/customer/QuotesTab";
 import { InvoicesTab } from "@/components/customer/InvoicesTab";
+import { NewJobDialog } from "@/components/customer/NewJobDialog";
+import type { Stage } from "@/data/dummyJobs";
 
 type CustTab = "overview" | "messages" | "jobs" | "contacts" | "notes" | "spend" | "add-job" | "history" | "photos" | "documents" | "quotes" | "invoices";
 
