@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
 import type { DemoCustomer, DemoDataset, DemoJob, DemoMaterial, DemoScheduleItem } from "@/types/demoData";
 import type { Stage } from "@/data/dummyJobs";
-import { ensureSession, fetchDataset, dbUpdateJobStage, dbAddCustomer, dbResetSession } from "@/services/dbDemoService";
+import { ensureSession, fetchDataset, dbUpdateJobStage, dbAddCustomer, dbAddJob, dbResetSession } from "@/services/dbDemoService";
 import { loadDemoDataset } from "@/demo/demoLoader";
 
 interface DemoDataContextType {
