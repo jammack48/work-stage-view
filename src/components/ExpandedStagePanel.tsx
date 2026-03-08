@@ -10,6 +10,7 @@ import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
 import { TutorialTip } from "@/components/TutorialTip";
 import { LeadActionMenu } from "@/components/LeadActionMenu";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { LeadBadge } from "@/components/LeadBadge";
 
 interface ExpandedStagePanelProps {
   stage: string;
@@ -93,6 +94,7 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
               <span className="hidden sm:inline font-mono text-xs text-muted-foreground">{job.id.replace(/^[A-Z]+-/, `${prefix}-`)}</span>
               <div className="flex-1 sm:flex-none flex items-center gap-2 min-w-0">
                 <span className="font-semibold text-card-foreground truncate">{job.client}</span>
+                <LeadBadge compact className="border-border/60 bg-secondary/70 text-foreground" />
                 {job.urgent && <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0" />}
                 {job.hasUnread && (
                   <>

@@ -18,6 +18,7 @@ import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { cn } from "@/lib/utils";
 import { JOB_EXTRAS } from "@/config/toolbarTabs";
 import { useDemoData } from "@/contexts/DemoDataContext";
+import { LeadBadge } from "@/components/LeadBadge";
 
 type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences" | "messages";
 
@@ -96,6 +97,7 @@ export default function JobCard() {
     <div className="flex items-center gap-2 flex-wrap">
       <h2 className="text-base font-bold text-card-foreground">{job.jobName}</h2>
       <span className="text-sm font-bold text-card-foreground">${job.value.toLocaleString()}</span>
+      <LeadBadge className="border-border/60 bg-secondary/70 text-foreground" />
       <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", statusColor(job.stage))}>
         {job.stage}
       </span>

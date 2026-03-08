@@ -53,6 +53,7 @@ const Index = () => {
   const horizontalScrollRef = useRef<HTMLDivElement | null>(null);
   const dragPointerIdRef = useRef<number | null>(null);
   const dragStartXRef = useRef(0);
+  const dragStartYRef = useRef(0);
   const dragStartScrollLeftRef = useRef(0);
   const dragHasMovedRef = useRef(false);
   const [isDraggingHorizontal, setIsDraggingHorizontal] = useState(false);
@@ -80,6 +81,7 @@ const Index = () => {
 
     dragPointerIdRef.current = event.pointerId;
     dragStartXRef.current = event.clientX;
+    dragStartYRef.current = event.clientY;
     dragStartScrollLeftRef.current = container.scrollLeft;
     dragHasMovedRef.current = false;
   }, [isMobile]);
@@ -91,7 +93,12 @@ const Index = () => {
     if (!container) return;
 
     const deltaX = event.clientX - dragStartXRef.current;
-    if (!dragHasMovedRef.current && Math.abs(deltaX) < 6) return;
+    const deltaY = event.clientY - dragStartYRef.current;
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
+
+    // Distinguish intentional horizontal drag from normal click jitter.
+    if (!dragHasMovedRef.current && (absDeltaX < 10 || absDeltaX < absDeltaY + 2)) return;
 
     if (!dragHasMovedRef.current) {
       dragHasMovedRef.current = true;
