@@ -12,26 +12,11 @@ interface ScopeTabProps {
 }
 
 export function ScopeTab({ job }: ScopeTabProps) {
-  const [aiDescription, setAiDescription] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const handleAISuggest = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("ai-suggest-description", {
-        body: { jobTitle: job.jobName, client: job.client, address: job.address },
-      });
-      if (error) throw error;
-      setAiDescription(data.description);
-    } catch (e: any) {
-      console.error("AI suggest error:", e);
-      toast({ title: "Couldn't generate description", description: e.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
+  const handleAISuggest = () => {
+    toast({ title: "Coming soon", description: "AI suggestions will be available once the backend is connected." });
   };
 
-  const displayDescription = aiDescription || job.description;
+  const displayDescription = job.description;
 
   return (
     <div className="space-y-3">
