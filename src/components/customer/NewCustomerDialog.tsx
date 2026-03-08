@@ -15,13 +15,13 @@ interface NewCustomerDialogProps {
 
 export function NewCustomerDialog({ open, onOpenChange }: NewCustomerDialogProps) {
   const navigate = useNavigate();
-  const { addCustomer, customers } = useDemoData();
+  const { addCustomer } = useDemoData();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
@@ -38,15 +38,13 @@ export function NewCustomerDialog({ open, onOpenChange }: NewCustomerDialogProps
       jobHistory: [],
     };
 
-    addCustomer(newCustomer);
+    const newId = await addCustomer(newCustomer);
     toast({ title: "Customer added", description: `${name.trim()} has been created.` });
-    onOpenChange(false);
-    // Navigate to the new customer's card after a brief delay to let state update
-    setTimeout(() => {
-      const maxId = customers.reduce((max, c) => Math.max(max, c.id), 0);
-      navigate(`/customer/${maxId + 1}`);
-    }, 300);
     setName(""); setPhone(""); setEmail(""); setAddress("");
+    onOpenChange(false);
+    if (newId !== undefined) {
+      navigate(`/customer/${newId}`);
+    }
   };
 
   return (

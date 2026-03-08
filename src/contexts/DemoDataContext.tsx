@@ -11,7 +11,7 @@ interface DemoDataContextType {
   schedule: DemoScheduleItem[];
   jobsByStage: (stage: Stage) => DemoJob[];
   updateJobStage: (jobId: string, stage: Stage) => void;
-  addCustomer: (customer: Omit<DemoCustomer, "id">) => void;
+  addCustomer: (customer: Omit<DemoCustomer, "id">) => Promise<number | undefined>;
   addJob: (job: { client: string; jobName: string; value: number; stage: Stage }) => void;
   resetDemo: () => void;
   loading: boolean;
@@ -56,9 +56,18 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     dbUpdateJobStage(sessionId, jobId, stage).then(setDataset).catch(console.error);
   }, [sessionId]);
 
-  const addCustomer = useCallback((customer: Omit<DemoCustomer, "id">) => {
-    if (!sessionId) return;
-    dbAddCustomer(sessionId, customer).then(setDataset).catch(console.error);
+  const addCustomer = useCallback(async (customer: Omit<DemoCustomer, "id">): Promise<number | undefined> => {
+    if (!sessionId) return undefined;
+    try {
+      const data = await dbAddCustomer(sessionId, customer);
+      setDataset(data);
+      // Find the newly added customer by name (latest one)
+      const newCust = data.customers.filter(c => c.name === customer.name).pop();
+      return newCust?.id;
+    } catch (err) {
+      console.error(err);
+      return undefined;
+    }
   }, [sessionId]);
 
   const addJob = useCallback((job: { client: string; jobName: string; value: number; stage: Stage }) => {
