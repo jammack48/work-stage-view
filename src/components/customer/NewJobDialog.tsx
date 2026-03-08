@@ -11,11 +11,11 @@ import type { Stage } from "@/data/dummyJobs";
 
 const STAGE_OPTIONS: { value: Stage; label: string; desc: string }[] = [
   { value: "Lead", label: "Lead", desc: "New enquiry to follow up" },
-  { value: "To Quote", label: "To Quote", desc: "Needs a quote preparing" },
-  { value: "Quote Sent", label: "Quote Sent", desc: "Quote sent, awaiting response" },
-  { value: "Quote Accepted", label: "Quote Accepted", desc: "Ready to schedule" },
-  { value: "In Progress", label: "In Progress", desc: "Job is underway" },
-  { value: "To Invoice", label: "To Invoice", desc: "Job done, needs invoicing" },
+  { value: "To Quote", label: "Pricing/Quoting", desc: "Needs pricing or quoting" },
+  { value: "Quote Sent", label: "Awaiting Acceptance", desc: "Quote sent, awaiting acceptance" },
+  { value: "Quote Accepted", label: "Schedule Job", desc: "Quote accepted and ready to schedule" },
+  { value: "In Progress", label: "Job In Progress", desc: "Job is underway" },
+  { value: "To Invoice", label: "Ready To Invoice", desc: "Job done and ready for invoicing" },
   { value: "Invoiced", label: "Invoiced", desc: "Invoice sent, awaiting payment" },
 ];
 

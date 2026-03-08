@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
+import { STAGE_LABELS } from "@/data/dummyJobs";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import { OverviewTab } from "@/components/job/OverviewTab";
@@ -99,7 +100,7 @@ export default function JobCard() {
       <span className="text-sm font-bold text-card-foreground">${job.value.toLocaleString()}</span>
       <LeadBadge className="border-border/60 bg-secondary/70 text-foreground" />
       <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", statusColor(job.stage))}>
-        {job.stage}
+        {(STAGE_LABELS[job.stage as keyof typeof STAGE_LABELS] ?? [job.stage])[0]}
       </span>
       {isToInvoice && (
         <button
