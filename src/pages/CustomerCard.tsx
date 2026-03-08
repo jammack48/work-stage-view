@@ -141,7 +141,7 @@ export default function CustomerCard() {
             customerName={customer.name}
             customerAddress={customer.address}
             onCreateJob={(job) => addJob({ client: customer.name, jobName: job.jobName, value: job.value, stage: job.stage })}
-            trigger={<Button size="sm" variant="outline" className="justify-start gap-2"><Plus className="w-4 h-4" /> New Job</Button>}
+            trigger={<Button size="sm" variant="outline" className="justify-start gap-2"><Plus className="w-4 h-4" /> New Job Card</Button>}
           />
           <Button size="sm" variant="outline" className="justify-start gap-2" onClick={() => navigate("/quote/new", { state: { customer } })}>
             <Plus className="w-4 h-4" /> New Quote
@@ -161,7 +161,7 @@ export default function CustomerCard() {
             customerName={customer.name}
             customerAddress={customer.address}
             onCreateJob={(job) => addJob({ client: customer.name, jobName: job.jobName, value: job.value, stage: job.stage })}
-            trigger={<Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> New Job</Button>}
+            trigger={<Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> New Job Card</Button>}
           />
         </div>
         {customer.jobHistory.length === 0 ? (
