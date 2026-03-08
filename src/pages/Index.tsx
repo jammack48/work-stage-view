@@ -40,7 +40,7 @@ const ACTION_TIPS: Record<string, string> = {
 const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const managerState = location.state as { fromManager?: boolean; stage?: string; priority?: string; slideIndex?: number } | null;
+  const managerState = location.state as { fromManager?: boolean; stage?: string; priority?: string; slideIndex?: number; fromStage?: string } | null;
   const { jobs, jobsByStage } = useDemoData();
 
   const [expandedStage, setExpandedStage] = useState<Stage | null>(null);
