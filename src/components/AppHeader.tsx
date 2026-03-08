@@ -3,6 +3,7 @@ import { Wrench, Settings as SettingsIcon, GraduationCap, Shield, LayoutGrid, Ch
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ThemePicker } from "@/components/ThemePicker";
+import { BackendStatus } from "@/components/BackendStatus";
 import { useTutorial } from "@/contexts/TutorialContext";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -111,6 +112,7 @@ export function AppHeader() {
           <GraduationCap className="w-5 h-5" />
           {!isMobile && <span className="text-xs font-medium">Tutorial</span>}
         </Button>
+        <BackendStatus />
         <ThemePicker />
       </div>
     </header>

@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import type { JobDetail } from "@/data/dummyJobDetails";
@@ -13,26 +11,11 @@ interface ScopeTabProps {
 }
 
 export function ScopeTab({ job }: ScopeTabProps) {
-  const [aiDescription, setAiDescription] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const handleAISuggest = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("ai-suggest-description", {
-        body: { jobTitle: job.jobName, client: job.client, address: job.address },
-      });
-      if (error) throw error;
-      setAiDescription(data.description);
-    } catch (e: any) {
-      console.error("AI suggest error:", e);
-      toast({ title: "Couldn't generate description", description: e.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
+  const handleAISuggest = () => {
+    toast({ title: "Coming soon", description: "AI suggestions will be available once the backend is connected." });
   };
 
-  const displayDescription = aiDescription || job.description;
+  const displayDescription = job.description;
 
   return (
     <div className="space-y-3">
@@ -45,23 +28,13 @@ export function ScopeTab({ job }: ScopeTabProps) {
             variant="outline"
             className="gap-1.5 text-xs"
             onClick={handleAISuggest}
-            disabled={loading}
+            disabled={false}
           >
-            {loading ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Sparkles className="w-3.5 h-3.5" />
-            )}
+            <Sparkles className="w-3.5 h-3.5" />
             AI Suggest
           </Button>
         </CardHeader>
         <CardContent>
-          {aiDescription && (
-            <div className="mb-2 flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-primary" />
-              <span className="text-xs text-muted-foreground">AI-generated description</span>
-            </div>
-          )}
           <div className="text-sm text-card-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none">
             <ReactMarkdown>
               {displayDescription || "No scope description available. Tap AI Suggest to generate one."}
