@@ -54,6 +54,7 @@ const Index = () => {
   const dragPointerIdRef = useRef<number | null>(null);
   const dragStartXRef = useRef(0);
   const dragStartScrollLeftRef = useRef(0);
+  const dragHasMovedRef = useRef(false);
   const [isDraggingHorizontal, setIsDraggingHorizontal] = useState(false);
 
   const isInteractiveTarget = (target: EventTarget | null) => {
@@ -67,6 +68,7 @@ const Index = () => {
       container.releasePointerCapture(pointerId);
     }
     dragPointerIdRef.current = null;
+    dragHasMovedRef.current = false;
     setIsDraggingHorizontal(false);
   }, []);
 
@@ -79,19 +81,27 @@ const Index = () => {
     dragPointerIdRef.current = event.pointerId;
     dragStartXRef.current = event.clientX;
     dragStartScrollLeftRef.current = container.scrollLeft;
-    setIsDraggingHorizontal(true);
-    container.setPointerCapture(event.pointerId);
+    dragHasMovedRef.current = false;
   }, [isMobile]);
 
   const handleHorizontalPointerMove = useCallback((event: PointerEvent<HTMLDivElement>) => {
-    if (!isDraggingHorizontal || dragPointerIdRef.current !== event.pointerId) return;
+    if (dragPointerIdRef.current !== event.pointerId) return;
 
     const container = horizontalScrollRef.current;
     if (!container) return;
 
     const deltaX = event.clientX - dragStartXRef.current;
+    if (!dragHasMovedRef.current && Math.abs(deltaX) < 6) return;
+
+    if (!dragHasMovedRef.current) {
+      dragHasMovedRef.current = true;
+      setIsDraggingHorizontal(true);
+      container.setPointerCapture(event.pointerId);
+    }
+
+    event.preventDefault();
     container.scrollLeft = dragStartScrollLeftRef.current - deltaX;
-  }, [isDraggingHorizontal]);
+  }, []);
 
   const handleHorizontalPointerUp = useCallback((event: PointerEvent<HTMLDivElement>) => {
     if (dragPointerIdRef.current !== event.pointerId) return;
