@@ -31,11 +31,7 @@ export function ScopeTab({ job }: ScopeTabProps) {
             onClick={handleAISuggest}
             disabled={loading}
           >
-            {loading ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Sparkles className="w-3.5 h-3.5" />
-            )}
+            <Sparkles className="w-3.5 h-3.5" />
             AI Suggest
           </Button>
         </CardHeader>
