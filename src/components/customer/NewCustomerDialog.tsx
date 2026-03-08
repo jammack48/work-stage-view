@@ -40,8 +40,13 @@ export function NewCustomerDialog({ open, onOpenChange }: NewCustomerDialogProps
 
     addCustomer(newCustomer);
     toast({ title: "Customer added", description: `${name.trim()} has been created.` });
-    setName(""); setPhone(""); setEmail(""); setAddress("");
     onOpenChange(false);
+    // Navigate to the new customer's card after a brief delay to let state update
+    setTimeout(() => {
+      const maxId = customers.reduce((max, c) => Math.max(max, c.id), 0);
+      navigate(`/customer/${maxId + 1}`);
+    }, 300);
+    setName(""); setPhone(""); setEmail(""); setAddress("");
   };
 
   return (
