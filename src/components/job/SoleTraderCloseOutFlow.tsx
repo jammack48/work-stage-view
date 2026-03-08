@@ -23,7 +23,7 @@ import { useDemoData } from "@/contexts/DemoDataContext";
 import { stageForPipelineEvent } from "@/services/pipelineTransitions";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { SequenceSelector } from "@/components/quote/SequenceSelector";
-import { supabase } from "@/integrations/supabase/client";
+
 
 interface Props {
   open: boolean;
