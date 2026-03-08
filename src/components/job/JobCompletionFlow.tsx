@@ -16,7 +16,7 @@ import { checklistTemplates, type CompletedChecklist } from "@/data/dummyCheckli
 import { toast } from "@/hooks/use-toast";
 import { useDemoData } from "@/contexts/DemoDataContext";
 import { stageForPipelineEvent } from "@/services/pipelineTransitions";
-import { supabase } from "@/integrations/supabase/client";
+
 
 interface JobCompletionFlowProps {
   open: boolean;
