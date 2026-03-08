@@ -46,7 +46,6 @@ export function NewCustomerDialog({ open, onOpenChange }: NewCustomerDialogProps
       navigate(`/customer/${newId}`);
     }
   };
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
