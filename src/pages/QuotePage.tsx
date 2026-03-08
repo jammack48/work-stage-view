@@ -18,6 +18,7 @@ import { useDemoData } from "@/contexts/DemoDataContext";
 import { stageForPipelineEvent, stageFromQuoteStatus } from "@/services/pipelineTransitions";
 import { useThresholds } from "@/contexts/ThresholdContext";
 import type { DemoCustomer } from "@/types/demoData";
+import { LeadBadge } from "@/components/LeadBadge";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
@@ -232,6 +233,7 @@ export default function QuotePage() {
       {job.client && (
         <span className="text-sm text-muted-foreground">for {job.client}</span>
       )}
+      <LeadBadge className="border-border/60 bg-secondary/70 text-foreground" />
       <button
         onClick={cycleStatus}
         className={cn("text-xs font-semibold px-2 py-0.5 rounded-full cursor-pointer transition-colors inline-flex items-center gap-1", statusColor[status])}
