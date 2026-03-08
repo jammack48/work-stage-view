@@ -263,25 +263,8 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
 
   const isAiCleanupMode = jobSheet.trim().length > 0;
 
-  const handleAiJobSheetAssist = async () => {
-    const shouldCleanUp = jobSheet.trim().length > 0;
-    setAiLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("ai-suggest-description", {
-        body: shouldCleanUp
-          ? { jobTitle: job.jobName, client: job.client, address: job.address, rawNotes: jobSheet }
-          : { jobTitle: job.jobName, client: job.client, address: job.address },
-      });
-      if (error) throw error;
-      setJobSheet(data.description);
-      if (shouldCleanUp) {
-        toast({ title: "Job notes cleaned up ✨", description: "Your notes were rewritten to be clearer and more professional." });
-      }
-    } catch (e: any) {
-      toast({ title: shouldCleanUp ? "Couldn't clean up notes" : "Couldn't generate notes", description: e.message, variant: "destructive" });
-    } finally {
-      setAiLoading(false);
-    }
+  const handleAiJobSheetAssist = () => {
+    toast({ title: "Coming soon", description: "AI suggestions will be available once the backend is connected." });
   };
 
   const handlePhotoCapture = (type: "before" | "after") => (e: React.ChangeEvent<HTMLInputElement>) => {

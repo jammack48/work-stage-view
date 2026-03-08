@@ -234,25 +234,8 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
     };
   }, []);
 
-  const handleAiJobSheetAssist = async () => {
-    const shouldCleanUp = jobSheet.trim().length > 0;
-    setAiLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("ai-suggest-description", {
-        body: shouldCleanUp
-          ? { jobTitle: job.jobName, client: job.client, address: job.address, rawNotes: jobSheet }
-          : { jobTitle: job.jobName, client: job.client, address: job.address },
-      });
-      if (error) throw error;
-      setJobSheet(data.description);
-      if (shouldCleanUp) {
-        toast({ title: "Job sheet cleaned up ✨", description: "Dictation has been rewritten into clear job notes." });
-      }
-    } catch (e: any) {
-      toast({ title: shouldCleanUp ? "Couldn't clean up notes" : "Couldn't generate notes", description: e.message, variant: "destructive" });
-    } finally {
-      setAiLoading(false);
-    }
+  const handleAiJobSheetAssist = () => {
+    toast({ title: "Coming soon", description: "AI suggestions will be available once the backend is connected." });
   };
 
   const handlePhotoCapture = (type: "before" | "after") => (e: React.ChangeEvent<HTMLInputElement>) => {

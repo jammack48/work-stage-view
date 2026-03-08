@@ -112,6 +112,7 @@ export function AppHeader() {
           <GraduationCap className="w-5 h-5" />
           {!isMobile && <span className="text-xs font-medium">Tutorial</span>}
         </Button>
+        <BackendStatus />
         <ThemePicker />
       </div>
     </header>

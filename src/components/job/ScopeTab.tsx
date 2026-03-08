@@ -36,12 +36,6 @@ export function ScopeTab({ job }: ScopeTabProps) {
           </Button>
         </CardHeader>
         <CardContent>
-          {aiDescription && (
-            <div className="mb-2 flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-primary" />
-              <span className="text-xs text-muted-foreground">AI-generated description</span>
-            </div>
-          )}
           <div className="text-sm text-card-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none">
             <ReactMarkdown>
               {displayDescription || "No scope description available. Tap AI Suggest to generate one."}
