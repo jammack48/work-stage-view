@@ -29,7 +29,7 @@ export function ScopeTab({ job }: ScopeTabProps) {
             variant="outline"
             className="gap-1.5 text-xs"
             onClick={handleAISuggest}
-            disabled={loading}
+            disabled={false}
           >
             <Sparkles className="w-3.5 h-3.5" />
             AI Suggest
