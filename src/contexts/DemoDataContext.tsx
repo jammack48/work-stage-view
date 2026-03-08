@@ -86,6 +86,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     jobsByStage: (stage) => dataset.jobs.filter((job) => job.stage === stage),
     updateJobStage,
     addCustomer,
+    addJob,
     resetDemo,
     loading,
   }), [dataset, updateJobStage, addCustomer, resetDemo, loading]);
