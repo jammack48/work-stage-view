@@ -47,7 +47,13 @@ const Index = () => {
   const [layout, setLayout] = useState<Layout>("horizontal");
   const isMobile = useIsMobile();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "center" });
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(() => {
+    if (managerState?.fromStage) {
+      const idx = STAGES.indexOf(managerState.fromStage as Stage);
+      return idx >= 0 ? idx : 0;
+    }
+    return 0;
+  });
   const [activeView, setActiveView] = useState<HomeView>(managerState?.fromManager ? "manager" : "pipeline");
   const [inboxOpen, setInboxOpen] = useState(false);
   const horizontalScrollRef = useRef<HTMLDivElement | null>(null);
