@@ -11,7 +11,7 @@ interface DemoDataContextType {
   schedule: DemoScheduleItem[];
   jobsByStage: (stage: Stage) => DemoJob[];
   updateJobStage: (jobId: string, stage: Stage) => void;
-  addCustomer: (customer: Omit<DemoCustomer, "id">) => void;
+  addCustomer: (customer: Omit<DemoCustomer, "id">) => Promise<number | undefined>;
   addJob: (job: { client: string; jobName: string; value: number; stage: Stage }) => void;
   resetDemo: () => void;
   loading: boolean;
