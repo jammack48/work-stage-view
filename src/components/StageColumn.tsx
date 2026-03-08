@@ -105,12 +105,14 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
   const firstRed = jobs.find(j => j.urgent || j.ageDays > thresholds.orangeMax);
   const isLeadStage = stage === "Lead";
 
+  const navState = { fromStage: stage };
+
   const handleColorClick = (e: React.MouseEvent, job: Job | undefined) => {
     e.stopPropagation();
     if (!job || isLeadStage) return; // Lead stage handled by LeadActionMenu
     const isQ = ["Lead","To Quote","Quote Sent"].includes(job.stage);
     const isInv = job.stage === "To Invoice";
-    navigate(isQ ? `/quote/${job.id}` : `/job/${job.id}${isInv ? '?action=closeout' : ''}`);
+    navigate(isQ ? `/quote/${job.id}` : `/job/${job.id}${isInv ? '?action=closeout' : ''}`, { state: navState });
   };
 
   return (
