@@ -29,6 +29,7 @@ type QuotePageTab = "overview" | "messages" | "line-items" | "sequences" | "note
 interface QuotePageLocationState {
   customer?: DemoCustomer | null;
   fromManager?: boolean;
+  fromStage?: string;
 }
 
 type QuoteStatus = "Draft" | "Sent" | "Approved";
