@@ -89,7 +89,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     addJob,
     resetDemo,
     loading,
-  }), [dataset, updateJobStage, addCustomer, resetDemo, loading]);
+  }), [dataset, updateJobStage, addCustomer, addJob, resetDemo, loading]);
 
   return <DemoDataContext.Provider value={value}>{children}</DemoDataContext.Provider>;
 }
