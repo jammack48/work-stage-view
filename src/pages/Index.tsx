@@ -135,6 +135,11 @@ const Index = () => {
     if (!emblaApi) return;
     emblaApi.on("select", onSelect);
     onSelect();
+    // Restore slide position when returning from a job/quote
+    if (managerState?.fromStage) {
+      const idx = STAGES.indexOf(managerState.fromStage as Stage);
+      if (idx >= 0) emblaApi.scrollTo(idx, true);
+    }
     return () => { emblaApi.off("select", onSelect); };
   }, [emblaApi, onSelect]);
 
