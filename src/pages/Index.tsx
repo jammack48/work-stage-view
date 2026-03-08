@@ -142,6 +142,22 @@ const Index = () => {
     }
     return () => { emblaApi.off("select", onSelect); };
   }, [emblaApi, onSelect]);
+  // Restore horizontal scroll position on desktop when returning from a job
+  useEffect(() => {
+    if (!managerState?.fromStage || isMobile) return;
+    const idx = STAGES.indexOf(managerState.fromStage as Stage);
+    if (idx <= 0) return;
+    const container = horizontalScrollRef.current;
+    if (!container) return;
+    // Each column is 200px + 8px gap
+    container.scrollLeft = idx * 208;
+  }, [managerState?.fromStage, isMobile]);
+
+  // Restore vertical layout expanded stage
+  useEffect(() => {
+    if (!managerState?.fromStage) return;
+    setExpandedStage(managerState.fromStage as Stage);
+  }, []);
 
   const handleTabChange = (id: string) => {
     if (id === "pipeline") {
