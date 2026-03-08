@@ -1,0 +1,1522 @@
+[
+  {
+    "id": 1,
+    "name": "Ava Thompson",
+    "phone": "021 500 1000",
+    "email": "ava.thompson@example.com",
+    "address": "10 Queen St, Auckland",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Ava Thompson",
+        "role": "Owner",
+        "phone": "021 500 1000",
+        "email": "ava.thompson@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0101",
+        "name": "Switchboard Upgrade",
+        "value": 900,
+        "stage": "Lead",
+        "date": "2026-01-01"
+      },
+      {
+        "id": "TB-0501",
+        "name": "Emergency Fault Callout",
+        "value": 3100,
+        "stage": "In Progress",
+        "date": "2026-01-01"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Noah Patel",
+    "phone": "022 501 1007",
+    "email": "noah.patel@example.com",
+    "address": "11 Cuba St, Wellington",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Noah Patel",
+        "role": "Owner",
+        "phone": "022 501 1007",
+        "email": "noah.patel@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0102",
+        "name": "Bathroom Extraction Upgrade",
+        "value": 1120,
+        "stage": "Lead",
+        "date": "2026-02-02"
+      },
+      {
+        "id": "TB-0502",
+        "name": "Generator Changeover Switch",
+        "value": 3320,
+        "stage": "In Progress",
+        "date": "2026-02-02"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Isla Morgan",
+    "phone": "023 502 1014",
+    "email": "isla.morgan@example.com",
+    "address": "12 Riccarton Rd, Christchurch",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Isla Morgan",
+        "role": "Owner",
+        "phone": "023 502 1014",
+        "email": "isla.morgan@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0103",
+        "name": "Garden Lighting Installation",
+        "value": 1340,
+        "stage": "Lead",
+        "date": "2026-03-03"
+      },
+      {
+        "id": "TB-0503",
+        "name": "Blocked Drain Investigation",
+        "value": 3540,
+        "stage": "In Progress",
+        "date": "2026-03-03"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Leo Wilson",
+    "phone": "024 503 1021",
+    "email": "leo.wilson@example.com",
+    "address": "13 Victoria St, Hamilton",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Leo Wilson",
+        "role": "Owner",
+        "phone": "024 503 1021",
+        "email": "leo.wilson@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0104",
+        "name": "Bathroom Plumbing Refit",
+        "value": 1560,
+        "stage": "Lead",
+        "date": "2026-04-04"
+      },
+      {
+        "id": "TB-0504",
+        "name": "School Maintenance Package",
+        "value": 3760,
+        "stage": "In Progress",
+        "date": "2026-04-04"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Mia Brown",
+    "phone": "025 504 1028",
+    "email": "mia.brown@example.com",
+    "address": "14 Devonport Rd, Tauranga",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Mia Brown",
+        "role": "Owner",
+        "phone": "025 504 1028",
+        "email": "mia.brown@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0105",
+        "name": "Rainwater Pump Install",
+        "value": 1780,
+        "stage": "Lead",
+        "date": "2026-05-05"
+      },
+      {
+        "id": "TB-0505",
+        "name": "Switchboard Upgrade",
+        "value": 3980,
+        "stage": "In Progress",
+        "date": "2026-05-05"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Arlo Singh",
+    "phone": "026 505 1035",
+    "email": "arlo.singh@example.com",
+    "address": "15 George St, Dunedin",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Arlo Singh",
+        "role": "Owner",
+        "phone": "026 505 1035",
+        "email": "arlo.singh@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0106",
+        "name": "Apartment Metering Upgrade",
+        "value": 2000,
+        "stage": "Lead",
+        "date": "2026-06-06"
+      },
+      {
+        "id": "TB-0506",
+        "name": "Bathroom Extraction Upgrade",
+        "value": 4200,
+        "stage": "In Progress",
+        "date": "2026-06-06"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Ruby Chen",
+    "phone": "027 506 1042",
+    "email": "ruby.chen@example.com",
+    "address": "16 Ponsonby Rd, Auckland",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Ruby Chen",
+        "role": "Owner",
+        "phone": "027 506 1042",
+        "email": "ruby.chen@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0107",
+        "name": "Heat Pump Installation",
+        "value": 2220,
+        "stage": "Lead",
+        "date": "2026-07-07"
+      },
+      {
+        "id": "TB-0507",
+        "name": "Garden Lighting Installation",
+        "value": 4420,
+        "stage": "In Progress",
+        "date": "2026-07-07"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Hugo Harris",
+    "phone": "028 507 1049",
+    "email": "hugo.harris@example.com",
+    "address": "17 Cameron Rd, Wellington",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Hugo Harris",
+        "role": "Owner",
+        "phone": "028 507 1049",
+        "email": "hugo.harris@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0108",
+        "name": "Ceiling Fan Installation",
+        "value": 2440,
+        "stage": "Lead",
+        "date": "2026-08-08"
+      },
+      {
+        "id": "TB-0508",
+        "name": "Bathroom Plumbing Refit",
+        "value": 4640,
+        "stage": "In Progress",
+        "date": "2026-08-08"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Luca James",
+    "phone": "021 508 1056",
+    "email": "luca.james@example.com",
+    "address": "18 Papanui Rd, Christchurch",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Luca James",
+        "role": "Owner",
+        "phone": "021 508 1056",
+        "email": "luca.james@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0109",
+        "name": "Distribution Board Relocation",
+        "value": 2660,
+        "stage": "Lead",
+        "date": "2026-09-09"
+      },
+      {
+        "id": "TB-0509",
+        "name": "Rainwater Pump Install",
+        "value": 4860,
+        "stage": "In Progress",
+        "date": "2026-09-09"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Sophie King",
+    "phone": "022 509 1063",
+    "email": "sophie.king@example.com",
+    "address": "19 Khyber Pass Rd, Hamilton",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Sophie King",
+        "role": "Owner",
+        "phone": "022 509 1063",
+        "email": "sophie.king@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0110",
+        "name": "Water Main Repair",
+        "value": 2880,
+        "stage": "Lead",
+        "date": "2026-01-10"
+      },
+      {
+        "id": "TB-0510",
+        "name": "Apartment Metering Upgrade",
+        "value": 5080,
+        "stage": "In Progress",
+        "date": "2026-01-10"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Ethan Clarke",
+    "phone": "023 510 1070",
+    "email": "ethan.clarke@example.com",
+    "address": "20 Queen St, Tauranga",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Ethan Clarke",
+        "role": "Owner",
+        "phone": "023 510 1070",
+        "email": "ethan.clarke@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0201",
+        "name": "Smoke Alarm Compliance Check",
+        "value": 3100,
+        "stage": "To Quote",
+        "date": "2026-02-11"
+      },
+      {
+        "id": "TB-0601",
+        "name": "Shower Mixer Replacement",
+        "value": 5300,
+        "stage": "To Invoice",
+        "date": "2026-02-11"
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Amelia Davis",
+    "phone": "024 511 1077",
+    "email": "amelia.davis@example.com",
+    "address": "21 Cuba St, Dunedin",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Amelia Davis",
+        "role": "Owner",
+        "phone": "024 511 1077",
+        "email": "amelia.davis@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0202",
+        "name": "Roof Leak Electrical Repair",
+        "value": 3320,
+        "stage": "To Quote",
+        "date": "2026-03-12"
+      },
+      {
+        "id": "TB-0602",
+        "name": "Warehouse Highbay LEDs",
+        "value": 5520,
+        "stage": "To Invoice",
+        "date": "2026-03-12"
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "name": "Jack Robertson",
+    "phone": "025 512 1084",
+    "email": "jack.robertson@example.com",
+    "address": "22 Riccarton Rd, Auckland",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Jack Robertson",
+        "role": "Owner",
+        "phone": "025 512 1084",
+        "email": "jack.robertson@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0203",
+        "name": "Stormwater Line Repair",
+        "value": 3540,
+        "stage": "To Quote",
+        "date": "2026-04-13"
+      },
+      {
+        "id": "TB-0603",
+        "name": "Intercom System Upgrade",
+        "value": 5740,
+        "stage": "To Invoice",
+        "date": "2026-04-13"
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Harper Lee",
+    "phone": "026 513 1091",
+    "email": "harper.lee@example.com",
+    "address": "23 Victoria St, Wellington",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Harper Lee",
+        "role": "Owner",
+        "phone": "026 513 1091",
+        "email": "harper.lee@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0204",
+        "name": "Restaurant Extraction Service",
+        "value": 3760,
+        "stage": "To Quote",
+        "date": "2026-05-14"
+      },
+      {
+        "id": "TB-0604",
+        "name": "Kitchen Renovation Electrical",
+        "value": 5960,
+        "stage": "To Invoice",
+        "date": "2026-05-14"
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "name": "Mason Walker",
+    "phone": "027 514 1098",
+    "email": "mason.walker@example.com",
+    "address": "24 Devonport Rd, Christchurch",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Mason Walker",
+        "role": "Owner",
+        "phone": "027 514 1098",
+        "email": "mason.walker@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0205",
+        "name": "EV Charger Install",
+        "value": 3980,
+        "stage": "To Quote",
+        "date": "2026-06-15"
+      },
+      {
+        "id": "TB-0605",
+        "name": "Smoke Alarm Compliance Check",
+        "value": 6180,
+        "stage": "To Invoice",
+        "date": "2026-06-15"
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "name": "Grace Hall",
+    "phone": "028 515 1105",
+    "email": "grace.hall@example.com",
+    "address": "25 George St, Hamilton",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Grace Hall",
+        "role": "Owner",
+        "phone": "028 515 1105",
+        "email": "grace.hall@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0206",
+        "name": "Solar Inverter Replacement",
+        "value": 4200,
+        "stage": "To Quote",
+        "date": "2026-07-16"
+      },
+      {
+        "id": "TB-0606",
+        "name": "Roof Leak Electrical Repair",
+        "value": 6400,
+        "stage": "To Invoice",
+        "date": "2026-07-16"
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "name": "Finn Young",
+    "phone": "021 516 1112",
+    "email": "finn.young@example.com",
+    "address": "26 Ponsonby Rd, Tauranga",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Finn Young",
+        "role": "Owner",
+        "phone": "021 516 1112",
+        "email": "finn.young@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0207",
+        "name": "Pool Pump Rewire",
+        "value": 4420,
+        "stage": "To Quote",
+        "date": "2026-08-17"
+      },
+      {
+        "id": "TB-0607",
+        "name": "Stormwater Line Repair",
+        "value": 6620,
+        "stage": "To Invoice",
+        "date": "2026-08-17"
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "name": "Ella Turner",
+    "phone": "022 517 1119",
+    "email": "ella.turner@example.com",
+    "address": "27 Cameron Rd, Dunedin",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Ella Turner",
+        "role": "Owner",
+        "phone": "022 517 1119",
+        "email": "ella.turner@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0208",
+        "name": "Kitchen Plumbing Fitoff",
+        "value": 4640,
+        "stage": "To Quote",
+        "date": "2026-09-18"
+      },
+      {
+        "id": "TB-0608",
+        "name": "Restaurant Extraction Service",
+        "value": 6840,
+        "stage": "To Invoice",
+        "date": "2026-09-18"
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "name": "Oscar Scott",
+    "phone": "023 518 1126",
+    "email": "oscar.scott@example.com",
+    "address": "28 Papanui Rd, Auckland",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Oscar Scott",
+        "role": "Owner",
+        "phone": "023 518 1126",
+        "email": "oscar.scott@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0209",
+        "name": "Toilet Cistern Replacement",
+        "value": 4860,
+        "stage": "To Quote",
+        "date": "2026-01-19"
+      },
+      {
+        "id": "TB-0609",
+        "name": "EV Charger Install",
+        "value": 7060,
+        "stage": "To Invoice",
+        "date": "2026-01-19"
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "name": "Chloe Wright",
+    "phone": "024 519 1133",
+    "email": "chloe.wright@example.com",
+    "address": "29 Khyber Pass Rd, Wellington",
+    "jobs": 2,
+    "status": "leads",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Chloe Wright",
+        "role": "Owner",
+        "phone": "024 519 1133",
+        "email": "chloe.wright@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0210",
+        "name": "Heat Recovery Ventilation Install",
+        "value": 5080,
+        "stage": "To Quote",
+        "date": "2026-02-20"
+      },
+      {
+        "id": "TB-0610",
+        "name": "Solar Inverter Replacement",
+        "value": 7280,
+        "stage": "To Invoice",
+        "date": "2026-02-20"
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "name": "Henry Green",
+    "phone": "025 520 1140",
+    "email": "henry.green@example.com",
+    "address": "30 Queen St, Christchurch",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Henry Green",
+        "role": "Owner",
+        "phone": "025 520 1140",
+        "email": "henry.green@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0301",
+        "name": "Blocked Drain Investigation",
+        "value": 5300,
+        "stage": "Quote Sent",
+        "date": "2026-03-21"
+      },
+      {
+        "id": "TB-0701",
+        "name": "Access Control Wiring",
+        "value": 900,
+        "stage": "Invoiced",
+        "date": "2026-03-21"
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "name": "Zoe Adams",
+    "phone": "026 521 1147",
+    "email": "zoe.adams@example.com",
+    "address": "31 Cuba St, Hamilton",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Zoe Adams",
+        "role": "Owner",
+        "phone": "026 521 1147",
+        "email": "zoe.adams@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0302",
+        "name": "School Maintenance Package",
+        "value": 5520,
+        "stage": "Quote Sent",
+        "date": "2026-04-22"
+      },
+      {
+        "id": "TB-0702",
+        "name": "Outdoor Security Lighting",
+        "value": 1120,
+        "stage": "Invoiced",
+        "date": "2026-04-22"
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "name": "Lucas Baker",
+    "phone": "027 522 1154",
+    "email": "lucas.baker@example.com",
+    "address": "32 Riccarton Rd, Tauranga",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Lucas Baker",
+        "role": "Owner",
+        "phone": "027 522 1154",
+        "email": "lucas.baker@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0303",
+        "name": "Switchboard Upgrade",
+        "value": 5740,
+        "stage": "Quote Sent",
+        "date": "2026-05-23"
+      },
+      {
+        "id": "TB-0703",
+        "name": "Emergency Fault Callout",
+        "value": 1340,
+        "stage": "Invoiced",
+        "date": "2026-05-23"
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "name": "Evie Nelson",
+    "phone": "028 523 1161",
+    "email": "evie.nelson@example.com",
+    "address": "33 Victoria St, Dunedin",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Evie Nelson",
+        "role": "Owner",
+        "phone": "028 523 1161",
+        "email": "evie.nelson@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0304",
+        "name": "Bathroom Extraction Upgrade",
+        "value": 5960,
+        "stage": "Quote Sent",
+        "date": "2026-06-24"
+      },
+      {
+        "id": "TB-0704",
+        "name": "Generator Changeover Switch",
+        "value": 1560,
+        "stage": "Invoiced",
+        "date": "2026-06-24"
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "name": "Charlie Carter",
+    "phone": "021 524 1168",
+    "email": "charlie.carter@example.com",
+    "address": "34 Devonport Rd, Auckland",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Charlie Carter",
+        "role": "Owner",
+        "phone": "021 524 1168",
+        "email": "charlie.carter@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0305",
+        "name": "Garden Lighting Installation",
+        "value": 6180,
+        "stage": "Quote Sent",
+        "date": "2026-07-25"
+      },
+      {
+        "id": "TB-0705",
+        "name": "Blocked Drain Investigation",
+        "value": 1780,
+        "stage": "Invoiced",
+        "date": "2026-07-25"
+      }
+    ]
+  },
+  {
+    "id": 26,
+    "name": "Lily Mitchell",
+    "phone": "022 525 1175",
+    "email": "lily.mitchell@example.com",
+    "address": "35 George St, Wellington",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Lily Mitchell",
+        "role": "Owner",
+        "phone": "022 525 1175",
+        "email": "lily.mitchell@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0306",
+        "name": "Bathroom Plumbing Refit",
+        "value": 6400,
+        "stage": "Quote Sent",
+        "date": "2026-08-26"
+      },
+      {
+        "id": "TB-0706",
+        "name": "School Maintenance Package",
+        "value": 2000,
+        "stage": "Invoiced",
+        "date": "2026-08-26"
+      }
+    ]
+  },
+  {
+    "id": 27,
+    "name": "William Phillips",
+    "phone": "023 526 1182",
+    "email": "william.phillips@example.com",
+    "address": "36 Ponsonby Rd, Christchurch",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "William Phillips",
+        "role": "Owner",
+        "phone": "023 526 1182",
+        "email": "william.phillips@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0307",
+        "name": "Rainwater Pump Install",
+        "value": 6620,
+        "stage": "Quote Sent",
+        "date": "2026-09-27"
+      },
+      {
+        "id": "TB-0707",
+        "name": "Switchboard Upgrade",
+        "value": 2220,
+        "stage": "Invoiced",
+        "date": "2026-09-27"
+      }
+    ]
+  },
+  {
+    "id": 28,
+    "name": "Emma Campbell",
+    "phone": "024 527 1189",
+    "email": "emma.campbell@example.com",
+    "address": "37 Cameron Rd, Hamilton",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Emma Campbell",
+        "role": "Owner",
+        "phone": "024 527 1189",
+        "email": "emma.campbell@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0308",
+        "name": "Apartment Metering Upgrade",
+        "value": 6840,
+        "stage": "Quote Sent",
+        "date": "2026-01-01"
+      },
+      {
+        "id": "TB-0708",
+        "name": "Bathroom Extraction Upgrade",
+        "value": 2440,
+        "stage": "Invoiced",
+        "date": "2026-01-01"
+      }
+    ]
+  },
+  {
+    "id": 29,
+    "name": "Thomas Parker",
+    "phone": "025 528 1196",
+    "email": "thomas.parker@example.com",
+    "address": "38 Papanui Rd, Tauranga",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Thomas Parker",
+        "role": "Owner",
+        "phone": "025 528 1196",
+        "email": "thomas.parker@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0309",
+        "name": "Heat Pump Installation",
+        "value": 7060,
+        "stage": "Quote Sent",
+        "date": "2026-02-02"
+      },
+      {
+        "id": "TB-0709",
+        "name": "Garden Lighting Installation",
+        "value": 2660,
+        "stage": "Invoiced",
+        "date": "2026-02-02"
+      }
+    ]
+  },
+  {
+    "id": 30,
+    "name": "Olivia Evans",
+    "phone": "026 529 1203",
+    "email": "olivia.evans@example.com",
+    "address": "39 Khyber Pass Rd, Dunedin",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 0,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Olivia Evans",
+        "role": "Owner",
+        "phone": "026 529 1203",
+        "email": "olivia.evans@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0310",
+        "name": "Ceiling Fan Installation",
+        "value": 7280,
+        "stage": "Quote Sent",
+        "date": "2026-03-03"
+      },
+      {
+        "id": "TB-0710",
+        "name": "Bathroom Plumbing Refit",
+        "value": 2880,
+        "stage": "Invoiced",
+        "date": "2026-03-03"
+      }
+    ]
+  },
+  {
+    "id": 31,
+    "name": "James Collins",
+    "phone": "027 530 1210",
+    "email": "james.collins@example.com",
+    "address": "40 Queen St, Auckland",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 3100,
+    "notes": [
+      "Prefers morning appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "James Collins",
+        "role": "Owner",
+        "phone": "027 530 1210",
+        "email": "james.collins@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0401",
+        "name": "Intercom System Upgrade",
+        "value": 900,
+        "stage": "Quote Accepted",
+        "date": "2026-04-04"
+      },
+      {
+        "id": "TB-0801",
+        "name": "Commercial LED Retrofit",
+        "value": 3100,
+        "stage": "Invoice Paid",
+        "date": "2026-04-04"
+      }
+    ]
+  },
+  {
+    "id": 32,
+    "name": "Freya Edwards",
+    "phone": "028 531 1217",
+    "email": "freya.edwards@example.com",
+    "address": "41 Cuba St, Wellington",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 3320,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Freya Edwards",
+        "role": "Owner",
+        "phone": "028 531 1217",
+        "email": "freya.edwards@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0402",
+        "name": "Kitchen Renovation Electrical",
+        "value": 1120,
+        "stage": "Quote Accepted",
+        "date": "2026-05-05"
+      },
+      {
+        "id": "TB-0802",
+        "name": "Three-Phase Upgrade",
+        "value": 3320,
+        "stage": "Invoice Paid",
+        "date": "2026-05-05"
+      }
+    ]
+  },
+  {
+    "id": 33,
+    "name": "George Stewart",
+    "phone": "021 532 1224",
+    "email": "george.stewart@example.com",
+    "address": "42 Riccarton Rd, Christchurch",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 3540,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "George Stewart",
+        "role": "Owner",
+        "phone": "021 532 1224",
+        "email": "george.stewart@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0403",
+        "name": "Smoke Alarm Compliance Check",
+        "value": 1340,
+        "stage": "Quote Accepted",
+        "date": "2026-06-06"
+      },
+      {
+        "id": "TB-0803",
+        "name": "Shower Mixer Replacement",
+        "value": 3540,
+        "stage": "Invoice Paid",
+        "date": "2026-06-06"
+      }
+    ]
+  },
+  {
+    "id": 34,
+    "name": "Poppy Cook",
+    "phone": "022 533 1231",
+    "email": "poppy.cook@example.com",
+    "address": "43 Victoria St, Hamilton",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 3760,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Poppy Cook",
+        "role": "Owner",
+        "phone": "022 533 1231",
+        "email": "poppy.cook@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0404",
+        "name": "Roof Leak Electrical Repair",
+        "value": 1560,
+        "stage": "Quote Accepted",
+        "date": "2026-07-07"
+      },
+      {
+        "id": "TB-0804",
+        "name": "Warehouse Highbay LEDs",
+        "value": 3760,
+        "stage": "Invoice Paid",
+        "date": "2026-07-07"
+      }
+    ]
+  },
+  {
+    "id": 35,
+    "name": "Harry Morris",
+    "phone": "023 534 1238",
+    "email": "harry.morris@example.com",
+    "address": "44 Devonport Rd, Tauranga",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 3980,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Harry Morris",
+        "role": "Owner",
+        "phone": "023 534 1238",
+        "email": "harry.morris@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0405",
+        "name": "Stormwater Line Repair",
+        "value": 1780,
+        "stage": "Quote Accepted",
+        "date": "2026-08-08"
+      },
+      {
+        "id": "TB-0805",
+        "name": "Intercom System Upgrade",
+        "value": 3980,
+        "stage": "Invoice Paid",
+        "date": "2026-08-08"
+      }
+    ]
+  },
+  {
+    "id": 36,
+    "name": "Ivy Rogers",
+    "phone": "024 535 1245",
+    "email": "ivy.rogers@example.com",
+    "address": "45 George St, Dunedin",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 4200,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Ivy Rogers",
+        "role": "Owner",
+        "phone": "024 535 1245",
+        "email": "ivy.rogers@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0406",
+        "name": "Restaurant Extraction Service",
+        "value": 2000,
+        "stage": "Quote Accepted",
+        "date": "2026-09-09"
+      },
+      {
+        "id": "TB-0806",
+        "name": "Kitchen Renovation Electrical",
+        "value": 4200,
+        "stage": "Invoice Paid",
+        "date": "2026-09-09"
+      }
+    ]
+  },
+  {
+    "id": 37,
+    "name": "Archie Bell",
+    "phone": "025 536 1252",
+    "email": "archie.bell@example.com",
+    "address": "46 Ponsonby Rd, Auckland",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 4420,
+    "notes": [
+      "Prefers morning appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Archie Bell",
+        "role": "Owner",
+        "phone": "025 536 1252",
+        "email": "archie.bell@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0407",
+        "name": "EV Charger Install",
+        "value": 2220,
+        "stage": "Quote Accepted",
+        "date": "2026-01-10"
+      },
+      {
+        "id": "TB-0807",
+        "name": "Smoke Alarm Compliance Check",
+        "value": 4420,
+        "stage": "Invoice Paid",
+        "date": "2026-01-10"
+      }
+    ]
+  },
+  {
+    "id": 38,
+    "name": "Matilda Murphy",
+    "phone": "026 537 1259",
+    "email": "matilda.murphy@example.com",
+    "address": "47 Cameron Rd, Wellington",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 4640,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Matilda Murphy",
+        "role": "Owner",
+        "phone": "026 537 1259",
+        "email": "matilda.murphy@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0408",
+        "name": "Solar Inverter Replacement",
+        "value": 2440,
+        "stage": "Quote Accepted",
+        "date": "2026-02-11"
+      },
+      {
+        "id": "TB-0808",
+        "name": "Roof Leak Electrical Repair",
+        "value": 4640,
+        "stage": "Invoice Paid",
+        "date": "2026-02-11"
+      }
+    ]
+  },
+  {
+    "id": 39,
+    "name": "Alexander Bailey",
+    "phone": "027 538 1266",
+    "email": "alexander.bailey@example.com",
+    "address": "48 Papanui Rd, Christchurch",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 4860,
+    "notes": [
+      "Prefers morning appointments",
+      "Standard customer"
+    ],
+    "contacts": [
+      {
+        "name": "Alexander Bailey",
+        "role": "Owner",
+        "phone": "027 538 1266",
+        "email": "alexander.bailey@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0409",
+        "name": "Pool Pump Rewire",
+        "value": 2660,
+        "stage": "Quote Accepted",
+        "date": "2026-03-12"
+      },
+      {
+        "id": "TB-0809",
+        "name": "Stormwater Line Repair",
+        "value": 4860,
+        "stage": "Invoice Paid",
+        "date": "2026-03-12"
+      }
+    ]
+  },
+  {
+    "id": 40,
+    "name": "Sienna Cooper",
+    "phone": "028 539 1273",
+    "email": "sienna.cooper@example.com",
+    "address": "49 Khyber Pass Rd, Hamilton",
+    "jobs": 2,
+    "status": "active",
+    "totalSpend": 5080,
+    "notes": [
+      "Prefers afternoon appointments",
+      "Key account customer"
+    ],
+    "contacts": [
+      {
+        "name": "Sienna Cooper",
+        "role": "Owner",
+        "phone": "028 539 1273",
+        "email": "sienna.cooper@example.com"
+      }
+    ],
+    "jobHistory": [
+      {
+        "id": "TB-0410",
+        "name": "Kitchen Plumbing Fitoff",
+        "value": 2880,
+        "stage": "Quote Accepted",
+        "date": "2026-04-13"
+      },
+      {
+        "id": "TB-0810",
+        "name": "Restaurant Extraction Service",
+        "value": 5080,
+        "stage": "Invoice Paid",
+        "date": "2026-04-13"
+      }
+    ]
+  }
+]

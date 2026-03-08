@@ -1,0 +1,802 @@
+[
+  {
+    "id": "TB-0101",
+    "client": "Ava Thompson",
+    "jobName": "Switchboard Upgrade",
+    "value": 900,
+    "ageDays": 1,
+    "urgent": false,
+    "stage": "Lead",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0102",
+    "client": "Noah Patel",
+    "jobName": "Bathroom Extraction Upgrade",
+    "value": 1120,
+    "ageDays": 2,
+    "urgent": false,
+    "stage": "Lead",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0103",
+    "client": "Isla Morgan",
+    "jobName": "Garden Lighting Installation",
+    "value": 1340,
+    "ageDays": 3,
+    "urgent": false,
+    "stage": "Lead",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0104",
+    "client": "Leo Wilson",
+    "jobName": "Bathroom Plumbing Refit",
+    "value": 1560,
+    "ageDays": 4,
+    "urgent": false,
+    "stage": "Lead",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0105",
+    "client": "Mia Brown",
+    "jobName": "Rainwater Pump Install",
+    "value": 1780,
+    "ageDays": 5,
+    "urgent": false,
+    "stage": "Lead",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0106",
+    "client": "Arlo Singh",
+    "jobName": "Apartment Metering Upgrade",
+    "value": 2000,
+    "ageDays": 7,
+    "urgent": false,
+    "stage": "Lead",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0107",
+    "client": "Ruby Chen",
+    "jobName": "Heat Pump Installation",
+    "value": 2220,
+    "ageDays": 9,
+    "urgent": false,
+    "stage": "Lead",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0108",
+    "client": "Hugo Harris",
+    "jobName": "Ceiling Fan Installation",
+    "value": 2440,
+    "ageDays": 12,
+    "urgent": false,
+    "stage": "Lead",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0109",
+    "client": "Luca James",
+    "jobName": "Distribution Board Relocation",
+    "value": 2660,
+    "ageDays": 16,
+    "urgent": true,
+    "stage": "Lead",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0110",
+    "client": "Sophie King",
+    "jobName": "Water Main Repair",
+    "value": 2880,
+    "ageDays": 24,
+    "urgent": true,
+    "stage": "Lead",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0201",
+    "client": "Ethan Clarke",
+    "jobName": "Smoke Alarm Compliance Check",
+    "value": 3100,
+    "ageDays": 1,
+    "urgent": false,
+    "stage": "To Quote",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0202",
+    "client": "Amelia Davis",
+    "jobName": "Roof Leak Electrical Repair",
+    "value": 3320,
+    "ageDays": 2,
+    "urgent": false,
+    "stage": "To Quote",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0203",
+    "client": "Jack Robertson",
+    "jobName": "Stormwater Line Repair",
+    "value": 3540,
+    "ageDays": 3,
+    "urgent": false,
+    "stage": "To Quote",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0204",
+    "client": "Harper Lee",
+    "jobName": "Restaurant Extraction Service",
+    "value": 3760,
+    "ageDays": 4,
+    "urgent": false,
+    "stage": "To Quote",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0205",
+    "client": "Mason Walker",
+    "jobName": "EV Charger Install",
+    "value": 3980,
+    "ageDays": 5,
+    "urgent": false,
+    "stage": "To Quote",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0206",
+    "client": "Grace Hall",
+    "jobName": "Solar Inverter Replacement",
+    "value": 4200,
+    "ageDays": 7,
+    "urgent": false,
+    "stage": "To Quote",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0207",
+    "client": "Finn Young",
+    "jobName": "Pool Pump Rewire",
+    "value": 4420,
+    "ageDays": 9,
+    "urgent": false,
+    "stage": "To Quote",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0208",
+    "client": "Ella Turner",
+    "jobName": "Kitchen Plumbing Fitoff",
+    "value": 4640,
+    "ageDays": 12,
+    "urgent": false,
+    "stage": "To Quote",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0209",
+    "client": "Oscar Scott",
+    "jobName": "Toilet Cistern Replacement",
+    "value": 4860,
+    "ageDays": 16,
+    "urgent": true,
+    "stage": "To Quote",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0210",
+    "client": "Chloe Wright",
+    "jobName": "Heat Recovery Ventilation Install",
+    "value": 5080,
+    "ageDays": 24,
+    "urgent": true,
+    "stage": "To Quote",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0301",
+    "client": "Henry Green",
+    "jobName": "Blocked Drain Investigation",
+    "value": 5300,
+    "ageDays": 1,
+    "urgent": false,
+    "stage": "Quote Sent",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0302",
+    "client": "Zoe Adams",
+    "jobName": "School Maintenance Package",
+    "value": 5520,
+    "ageDays": 2,
+    "urgent": false,
+    "stage": "Quote Sent",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0303",
+    "client": "Lucas Baker",
+    "jobName": "Switchboard Upgrade",
+    "value": 5740,
+    "ageDays": 3,
+    "urgent": false,
+    "stage": "Quote Sent",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0304",
+    "client": "Evie Nelson",
+    "jobName": "Bathroom Extraction Upgrade",
+    "value": 5960,
+    "ageDays": 4,
+    "urgent": false,
+    "stage": "Quote Sent",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0305",
+    "client": "Charlie Carter",
+    "jobName": "Garden Lighting Installation",
+    "value": 6180,
+    "ageDays": 5,
+    "urgent": false,
+    "stage": "Quote Sent",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0306",
+    "client": "Lily Mitchell",
+    "jobName": "Bathroom Plumbing Refit",
+    "value": 6400,
+    "ageDays": 7,
+    "urgent": false,
+    "stage": "Quote Sent",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0307",
+    "client": "William Phillips",
+    "jobName": "Rainwater Pump Install",
+    "value": 6620,
+    "ageDays": 9,
+    "urgent": false,
+    "stage": "Quote Sent",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0308",
+    "client": "Emma Campbell",
+    "jobName": "Apartment Metering Upgrade",
+    "value": 6840,
+    "ageDays": 12,
+    "urgent": false,
+    "stage": "Quote Sent",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0309",
+    "client": "Thomas Parker",
+    "jobName": "Heat Pump Installation",
+    "value": 7060,
+    "ageDays": 16,
+    "urgent": true,
+    "stage": "Quote Sent",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0310",
+    "client": "Olivia Evans",
+    "jobName": "Ceiling Fan Installation",
+    "value": 7280,
+    "ageDays": 24,
+    "urgent": true,
+    "stage": "Quote Sent",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0401",
+    "client": "James Collins",
+    "jobName": "Intercom System Upgrade",
+    "value": 900,
+    "ageDays": 1,
+    "urgent": false,
+    "stage": "Quote Accepted",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0402",
+    "client": "Freya Edwards",
+    "jobName": "Kitchen Renovation Electrical",
+    "value": 1120,
+    "ageDays": 2,
+    "urgent": false,
+    "stage": "Quote Accepted",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0403",
+    "client": "George Stewart",
+    "jobName": "Smoke Alarm Compliance Check",
+    "value": 1340,
+    "ageDays": 3,
+    "urgent": false,
+    "stage": "Quote Accepted",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0404",
+    "client": "Poppy Cook",
+    "jobName": "Roof Leak Electrical Repair",
+    "value": 1560,
+    "ageDays": 4,
+    "urgent": false,
+    "stage": "Quote Accepted",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0405",
+    "client": "Harry Morris",
+    "jobName": "Stormwater Line Repair",
+    "value": 1780,
+    "ageDays": 5,
+    "urgent": false,
+    "stage": "Quote Accepted",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0406",
+    "client": "Ivy Rogers",
+    "jobName": "Restaurant Extraction Service",
+    "value": 2000,
+    "ageDays": 7,
+    "urgent": false,
+    "stage": "Quote Accepted",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0407",
+    "client": "Archie Bell",
+    "jobName": "EV Charger Install",
+    "value": 2220,
+    "ageDays": 9,
+    "urgent": false,
+    "stage": "Quote Accepted",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0408",
+    "client": "Matilda Murphy",
+    "jobName": "Solar Inverter Replacement",
+    "value": 2440,
+    "ageDays": 12,
+    "urgent": false,
+    "stage": "Quote Accepted",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0409",
+    "client": "Alexander Bailey",
+    "jobName": "Pool Pump Rewire",
+    "value": 2660,
+    "ageDays": 16,
+    "urgent": true,
+    "stage": "Quote Accepted",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0410",
+    "client": "Sienna Cooper",
+    "jobName": "Kitchen Plumbing Fitoff",
+    "value": 2880,
+    "ageDays": 24,
+    "urgent": true,
+    "stage": "Quote Accepted",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0501",
+    "client": "Ava Thompson",
+    "jobName": "Emergency Fault Callout",
+    "value": 3100,
+    "ageDays": 1,
+    "urgent": false,
+    "stage": "In Progress",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0502",
+    "client": "Noah Patel",
+    "jobName": "Generator Changeover Switch",
+    "value": 3320,
+    "ageDays": 2,
+    "urgent": false,
+    "stage": "In Progress",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0503",
+    "client": "Isla Morgan",
+    "jobName": "Blocked Drain Investigation",
+    "value": 3540,
+    "ageDays": 3,
+    "urgent": false,
+    "stage": "In Progress",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0504",
+    "client": "Leo Wilson",
+    "jobName": "School Maintenance Package",
+    "value": 3760,
+    "ageDays": 4,
+    "urgent": false,
+    "stage": "In Progress",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0505",
+    "client": "Mia Brown",
+    "jobName": "Switchboard Upgrade",
+    "value": 3980,
+    "ageDays": 5,
+    "urgent": false,
+    "stage": "In Progress",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0506",
+    "client": "Arlo Singh",
+    "jobName": "Bathroom Extraction Upgrade",
+    "value": 4200,
+    "ageDays": 7,
+    "urgent": false,
+    "stage": "In Progress",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0507",
+    "client": "Ruby Chen",
+    "jobName": "Garden Lighting Installation",
+    "value": 4420,
+    "ageDays": 9,
+    "urgent": false,
+    "stage": "In Progress",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0508",
+    "client": "Hugo Harris",
+    "jobName": "Bathroom Plumbing Refit",
+    "value": 4640,
+    "ageDays": 12,
+    "urgent": false,
+    "stage": "In Progress",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0509",
+    "client": "Luca James",
+    "jobName": "Rainwater Pump Install",
+    "value": 4860,
+    "ageDays": 16,
+    "urgent": true,
+    "stage": "In Progress",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0510",
+    "client": "Sophie King",
+    "jobName": "Apartment Metering Upgrade",
+    "value": 5080,
+    "ageDays": 24,
+    "urgent": true,
+    "stage": "In Progress",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0601",
+    "client": "Ethan Clarke",
+    "jobName": "Shower Mixer Replacement",
+    "value": 5300,
+    "ageDays": 1,
+    "urgent": false,
+    "stage": "To Invoice",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0602",
+    "client": "Amelia Davis",
+    "jobName": "Warehouse Highbay LEDs",
+    "value": 5520,
+    "ageDays": 2,
+    "urgent": false,
+    "stage": "To Invoice",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0603",
+    "client": "Jack Robertson",
+    "jobName": "Intercom System Upgrade",
+    "value": 5740,
+    "ageDays": 3,
+    "urgent": false,
+    "stage": "To Invoice",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0604",
+    "client": "Harper Lee",
+    "jobName": "Kitchen Renovation Electrical",
+    "value": 5960,
+    "ageDays": 4,
+    "urgent": false,
+    "stage": "To Invoice",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0605",
+    "client": "Mason Walker",
+    "jobName": "Smoke Alarm Compliance Check",
+    "value": 6180,
+    "ageDays": 5,
+    "urgent": false,
+    "stage": "To Invoice",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0606",
+    "client": "Grace Hall",
+    "jobName": "Roof Leak Electrical Repair",
+    "value": 6400,
+    "ageDays": 7,
+    "urgent": false,
+    "stage": "To Invoice",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0607",
+    "client": "Finn Young",
+    "jobName": "Stormwater Line Repair",
+    "value": 6620,
+    "ageDays": 9,
+    "urgent": false,
+    "stage": "To Invoice",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0608",
+    "client": "Ella Turner",
+    "jobName": "Restaurant Extraction Service",
+    "value": 6840,
+    "ageDays": 12,
+    "urgent": false,
+    "stage": "To Invoice",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0609",
+    "client": "Oscar Scott",
+    "jobName": "EV Charger Install",
+    "value": 7060,
+    "ageDays": 16,
+    "urgent": true,
+    "stage": "To Invoice",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0610",
+    "client": "Chloe Wright",
+    "jobName": "Solar Inverter Replacement",
+    "value": 7280,
+    "ageDays": 24,
+    "urgent": true,
+    "stage": "To Invoice",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0701",
+    "client": "Henry Green",
+    "jobName": "Access Control Wiring",
+    "value": 900,
+    "ageDays": 1,
+    "urgent": false,
+    "stage": "Invoiced",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0702",
+    "client": "Zoe Adams",
+    "jobName": "Outdoor Security Lighting",
+    "value": 1120,
+    "ageDays": 2,
+    "urgent": false,
+    "stage": "Invoiced",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0703",
+    "client": "Lucas Baker",
+    "jobName": "Emergency Fault Callout",
+    "value": 1340,
+    "ageDays": 3,
+    "urgent": false,
+    "stage": "Invoiced",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0704",
+    "client": "Evie Nelson",
+    "jobName": "Generator Changeover Switch",
+    "value": 1560,
+    "ageDays": 4,
+    "urgent": false,
+    "stage": "Invoiced",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0705",
+    "client": "Charlie Carter",
+    "jobName": "Blocked Drain Investigation",
+    "value": 1780,
+    "ageDays": 5,
+    "urgent": false,
+    "stage": "Invoiced",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0706",
+    "client": "Lily Mitchell",
+    "jobName": "School Maintenance Package",
+    "value": 2000,
+    "ageDays": 7,
+    "urgent": false,
+    "stage": "Invoiced",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0707",
+    "client": "William Phillips",
+    "jobName": "Switchboard Upgrade",
+    "value": 2220,
+    "ageDays": 9,
+    "urgent": false,
+    "stage": "Invoiced",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0708",
+    "client": "Emma Campbell",
+    "jobName": "Bathroom Extraction Upgrade",
+    "value": 2440,
+    "ageDays": 12,
+    "urgent": false,
+    "stage": "Invoiced",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0709",
+    "client": "Thomas Parker",
+    "jobName": "Garden Lighting Installation",
+    "value": 2660,
+    "ageDays": 16,
+    "urgent": true,
+    "stage": "Invoiced",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0710",
+    "client": "Olivia Evans",
+    "jobName": "Bathroom Plumbing Refit",
+    "value": 2880,
+    "ageDays": 24,
+    "urgent": true,
+    "stage": "Invoiced",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0801",
+    "client": "James Collins",
+    "jobName": "Commercial LED Retrofit",
+    "value": 3100,
+    "ageDays": 1,
+    "urgent": false,
+    "stage": "Invoice Paid",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0802",
+    "client": "Freya Edwards",
+    "jobName": "Three-Phase Upgrade",
+    "value": 3320,
+    "ageDays": 2,
+    "urgent": false,
+    "stage": "Invoice Paid",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0803",
+    "client": "George Stewart",
+    "jobName": "Shower Mixer Replacement",
+    "value": 3540,
+    "ageDays": 3,
+    "urgent": false,
+    "stage": "Invoice Paid",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0804",
+    "client": "Poppy Cook",
+    "jobName": "Warehouse Highbay LEDs",
+    "value": 3760,
+    "ageDays": 4,
+    "urgent": false,
+    "stage": "Invoice Paid",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0805",
+    "client": "Harry Morris",
+    "jobName": "Intercom System Upgrade",
+    "value": 3980,
+    "ageDays": 5,
+    "urgent": false,
+    "stage": "Invoice Paid",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0806",
+    "client": "Ivy Rogers",
+    "jobName": "Kitchen Renovation Electrical",
+    "value": 4200,
+    "ageDays": 7,
+    "urgent": false,
+    "stage": "Invoice Paid",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0807",
+    "client": "Archie Bell",
+    "jobName": "Smoke Alarm Compliance Check",
+    "value": 4420,
+    "ageDays": 9,
+    "urgent": false,
+    "stage": "Invoice Paid",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0808",
+    "client": "Matilda Murphy",
+    "jobName": "Roof Leak Electrical Repair",
+    "value": 4640,
+    "ageDays": 12,
+    "urgent": false,
+    "stage": "Invoice Paid",
+    "hasUnread": true
+  },
+  {
+    "id": "TB-0809",
+    "client": "Alexander Bailey",
+    "jobName": "Stormwater Line Repair",
+    "value": 4860,
+    "ageDays": 16,
+    "urgent": true,
+    "stage": "Invoice Paid",
+    "hasUnread": false
+  },
+  {
+    "id": "TB-0810",
+    "client": "Sienna Cooper",
+    "jobName": "Restaurant Extraction Service",
+    "value": 5080,
+    "ageDays": 24,
+    "urgent": true,
+    "stage": "Invoice Paid",
+    "hasUnread": false
+  }
+]

@@ -1,10 +1,10 @@
 import { Mail, MessageSquare, X, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { jobs, type Job } from "@/data/dummyJobs";
-import { DUMMY_CUSTOMERS } from "@/data/dummyCustomers";
+import { useDemoData } from "@/contexts/DemoDataContext";
+import type { DemoJob as Job } from "@/types/demoData";
 import { cn } from "@/lib/utils";
 
-const UNREAD_MESSAGES: { job: Job; preview: string; channel: "sms" | "email"; time: string }[] = (() => {
+function buildUnreadMessages(jobs: Job[]): { job: Job; preview: string; channel: "sms" | "email"; time: string }[] {
   const unreadJobs = jobs.filter(j => j.hasUnread);
   const msgs = [
     { preview: "Thanks! Will have a look tonight and get back to you 👍", channel: "sms" as const, time: "2h ago" },
@@ -18,7 +18,7 @@ const UNREAD_MESSAGES: { job: Job; preview: string; channel: "sms" | "email"; ti
     job,
     ...msgs[i % msgs.length],
   }));
-})();
+}
 
 interface UnreadInboxProps {
   onClose: () => void;
@@ -26,6 +26,8 @@ interface UnreadInboxProps {
 
 export function UnreadInbox({ onClose }: UnreadInboxProps) {
   const navigate = useNavigate();
+  const { jobs, customers } = useDemoData();
+  const unreadMessages = buildUnreadMessages(jobs);
 
   return (
     <div className="animate-fade-in bg-card rounded-xl shadow-2xl border border-border w-[calc(100vw-2rem)] sm:w-[340px] max-h-[420px] flex flex-col">
@@ -35,7 +37,7 @@ export function UnreadInbox({ onClose }: UnreadInboxProps) {
           <Mail className="w-4 h-4 text-primary" />
           Unread Messages
           <span className="bg-primary/15 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-            {UNREAD_MESSAGES.length}
+            {unreadMessages.length}
           </span>
         </h3>
         <button onClick={onClose} className="p-1 rounded-lg hover:bg-accent transition-colors">
@@ -45,18 +47,18 @@ export function UnreadInbox({ onClose }: UnreadInboxProps) {
 
       {/* Messages list */}
       <div className="flex-1 overflow-y-auto divide-y divide-border/50">
-        {UNREAD_MESSAGES.length === 0 ? (
+        {unreadMessages.length === 0 ? (
           <div className="p-6 text-center text-sm text-muted-foreground">
             No unread messages 🎉
           </div>
         ) : (
-          UNREAD_MESSAGES.map((msg, i) => (
+          unreadMessages.map((msg, i) => (
             <button
               key={i}
               className="w-full text-left px-4 py-3 hover:bg-accent/50 transition-colors flex gap-3 items-start group"
               onClick={() => {
                 onClose();
-                const customer = DUMMY_CUSTOMERS.find(c => c.name === msg.job.client);
+                const customer = customers.find((c) => c.name === msg.job.client);
                 if (customer) {
                   navigate(`/customer/${customer.id}?tab=messages`);
                 }

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { AlertTriangle, Clock3, CircleCheck } from "lucide-react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { getJobDetail, getNewJobDetail, type BundleTemplate } from "@/data/dummyJobDetails";
+import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
 import { toast } from "@/hooks/use-toast";
 import { PageToolbar } from "@/components/PageToolbar";
 import { QuoteOverviewTab } from "@/components/quote/QuoteOverviewTab";
@@ -13,6 +14,11 @@ import { SequencesTab } from "@/components/SequencesTab";
 import { MessagesTab } from "@/components/job/MessagesTab";
 import { cn } from "@/lib/utils";
 import { QUOTE_EXTRAS } from "@/config/toolbarTabs";
+import { useDemoData } from "@/contexts/DemoDataContext";
+import { stageForPipelineEvent, stageFromQuoteStatus } from "@/services/pipelineTransitions";
+import { useThresholds } from "@/contexts/ThresholdContext";
+import type { DemoCustomer } from "@/types/demoData";
+import { LeadBadge } from "@/components/LeadBadge";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
@@ -20,7 +26,11 @@ import {
 
 type QuotePageTab = "overview" | "messages" | "line-items" | "sequences" | "notes" | "history";
 
-
+interface QuotePageLocationState {
+  customer?: DemoCustomer | null;
+  fromManager?: boolean;
+  fromStage?: string;
+}
 
 type QuoteStatus = "Draft" | "Sent" | "Approved";
 
@@ -30,12 +40,14 @@ const statusColor: Record<QuoteStatus, string> = {
   Approved: "bg-[hsl(var(--status-green))] text-white",
 };
 
+type AgeTone = "green" | "orange" | "red";
+
 export default function QuotePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const managerState = (location.state as any);
-  const initialCustomer = managerState?.customer || null;
+  const managerState = (location.state as QuotePageLocationState | null) ?? null;
+  const initialCustomer = managerState?.customer ?? null;
   const [searchParams] = useSearchParams();
   const initialTab = (searchParams.get("tab") as QuotePageTab) || "line-items";
   const [activeTab, setActiveTab] = useState<QuotePageTab>(initialTab);
@@ -46,11 +58,32 @@ export default function QuotePage() {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
+  const { jobs, updateJobStage } = useDemoData();
+  const { getThresholds, getLabel } = useThresholds();
 
   const isNew = id === "new";
+  const liveJob = useMemo(() => jobs.find((item) => item.id === id), [jobs, id]);
+  const stageThresholds = getThresholds(liveJob?.stage || "To Quote");
+  const ageTone: AgeTone = liveJob
+    ? liveJob.urgent || liveJob.ageDays > stageThresholds.orangeMax
+      ? "red"
+      : liveJob.ageDays > stageThresholds.greenMax
+        ? "orange"
+        : "green"
+    : "green";
+  const ageMeta = {
+    green: { icon: CircleCheck, className: "bg-[hsl(var(--status-green))]/20 text-[hsl(var(--status-green))]", label: getLabel(liveJob?.stage || "To Quote", "green") },
+    orange: { icon: Clock3, className: "bg-[hsl(var(--status-orange))]/20 text-[hsl(var(--status-orange))]", label: getLabel(liveJob?.stage || "To Quote", "orange") },
+    red: { icon: AlertTriangle, className: "bg-[hsl(var(--status-red))]/20 text-[hsl(var(--status-red))]", label: getLabel(liveJob?.stage || "To Quote", "red") },
+  } as const;
+  const AgeIcon = ageMeta[ageTone].icon;
 
   const handleTabChange = (tabId: string) => {
-    if (tabId === "back") { managerState?.fromManager ? navigate("/", { state: managerState }) : navigate("/"); return; }
+    if (tabId === "back") {
+      const returnState = managerState?.fromManager ? managerState : managerState?.fromStage ? { fromStage: managerState.fromStage } : undefined;
+      navigate("/", { state: returnState });
+      return;
+    }
     if (isNew && !funnelComplete) {
       setPendingNavId(tabId);
       setShowLeaveDialog(true);
@@ -94,7 +127,7 @@ export default function QuotePage() {
         >
           <QuoteFunnel
             onComplete={(data) => {
-            setFunnelData(data);
+              setFunnelData(data);
               // Only pre-fill scope for custom descriptions, not bundle defaults
               setFunnelComplete(true);
             }}
@@ -132,7 +165,20 @@ export default function QuotePage() {
         address: funnelData?.address || "",
         description: funnelData?.description || "",
       }
-    : getJobDetail(id || "");
+    : (() => {
+        const detail = getJobDetail(id || "");
+        if (!detail) return null;
+        if (!liveJob) return detail;
+        return {
+          ...detail,
+          stage: liveJob.stage,
+          client: liveJob.client,
+          jobName: liveJob.jobName,
+          value: liveJob.value,
+          ageDays: liveJob.ageDays,
+          urgent: liveJob.urgent,
+        };
+      })();
 
   if (!job) {
     return (
@@ -145,7 +191,22 @@ export default function QuotePage() {
 
   const cycleStatus = () => {
     const next: Record<QuoteStatus, QuoteStatus> = { Draft: "Sent", Sent: "Approved", Approved: "Draft" };
-    setStatus(next[status]);
+    const nextStatus = next[status];
+    setStatus(nextStatus);
+
+    if (job && !isNew) {
+      const nextStage = stageFromQuoteStatus(nextStatus);
+      if (nextStage) {
+        updateJobStage(job.id, nextStage);
+      }
+    }
+  };
+
+  const handleSendQuote = () => {
+    if (job && !isNew) {
+      updateJobStage(job.id, stageForPipelineEvent("quote_sent"));
+      setStatus("Sent");
+    }
   };
 
   const tabContent: Record<QuotePageTab, React.ReactNode> = {
@@ -153,7 +214,7 @@ export default function QuotePage() {
     messages: <MessagesTab recordType="quote" recordId={job.id} showPipelineLink pipelinePath="/" />,
     "line-items": (
       <div className="space-y-4">
-        <QuoteTab job={job} initialBundle={funnelData?.bundle || undefined} initialDescription={funnelData?.description || undefined} beforeActions={
+        <QuoteTab job={job} onSendQuote={handleSendQuote} initialBundle={funnelData?.bundle || undefined} initialDescription={funnelData?.description || undefined} beforeActions={
           <SequenceSelector category="quotes" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
         } />
       </div>
@@ -177,12 +238,20 @@ export default function QuotePage() {
       {job.client && (
         <span className="text-sm text-muted-foreground">for {job.client}</span>
       )}
+      <LeadBadge className="border-border/60 bg-secondary/70 text-foreground" />
       <button
         onClick={cycleStatus}
-        className={cn("text-xs font-semibold px-2 py-0.5 rounded-full cursor-pointer transition-colors", statusColor[status])}
+        className={cn("text-xs font-semibold px-2 py-0.5 rounded-full cursor-pointer transition-colors inline-flex items-center gap-1", statusColor[status])}
       >
+        <AgeIcon className={cn("w-3 h-3", !liveJob && "hidden")} />
         {status}
       </button>
+      {!isNew && liveJob && (
+        <span className={cn("text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1", ageMeta[ageTone].className)}>
+          <AgeIcon className="w-3 h-3" />
+          {ageMeta[ageTone].label}
+        </span>
+      )}
     </div>
   );
 

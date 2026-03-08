@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
+import { STAGE_LABELS } from "@/data/dummyJobs";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import { OverviewTab } from "@/components/job/OverviewTab";
@@ -17,6 +18,8 @@ import { MessagesTab } from "@/components/job/MessagesTab";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { cn } from "@/lib/utils";
 import { JOB_EXTRAS } from "@/config/toolbarTabs";
+import { useDemoData } from "@/contexts/DemoDataContext";
+import { LeadBadge } from "@/components/LeadBadge";
 
 type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences" | "messages";
 
@@ -37,11 +40,27 @@ export default function JobCard() {
   const [activeTab, setActiveTab] = useState<JobTab>(initialTab);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
   const actionParam = searchParams.get("action");
+  const { jobs } = useDemoData();
 
   const scheduleState = location.state as { jobName?: string; client?: string; address?: string; status?: string } | undefined;
+  const liveJob = useMemo(() => jobs.find((item) => item.id === id), [jobs, id]);
+
   const job = id === "new"
     ? getNewJobDetail(searchParams.get("stage") || "Lead")
-    : getJobDetail(id || "", scheduleState ? { client: scheduleState.client, address: scheduleState.address, description: scheduleState.jobName } : undefined);
+    : (() => {
+        const detail = getJobDetail(id || "", scheduleState ? { client: scheduleState.client, address: scheduleState.address, description: scheduleState.jobName } : undefined);
+        if (!detail) return null;
+        if (!liveJob) return detail;
+        return {
+          ...detail,
+          stage: liveJob.stage,
+          client: liveJob.client,
+          jobName: liveJob.jobName,
+          value: liveJob.value,
+          ageDays: liveJob.ageDays,
+          urgent: liveJob.urgent,
+        };
+      })();
 
   const isToInvoice = job?.stage === "To Invoice";
 
@@ -79,8 +98,9 @@ export default function JobCard() {
     <div className="flex items-center gap-2 flex-wrap">
       <h2 className="text-base font-bold text-card-foreground">{job.jobName}</h2>
       <span className="text-sm font-bold text-card-foreground">${job.value.toLocaleString()}</span>
+      <LeadBadge className="border-border/60 bg-secondary/70 text-foreground" />
       <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", statusColor(job.stage))}>
-        {job.stage}
+        {(STAGE_LABELS[job.stage as keyof typeof STAGE_LABELS] ?? [job.stage])[0]}
       </span>
       {isToInvoice && (
         <button
@@ -103,7 +123,8 @@ export default function JobCard() {
             if (activeTab !== "overview") {
               setActiveTab("overview");
             } else {
-              managerState?.fromManager ? navigate("/", { state: managerState }) : navigate("/");
+              const returnState = managerState?.fromManager ? managerState : managerState?.fromStage ? { fromStage: managerState.fromStage } : undefined;
+              navigate("/", { state: returnState });
             }
             return;
           }

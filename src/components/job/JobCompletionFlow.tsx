@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
 import type { JobDetail, MaterialItem } from "@/data/dummyJobDetails";
 import { checklistTemplates, type CompletedChecklist } from "@/data/dummyChecklists";
 import { toast } from "@/hooks/use-toast";
+import { useDemoData } from "@/contexts/DemoDataContext";
+import { stageForPipelineEvent } from "@/services/pipelineTransitions";
 import { supabase } from "@/integrations/supabase/client";
 
 interface JobCompletionFlowProps {
@@ -121,6 +123,7 @@ function ChecklistStepInline({ category, onComplete }: { category: "arrival" | "
 
 export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking, onChecklistComplete }: JobCompletionFlowProps) {
   const navigate = useNavigate();
+  const { updateJobStage } = useDemoData();
   const [step, setStep] = useState(resumeAfterBooking ? 1 : 0);
   const [jobFinished, setJobFinished] = useState(true);
 
@@ -331,6 +334,7 @@ export function JobCompletionFlow({ open, onOpenChange, job, resumeAfterBooking,
       }, 500);
     }
 
+    if (jobFinished) updateJobStage(job.id, stageForPipelineEvent("job_finished"));
     onOpenChange(false);
     navigate("/");
   }

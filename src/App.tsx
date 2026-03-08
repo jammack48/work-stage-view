@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
 import { TutorialProvider } from "@/contexts/TutorialContext";
 import { AppModeProvider, useAppMode } from "@/contexts/AppModeContext";
+import { DemoDataProvider } from "@/contexts/DemoDataContext";
 import { useState } from "react";
 import { JobPrefixProvider } from "@/contexts/JobPrefixContext";
 import { AppHeader } from "@/components/AppHeader";
@@ -114,6 +115,7 @@ const App = () => (
     <ThemeProvider>
       <JobPrefixProvider>
       <AppModeProvider>
+      <DemoDataProvider>
       <TutorialProvider>
       <ToolbarPositionProvider>
       <ThresholdProvider>
@@ -129,6 +131,7 @@ const App = () => (
       </ThresholdProvider>
       </ToolbarPositionProvider>
       </TutorialProvider>
+      </DemoDataProvider>
       </AppModeProvider>
       </JobPrefixProvider>
     </ThemeProvider>

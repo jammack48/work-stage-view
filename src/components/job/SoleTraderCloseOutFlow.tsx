@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 import type { JobDetail, MaterialItem } from "@/data/dummyJobDetails";
 import { checklistTemplates, type CompletedChecklist } from "@/data/dummyChecklists";
 import { toast } from "@/hooks/use-toast";
+import { useDemoData } from "@/contexts/DemoDataContext";
+import { stageForPipelineEvent } from "@/services/pipelineTransitions";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { SequenceSelector } from "@/components/quote/SequenceSelector";
 import { supabase } from "@/integrations/supabase/client";
@@ -149,6 +151,7 @@ function buildInvoiceLines(job: JobDetail, parts: PartUsed[], actualHours: numbe
 
 export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBooking, onChecklistComplete }: Props) {
   const navigate = useNavigate();
+  const { updateJobStage } = useDemoData();
   const { soleTraderPrefs } = useAppMode();
   const [step, setStep] = useState(resumeAfterBooking ? 1 : 0);
 
@@ -338,6 +341,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
 
   function handleComplete() {
     toast({ title: "Invoice Sent ✅", description: `$${invoiceTotal.toFixed(2)} invoice sent to ${job.client}. Job closed out.`, duration: 4000 });
+    updateJobStage(job.id, stageForPipelineEvent("invoice_sent"));
     onOpenChange(false);
     navigate("/");
   }

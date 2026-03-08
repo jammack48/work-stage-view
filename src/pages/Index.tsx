@@ -1,18 +1,18 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef, type PointerEvent } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { STAGES, jobsByStage, type Stage } from "@/data/dummyJobs";
+import { STAGES, type Stage } from "@/data/dummyJobs";
 import { StageColumn } from "@/components/StageColumn";
 import { ExpandedStagePanel } from "@/components/ExpandedStagePanel";
 import { PipelineFlowBanner } from "@/components/PipelineFlowBanner";
 import { ManagerMode } from "@/components/ManagerMode";
 import { UnreadInbox } from "@/components/UnreadInbox";
 import { ChevronLeft, ChevronRight, LayoutGrid, Columns, Plus, Bell } from "lucide-react";
-import { jobs } from "@/data/dummyJobs";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TutorialTip } from "@/components/TutorialTip";
+import { useDemoData } from "@/contexts/DemoDataContext";
 
 import { PageToolbar } from "@/components/PageToolbar";
 import useEmblaCarousel from "embla-carousel-react";
@@ -40,15 +40,92 @@ const ACTION_TIPS: Record<string, string> = {
 const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const managerState = location.state as { fromManager?: boolean; stage?: string; priority?: string; slideIndex?: number } | null;
+  const managerState = location.state as { fromManager?: boolean; stage?: string; priority?: string; slideIndex?: number; fromStage?: string } | null;
+  const { jobs, jobsByStage } = useDemoData();
 
   const [expandedStage, setExpandedStage] = useState<Stage | null>(null);
   const [layout, setLayout] = useState<Layout>("horizontal");
   const isMobile = useIsMobile();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "center" });
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(() => {
+    if (managerState?.fromStage) {
+      const idx = STAGES.indexOf(managerState.fromStage as Stage);
+      return idx >= 0 ? idx : 0;
+    }
+    return 0;
+  });
   const [activeView, setActiveView] = useState<HomeView>(managerState?.fromManager ? "manager" : "pipeline");
   const [inboxOpen, setInboxOpen] = useState(false);
+  const horizontalScrollRef = useRef<HTMLDivElement | null>(null);
+  const dragPointerIdRef = useRef<number | null>(null);
+  const dragStartXRef = useRef(0);
+  const dragStartYRef = useRef(0);
+  const dragStartScrollLeftRef = useRef(0);
+  const dragHasMovedRef = useRef(false);
+  const [isDraggingHorizontal, setIsDraggingHorizontal] = useState(false);
+
+  const isInteractiveTarget = (target: EventTarget | null) => {
+    if (!(target instanceof Element)) return false;
+    return Boolean(target.closest("button, input, textarea, select, option, a, [role='button'], [data-no-drag]"));
+  };
+
+  const stopHorizontalDrag = useCallback((pointerId?: number) => {
+    const container = horizontalScrollRef.current;
+    if (container && pointerId !== undefined && container.hasPointerCapture(pointerId)) {
+      container.releasePointerCapture(pointerId);
+    }
+    dragPointerIdRef.current = null;
+    dragHasMovedRef.current = false;
+    setIsDraggingHorizontal(false);
+  }, []);
+
+  const handleHorizontalPointerDown = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (isMobile || event.pointerType === "touch" || isInteractiveTarget(event.target)) return;
+
+    const container = horizontalScrollRef.current;
+    if (!container) return;
+
+    dragPointerIdRef.current = event.pointerId;
+    dragStartXRef.current = event.clientX;
+    dragStartYRef.current = event.clientY;
+    dragStartScrollLeftRef.current = container.scrollLeft;
+    dragHasMovedRef.current = false;
+  }, [isMobile]);
+
+  const handleHorizontalPointerMove = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (dragPointerIdRef.current !== event.pointerId) return;
+
+    const container = horizontalScrollRef.current;
+    if (!container) return;
+
+    const deltaX = event.clientX - dragStartXRef.current;
+    const deltaY = event.clientY - dragStartYRef.current;
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
+
+    // Distinguish intentional horizontal drag from normal click jitter.
+    if (!dragHasMovedRef.current && (absDeltaX < 10 || absDeltaX < absDeltaY + 2)) return;
+
+    if (!dragHasMovedRef.current) {
+      dragHasMovedRef.current = true;
+      setIsDraggingHorizontal(true);
+      container.setPointerCapture(event.pointerId);
+    }
+
+    event.preventDefault();
+    container.scrollLeft = dragStartScrollLeftRef.current - deltaX;
+  }, []);
+
+  const handleHorizontalPointerUp = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (dragPointerIdRef.current !== event.pointerId) return;
+    stopHorizontalDrag(event.pointerId);
+  }, [stopHorizontalDrag]);
+
+  const handleHorizontalPointerLeave = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (dragPointerIdRef.current !== event.pointerId) return;
+    stopHorizontalDrag(event.pointerId);
+  }, [stopHorizontalDrag]);
+
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setCurrentSlide(emblaApi.selectedScrollSnap());
@@ -58,8 +135,29 @@ const Index = () => {
     if (!emblaApi) return;
     emblaApi.on("select", onSelect);
     onSelect();
+    // Restore slide position when returning from a job/quote
+    if (managerState?.fromStage) {
+      const idx = STAGES.indexOf(managerState.fromStage as Stage);
+      if (idx >= 0) emblaApi.scrollTo(idx, true);
+    }
     return () => { emblaApi.off("select", onSelect); };
   }, [emblaApi, onSelect]);
+  // Restore horizontal scroll position on desktop when returning from a job
+  useEffect(() => {
+    if (!managerState?.fromStage || isMobile) return;
+    const idx = STAGES.indexOf(managerState.fromStage as Stage);
+    if (idx <= 0) return;
+    const container = horizontalScrollRef.current;
+    if (!container) return;
+    // Each column is 200px + 8px gap
+    container.scrollLeft = idx * 208;
+  }, [managerState?.fromStage, isMobile]);
+
+  // Restore vertical layout expanded stage
+  useEffect(() => {
+    if (!managerState?.fromStage) return;
+    setExpandedStage(managerState.fromStage as Stage);
+  }, []);
 
   const handleTabChange = (id: string) => {
     if (id === "pipeline") {
@@ -76,6 +174,21 @@ const Index = () => {
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
+  const handleStageAction = (stage: Stage) => {
+    if (stage === "Lead") {
+      navigate("/customers?new=1");
+      return;
+    }
+
+    navigate(
+      stage === "Quote Sent"
+        ? "/quote/new"
+        : stage === "To Invoice"
+          ? "/invoice/new"
+          : `/job/new?stage=${encodeURIComponent(stage)}`,
+    );
+  };
 
   return (
     <>
@@ -178,7 +291,7 @@ const Index = () => {
                     <StageColumn stage={stage} jobs={jobsByStage(stage)} isExpanded={expandedStage === stage} onToggle={() => handleToggle(stage)} onNext={scrollNext} layout="horizontal" />
                     {ACTION_BOXES[stage] && (
                       <TutorialTip tip={ACTION_TIPS[stage] || ""} side="bottom">
-                        <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(stage === "Lead" ? "/customers" : stage === "Quote Sent" ? "/quote/new" : stage === "To Invoice" ? "/invoice/new" : `/job/new?stage=${encodeURIComponent(stage)}`)}>
+                        <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => handleStageAction(stage)}>
                           <Plus className="w-5 h-5" />
                           <span className="text-xs font-medium">{ACTION_BOXES[stage]}</span>
                         </button>
@@ -195,13 +308,23 @@ const Index = () => {
         ) : layout === "horizontal" ? (
           <div className="space-y-0">
             <PipelineFlowBanner activeStage={expandedStage} />
-            <div className="flex gap-2 overflow-x-auto pb-2 pt-2">
+            <div
+              ref={horizontalScrollRef}
+              className={cn(
+                "flex gap-2 overflow-x-auto pb-2 pt-2",
+                !isMobile && (isDraggingHorizontal ? "cursor-grabbing select-none" : "cursor-grab")
+              )}
+              onPointerDown={handleHorizontalPointerDown}
+              onPointerMove={handleHorizontalPointerMove}
+              onPointerUp={handleHorizontalPointerUp}
+              onPointerLeave={handleHorizontalPointerLeave}
+            >
               {STAGES.map((stage) => (
                 <div key={stage} className="min-w-[200px] w-[200px] flex-shrink-0 flex flex-col gap-2">
                   <StageColumn stage={stage} jobs={jobsByStage(stage)} isExpanded={expandedStage === stage} onToggle={() => handleToggle(stage)} layout="horizontal" />
                   {ACTION_BOXES[stage] && (
                     <TutorialTip tip={ACTION_TIPS[stage] || ""} side="bottom">
-                      <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(stage === "Lead" ? "/customers" : stage === "Quote Sent" ? "/quote/new" : stage === "To Invoice" ? "/invoice/new" : `/job/new?stage=${encodeURIComponent(stage)}`)}>
+                      <button className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors cursor-pointer" onClick={() => handleStageAction(stage)}>
                         <Plus className="w-5 h-5" />
                         <span className="text-xs font-medium">{ACTION_BOXES[stage]}</span>
                       </button>

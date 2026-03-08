@@ -42,6 +42,7 @@ interface QuoteTabProps {
   initialBundle?: import("@/data/dummyJobDetails").BundleTemplate;
   initialDescription?: string;
   beforeActions?: React.ReactNode;
+  onSendQuote?: (total: number) => void;
 }
 
 type Section = "labour" | "materials" | "extras";
@@ -126,7 +127,7 @@ function BlockSection({ label, items, section, isOpen, onToggle, onUpdate, onDel
 }
 
 /* ── Main QuoteTab ──────────────────────────────────────── */
-export function QuoteTab({ job, initialBundle, initialDescription, beforeActions }: QuoteTabProps) {
+export function QuoteTab({ job, initialBundle, initialDescription, beforeActions, onSendQuote }: QuoteTabProps) {
   const mkItem = (name: string, qty: number, unitPrice: number): LineItem => ({
     id: genId(), name, qty, unitPrice, sellPrice: unitPrice, markup: 0,
   });
@@ -528,7 +529,14 @@ export function QuoteTab({ job, initialBundle, initialDescription, beforeActions
 
       {/* ── Action buttons ───────────────────────────────── */}
       <div className="flex gap-2">
-        <Button size="lg" className="flex-1 h-12 gap-2" onClick={() => toast({ title: "Quote sent!", description: `$${grandTotal.toFixed(2)} quote sent to ${job.client}` })}><Send className="w-5 h-5" /> Send Quote</Button>
+        <Button
+          size="lg"
+          className="flex-1 h-12 gap-2"
+          onClick={() => {
+            toast({ title: "Quote sent!", description: `$${grandTotal.toFixed(2)} quote sent to ${job.client}` });
+            onSendQuote?.(grandTotal);
+          }}
+        ><Send className="w-5 h-5" /> Send Quote</Button>
         <QuotePreview blocks={blocks} coverLetter={coverLetter} customerName={job.client} jobAddress={job.address || ""} />
         <Button size="lg" variant="outline" className="h-12 gap-2" onClick={() => toast({ title: "Draft saved" })}><Save className="w-4 h-4" /> Save</Button>
       </div>

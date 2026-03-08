@@ -2,10 +2,10 @@ import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Customer } from "@/data/dummyCustomers";
+import type { DemoCustomer } from "@/types/demoData";
 
 interface QuotesTabProps {
-  customer: Customer;
+  customer: DemoCustomer;
 }
 
 export function QuotesTab({ customer }: QuotesTabProps) {

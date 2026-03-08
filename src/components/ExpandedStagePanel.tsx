@@ -10,6 +10,7 @@ import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
 import { TutorialTip } from "@/components/TutorialTip";
 import { LeadActionMenu } from "@/components/LeadActionMenu";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { LeadBadge } from "@/components/LeadBadge";
 
 interface ExpandedStagePanelProps {
   stage: string;
@@ -87,12 +88,13 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
           const rowContent = (
             <div
               className="flex sm:grid gap-2 sm:gap-4 px-4 sm:px-5 py-3 items-center hover:bg-accent/30 transition-colors text-sm cursor-pointer min-h-[52px] sm:grid-cols-[auto_70px_1fr_1fr_90px_60px]"
-              onClick={isLeadStage ? undefined : () => navigate(isQuoteStage ? `/quote/${job.id}` : `/job/${job.id}${isToInvoice ? '?action=closeout' : ''}`)}
+              onClick={isLeadStage ? undefined : () => navigate(isQuoteStage ? `/quote/${job.id}` : `/job/${job.id}${isToInvoice ? '?action=closeout' : ''}`, { state: { fromStage: stage } })}
             >
               <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job, thresholds.greenMax, thresholds.orangeMax))} />
               <span className="hidden sm:inline font-mono text-xs text-muted-foreground">{job.id.replace(/^[A-Z]+-/, `${prefix}-`)}</span>
               <div className="flex-1 sm:flex-none flex items-center gap-2 min-w-0">
                 <span className="font-semibold text-card-foreground truncate">{job.client}</span>
+                <LeadBadge compact className="border-border/60 bg-secondary/70 text-foreground" />
                 {job.urgent && <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0" />}
                 {job.hasUnread && (
                   <>
