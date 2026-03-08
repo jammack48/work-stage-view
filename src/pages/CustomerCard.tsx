@@ -137,9 +137,12 @@ export default function CustomerCard() {
 
         {/* Quick Actions */}
         <div className="rounded-lg bg-card border border-border p-3 flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" className="justify-start gap-2" onClick={() => setActiveTab("add-job")}>
-            <Plus className="w-4 h-4" /> New Job
-          </Button>
+          <NewJobDialog
+            customerName={customer.name}
+            customerAddress={customer.address}
+            onCreateJob={(job) => addJob({ client: customer.name, jobName: job.jobName, value: job.value, stage: job.stage })}
+            trigger={<Button size="sm" variant="outline" className="justify-start gap-2"><Plus className="w-4 h-4" /> New Job</Button>}
+          />
           <Button size="sm" variant="outline" className="justify-start gap-2" onClick={() => navigate("/quote/new", { state: { customer } })}>
             <Plus className="w-4 h-4" /> New Quote
           </Button>
