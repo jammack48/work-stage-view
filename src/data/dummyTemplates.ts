@@ -28,6 +28,7 @@ export const TEMPLATE_VARIABLES = [
   "{{job_address}}",
   "{{review_link}}",
   "{{service_date}}",
+  "{{service_type}}",
 ];
 
 export const dummyTemplates: MessageTemplate[] = [
