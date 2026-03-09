@@ -207,14 +207,6 @@ export default function ServicingPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <Wrench className="w-6 h-6 text-primary" />
-        <h1 className="text-xl font-bold">Servicing</h1>
-      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-3">

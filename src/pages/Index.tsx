@@ -161,8 +161,8 @@ const Index = () => {
   }, []);
 
   const handleTabChange = (id: string) => {
-    if (id === "pipeline") {
-      setActiveView("pipeline");
+    if (id === "pipeline" || id === "servicing") {
+      setActiveView(id);
       return;
     }
     if (handleCommonTab(id, navigate)) return;
