@@ -13,6 +13,8 @@ import { AppModeProvider, useAppMode } from "@/contexts/AppModeContext";
 import { DemoDataProvider } from "@/contexts/DemoDataContext";
 import { useState } from "react";
 import { JobPrefixProvider } from "@/contexts/JobPrefixContext";
+import { BackendProvider } from "@/contexts/BackendContext";
+import { BackendLogPanel } from "@/components/BackendLogPanel";
 import { AppHeader } from "@/components/AppHeader";
 import { ModePicker } from "@/components/ModePicker";
 import { WorkBottomNav } from "@/components/WorkBottomNav";
