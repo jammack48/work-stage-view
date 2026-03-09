@@ -17,6 +17,7 @@ import { useDemoData } from "@/contexts/DemoDataContext";
 import { PageToolbar } from "@/components/PageToolbar";
 import useEmblaCarousel from "embla-carousel-react";
 import { COMMON_TABS, PIPELINE_EXTRAS, buildTabs, handleCommonTab } from "@/config/toolbarTabs";
+import ServicingPage from "@/pages/ServicingPage";
 
 type Layout = "horizontal" | "vertical";
 type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings" | "manager" | "servicing";
