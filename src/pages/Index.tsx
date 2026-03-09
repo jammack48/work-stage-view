@@ -19,7 +19,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { COMMON_TABS, PIPELINE_EXTRAS, buildTabs, handleCommonTab } from "@/config/toolbarTabs";
 
 type Layout = "horizontal" | "vertical";
-type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings" | "manager";
+type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings" | "manager" | "servicing";
 
 const HOME_TABS = buildTabs(...PIPELINE_EXTRAS);
 
