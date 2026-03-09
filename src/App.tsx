@@ -100,6 +100,7 @@ function AppLayout() {
               <Route path="/schedule" element={<SchedulePage />} />
               <Route path="/email-templates" element={<EmailTemplatesPage />} />
               <Route path="/sms-templates" element={<SmsTemplatesPage />} />
+              <Route path="/servicing" element={<ServicingPage />} />
               <Route path="/coming-soon" element={<ComingSoon />} />
               <Route path="*" element={<NotFound />} />
             </>

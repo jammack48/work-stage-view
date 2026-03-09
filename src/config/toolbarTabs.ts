@@ -166,6 +166,7 @@ export function handleCommonTab(id: string, navigate: (path: string) => void): b
     quotes: "/quote/new",
     invoices: "/invoice/new",
     bundles: "/bundles",
+    servicing: "/servicing",
     email: "/email-templates",
     sms: "/sms-templates",
   };
