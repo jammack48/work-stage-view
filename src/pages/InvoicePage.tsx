@@ -12,6 +12,7 @@ import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequenceSelector } from "@/components/quote/SequenceSelector";
 import { SequencesTab } from "@/components/SequencesTab";
 import { cn } from "@/lib/utils";
+import { ServiceReminderSection } from "@/components/job/ServiceReminderSection";
 import { INVOICE_EXTRAS } from "@/config/toolbarTabs";
 import { useDemoData } from "@/contexts/DemoDataContext";
 import { stageFromInvoiceStatus, stageForPipelineEvent } from "@/services/pipelineTransitions";
@@ -195,7 +196,10 @@ export default function InvoicePage() {
           />
         </div>
         <QuoteTab job={job} onSendQuote={handleSendInvoice} initialBundle={funnelData?.bundle || undefined} beforeActions={
-          <SequenceSelector category="invoices" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
+          <div className="space-y-4">
+            <SequenceSelector category="invoices" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
+            <ServiceReminderSection customerName={job.client} jobName={job.jobName} />
+          </div>
         } />
       </div>
     ),

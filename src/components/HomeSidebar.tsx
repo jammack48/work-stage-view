@@ -1,10 +1,10 @@
-import { Home, Users, DollarSign, FileText, Settings, Columns, LayoutGrid, Wrench } from "lucide-react";
+import { Home, Users, DollarSign, FileText, Settings, Columns, LayoutGrid } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDemoData } from "@/contexts/DemoDataContext";
 
-export type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "servicing" | "settings";
+export type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings";
 
 
 interface HomeSidebarProps {
@@ -25,7 +25,6 @@ export function HomeSidebar({ activeView, onViewChange, mobileLayout, onMobileLa
     { id: "customers", label: "Customers", icon: Users, path: "/customers" },
     { id: "quotes", label: "Quotes", icon: DollarSign },
     { id: "invoices", label: "Invoices", icon: FileText },
-    { id: "servicing", label: "Servicing", icon: Wrench, path: "/servicing" },
     { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
   ];
 
