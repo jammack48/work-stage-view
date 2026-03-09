@@ -24,6 +24,12 @@ export function AppHeader() {
   const { isWorkMode, isSoleTrader, isTimesheetOnlyMode, clearMode, setMode } = useAppMode();
   const isMobile = useIsMobile();
   const { position, cyclePosition } = useToolbarPosition();
+  const [showModeHint, setShowModeHint] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowModeHint(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
