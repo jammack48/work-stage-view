@@ -21,7 +21,6 @@ import {
 import { dummyTemplates } from "@/data/dummyTemplates";
 
 export default function ServicingPage() {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const { customers, jobs, addJob } = useDemoData();
 
