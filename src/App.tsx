@@ -41,15 +41,30 @@ import InvoicePage from "./pages/InvoicePage";
 
 import NotFound from "./pages/NotFound";
 import SplashPage from "./pages/SplashPage";
+import { OnboardingCarousel } from "./components/OnboardingCarousel";
 
 const queryClient = new QueryClient();
 
 function AppLayout() {
   const { mode, isWorkMode, isTimesheetOnlyMode } = useAppMode();
   const [splashDismissed, setSplashDismissed] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(() => {
+    return localStorage.getItem("onboardingSeen") === "true";
+  });
 
   if (!splashDismissed) {
     return <SplashPage onStart={() => setSplashDismissed(true)} />;
+  }
+
+  if (!onboardingCompleted) {
+    return (
+      <OnboardingCarousel 
+        onComplete={() => {
+          localStorage.setItem("onboardingSeen", "true");
+          setOnboardingCompleted(true);
+        }} 
+      />
+    );
   }
 
   if (!mode) {
