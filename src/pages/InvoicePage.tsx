@@ -196,7 +196,10 @@ export default function InvoicePage() {
           />
         </div>
         <QuoteTab job={job} onSendQuote={handleSendInvoice} initialBundle={funnelData?.bundle || undefined} beforeActions={
-          <SequenceSelector category="invoices" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
+          <div className="space-y-4">
+            <SequenceSelector category="invoices" selectedId={selectedSequenceId} onSelect={setSelectedSequenceId} />
+            <ServiceReminderSection customerName={job.client} jobName={job.jobName} />
+          </div>
         } />
       </div>
     ),
