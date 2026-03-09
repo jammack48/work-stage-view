@@ -1,23 +1,25 @@
 
 
-## Diagnosis
+## Plan: Add AI Suggest to Job Sheet Steps
 
-There are two separate issues preventing your database from working:
+The "AI Suggest" button and edge function already exist in the Scope tab but are missing from the two close-out flows where you actually write job notes. The screenshot shows the "Job Sheet" step in the sole trader close-out flow — that's where you need it.
 
-1. **Schema cache is stale** — PostgREST (the API layer) hasn't picked up your new tables yet, causing `PGRST205` ("Could not find the table") errors. This is why every request to `demo_sessions`, `demo_jobs`, and `demo_customers` returns 404.
+### What changes
 
-2. **RLS policies are RESTRICTIVE instead of PERMISSIVE** — Your current policies use `Permissive: No`, which means they act as *additional* restrictions rather than grants. With no permissive policy present, all access is denied even after the cache refreshes.
+**1. `src/components/job/SoleTraderCloseOutFlow.tsx`** — Job Notes step (line ~362)
+- Add an "AI Suggest" button next to the "What was done on this job?" label (or alongside Dictate)
+- On press, call `supabase.functions.invoke("ai-suggest-description", { body: { jobTitle: job.jobName, client: job.client, address: job.address } })`
+- Replace/append the jobSheet textarea content with the AI response
+- Show a loading spinner while generating
 
-The Firebase and LinkedIn errors in your inspector are from the Lovable editor itself, not your app — you can ignore those.
+**2. `src/components/job/JobCompletionFlow.tsx`** — Same change on its jobsheet step (~line 394)
+- Add the same AI Suggest button and logic
 
-## Plan
+**3. `supabase/functions/ai-suggest-description/index.ts`** — Update prompt
+- Change from a "scope of works" writer to a "job completion notes" writer
+- Given a job title like "Solar Install", generate practical completion notes like: "Arrived on site. Spoke with customer regarding installation location. Installed solar panel system as per requirements. Tested and commissioned system, confirmed operational. Cleaned up site."
+- Keep it trade-focused, plain text, Australian language
 
-### Step 1: Fix RLS policies and reload schema cache
-Run a single migration that:
-- Drops the existing restrictive policies on all three tables
-- Creates new **permissive** policies allowing full public access (appropriate for anonymous demo sessions)
-- Sends `NOTIFY pgrst, 'reload schema'` to force the API to recognize the tables
-
-### Step 2: No code changes needed
-The frontend code (`dbDemoService.ts`, `DemoDataContext.tsx`) is already correct — it will auto-seed demo data on first load once the database is accessible. After the migration, refreshing the preview will trigger session creation and data population automatically.
+### No new files needed
+The edge function already exists and handles the API call. Just need to update the prompt and add the button to the two close-out flows.
 
