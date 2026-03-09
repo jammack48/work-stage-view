@@ -1,8 +1,10 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
 import type { DemoCustomer, DemoDataset, DemoJob, DemoMaterial, DemoScheduleItem } from "@/types/demoData";
 import type { Stage } from "@/data/dummyJobs";
-import { ensureSession, fetchDataset, dbUpdateJobStage, dbAddCustomer, dbAddJob, dbResetSession } from "@/services/dbDemoService";
-import { loadDemoDataset } from "@/demo/demoLoader";
+import { fetchCustomers, dbAddCustomer } from "@/services/dbDemoService";
+import jobsSeed from "@/demo-data/jobs.json";
+import materialsSeed from "@/demo-data/materials.json";
+import scheduleSeed from "@/demo-data/schedule.json";
 
 interface DemoDataContextType {
   jobs: DemoJob[];
@@ -19,25 +21,26 @@ interface DemoDataContextType {
 
 const DemoDataContext = createContext<DemoDataContextType | undefined>(undefined);
 
+/** Jobs always start fresh from seed data (wiped on refresh) */
+function loadSeedJobs(): DemoJob[] {
+  return jobsSeed as unknown as DemoJob[];
+}
+
 export function DemoDataProvider({ children }: { children: ReactNode }) {
-  const [dataset, setDataset] = useState<DemoDataset>(() => loadDemoDataset());
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [jobs, setJobs] = useState<DemoJob[]>(loadSeedJobs);
+  const [customers, setCustomers] = useState<DemoCustomer[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Initialize session on mount
+  // Load customers from Supabase on mount
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const sid = await ensureSession();
-        if (cancelled) return;
-        setSessionId(sid);
-        const data = await fetchDataset(sid);
-        if (cancelled) return;
-        setDataset(data);
+        const custs = await fetchCustomers();
+        if (!cancelled) setCustomers(custs);
       } catch (err) {
-        console.error("Failed to init demo session:", err);
-        // Fall back to local seed data (already loaded)
+        console.error("Failed to load customers from DB:", err);
+        // Fall back to empty — seed data can be used as fallback if needed
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -46,59 +49,52 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateJobStage = useCallback((jobId: string, stage: Stage) => {
-    if (!sessionId) return;
-    // Optimistic: update local immediately
-    setDataset((prev) => ({
-      ...prev,
-      jobs: prev.jobs.map((j) => (j.id === jobId ? { ...j, stage, ageDays: 0 } : j)),
-    }));
-    // Then sync to DB
-    dbUpdateJobStage(sessionId, jobId, stage).then(setDataset).catch(console.error);
-  }, [sessionId]);
+    setJobs((prev) =>
+      prev.map((j) => (j.id === jobId ? { ...j, stage, ageDays: 0 } : j))
+    );
+  }, []);
 
   const addCustomer = useCallback(async (customer: Omit<DemoCustomer, "id">): Promise<number | undefined> => {
-    if (!sessionId) return undefined;
     try {
-      const data = await dbAddCustomer(sessionId, customer);
-      setDataset(data);
-      // Find the newly added customer by name (latest one)
-      const newCust = data.customers.filter(c => c.name === customer.name).pop();
-      return newCust?.id;
+      const newCust = await dbAddCustomer(customer);
+      setCustomers((prev) => [...prev, newCust]);
+      return newCust.id;
     } catch (err) {
-      console.error(err);
+      console.error("Failed to add customer:", err);
       return undefined;
     }
-  }, [sessionId]);
+  }, []);
 
   const addJob = useCallback((job: { client: string; jobName: string; value: number; stage: Stage }) => {
-    if (!sessionId) return;
-    // Optimistic: add locally
     const tempId = `JOB-${Date.now()}`;
-    const newJob: DemoJob = { id: tempId, client: job.client, jobName: job.jobName, value: job.value, ageDays: 0, urgent: false, stage: job.stage };
-    setDataset((prev) => ({ ...prev, jobs: [...prev.jobs, newJob] }));
-    dbAddJob(sessionId, job).then(setDataset).catch(console.error);
-  }, [sessionId]);
+    const newJob: DemoJob = {
+      id: tempId,
+      client: job.client,
+      jobName: job.jobName,
+      value: job.value,
+      ageDays: 0,
+      urgent: false,
+      stage: job.stage,
+    };
+    setJobs((prev) => [...prev, newJob]);
+  }, []);
 
   const resetDemo = useCallback(() => {
-    if (!sessionId) return;
-    setLoading(true);
-    dbResetSession(sessionId)
-      .then((data) => { setDataset(data); setLoading(false); })
-      .catch((err) => { console.error(err); setLoading(false); });
-  }, [sessionId]);
+    setJobs(loadSeedJobs());
+  }, []);
 
   const value = useMemo<DemoDataContextType>(() => ({
-    jobs: dataset.jobs,
-    customers: dataset.customers,
-    materials: dataset.materials,
-    schedule: dataset.schedule,
-    jobsByStage: (stage) => dataset.jobs.filter((job) => job.stage === stage),
+    jobs,
+    customers,
+    materials: materialsSeed as DemoMaterial[],
+    schedule: scheduleSeed as DemoScheduleItem[],
+    jobsByStage: (stage) => jobs.filter((job) => job.stage === stage),
     updateJobStage,
     addCustomer,
     addJob,
     resetDemo,
     loading,
-  }), [dataset, updateJobStage, addCustomer, addJob, resetDemo, loading]);
+  }), [jobs, customers, updateJobStage, addCustomer, addJob, resetDemo, loading]);
 
   return <DemoDataContext.Provider value={value}>{children}</DemoDataContext.Provider>;
 }
