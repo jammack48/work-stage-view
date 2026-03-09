@@ -13,6 +13,8 @@ import { AppModeProvider, useAppMode } from "@/contexts/AppModeContext";
 import { DemoDataProvider } from "@/contexts/DemoDataContext";
 import { useState } from "react";
 import { JobPrefixProvider } from "@/contexts/JobPrefixContext";
+import { BackendProvider } from "@/contexts/BackendContext";
+import { BackendLogPanel } from "@/components/BackendLogPanel";
 import { AppHeader } from "@/components/AppHeader";
 import { ModePicker } from "@/components/ModePicker";
 import { WorkBottomNav } from "@/components/WorkBottomNav";
@@ -130,6 +132,7 @@ function AppLayout() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      <BackendProvider>
       <JobPrefixProvider>
       <AppModeProvider>
       <DemoDataProvider>
@@ -139,6 +142,7 @@ const App = () => (
       <NotificationStyleProvider>
         <TooltipProvider>
           <Toaster />
+          <BackendLogPanel />
           <BrowserRouter>
             <ScrollToTop />
             <AppLayout />
@@ -151,6 +155,7 @@ const App = () => (
       </DemoDataProvider>
       </AppModeProvider>
       </JobPrefixProvider>
+      </BackendProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
