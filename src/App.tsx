@@ -38,6 +38,7 @@ import SchedulePage from "./pages/SchedulePage";
 import EmailTemplatesPage from "./pages/EmailTemplatesPage";
 import SmsTemplatesPage from "./pages/SmsTemplatesPage";
 import InvoicePage from "./pages/InvoicePage";
+import ServicingPage from "./pages/ServicingPage";
 import NotFound from "./pages/NotFound";
 import SplashPage from "./pages/SplashPage";
 
