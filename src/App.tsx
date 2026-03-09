@@ -132,6 +132,7 @@ function AppLayout() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      <BackendProvider>
       <JobPrefixProvider>
       <AppModeProvider>
       <DemoDataProvider>
@@ -141,6 +142,7 @@ const App = () => (
       <NotificationStyleProvider>
         <TooltipProvider>
           <Toaster />
+          <BackendLogPanel />
           <BrowserRouter>
             <ScrollToTop />
             <AppLayout />
@@ -153,6 +155,7 @@ const App = () => (
       </DemoDataProvider>
       </AppModeProvider>
       </JobPrefixProvider>
+      </BackendProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
