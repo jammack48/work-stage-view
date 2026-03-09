@@ -645,6 +645,8 @@ export function JobCloseOutFlow({ open, onOpenChange, job }: JobCloseOutFlowProp
                   ))}
                 </div>
               </div>
+
+              <ServiceReminderSection customerName={job.client} jobName={job.jobName} />
             </div>
           )}
 
