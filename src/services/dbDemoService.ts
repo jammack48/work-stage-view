@@ -29,7 +29,6 @@ async function seedCustomersIfEmpty(): Promise<void> {
   if ((count ?? 0) > 0) return; // already seeded
 
   const rows = (customersSeed as unknown as DemoCustomer[]).map((c) => ({
-    id: c.id,
     name: c.name,
     phone: c.phone,
     email: c.email,
