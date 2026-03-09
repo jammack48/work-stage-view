@@ -25,7 +25,6 @@ export function HomeSidebar({ activeView, onViewChange, mobileLayout, onMobileLa
     { id: "customers", label: "Customers", icon: Users, path: "/customers" },
     { id: "quotes", label: "Quotes", icon: DollarSign },
     { id: "invoices", label: "Invoices", icon: FileText },
-    { id: "servicing", label: "Servicing", icon: Wrench, path: "/servicing" },
     { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
   ];
 
