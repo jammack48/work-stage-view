@@ -5,6 +5,7 @@ import {
   Clock, Package, Camera, AlertTriangle, Mail, MessageSquare, Plus, Trash2,
   Check, ExternalLink, Eye, EyeOff
 } from "lucide-react";
+import { ServiceReminderSection } from "@/components/job/ServiceReminderSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
