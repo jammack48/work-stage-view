@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDemoData } from "@/contexts/DemoDataContext";
 
-export type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings";
+export type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "servicing" | "settings";
 
 
 interface HomeSidebarProps {
