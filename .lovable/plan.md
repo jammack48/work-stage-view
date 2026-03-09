@@ -1,25 +1,39 @@
 
 
-## Plan: Add AI Suggest to Job Sheet Steps
+## Use Real Screenshots in Onboarding Carousel
 
-The "AI Suggest" button and edge function already exist in the Scope tab but are missing from the two close-out flows where you actually write job notes. The screenshot shows the "Job Sheet" step in the sole trader close-out flow — that's where you need it.
+### File: `src/components/OnboardingCarousel.tsx`
 
-### What changes
+Replace the `slides` array (lines 17-35) with 4 slides using the uploaded screenshots:
 
-**1. `src/components/job/SoleTraderCloseOutFlow.tsx`** — Job Notes step (line ~362)
-- Add an "AI Suggest" button next to the "What was done on this job?" label (or alongside Dictate)
-- On press, call `supabase.functions.invoke("ai-suggest-description", { body: { jobTitle: job.jobName, client: job.client, address: job.address } })`
-- Replace/append the jobSheet textarea content with the AI response
-- Show a loading spinner while generating
+```typescript
+const slides: Slide[] = [
+  {
+    id: 1,
+    image: "user-uploads://Screenshot_20260309_172332_Chrome.jpg",
+    title: "Stay Connected",
+    description: "See every SMS, email and reply in one timeline — know exactly where each customer stands.",
+  },
+  {
+    id: 2,
+    image: "user-uploads://Screenshot_20260309_172341_Chrome.jpg",
+    title: "Quote Jobs Fast",
+    description: "Build detailed quotes with labour, materials and markup — right from your phone.",
+  },
+  {
+    id: 3,
+    image: "user-uploads://Screenshot_20260309_172347_Chrome.jpg",
+    title: "Send & Track Quotes",
+    description: "Review totals, attach cover letters, and send quotes with one tap.",
+  },
+  {
+    id: 4,
+    image: "user-uploads://Screenshot_20260309_172352_Chrome.jpg",
+    title: "Auto Follow-ups",
+    description: "Set up SMS and email sequences that chase quotes for you — no manual follow-up needed.",
+  }
+];
+```
 
-**2. `src/components/job/JobCompletionFlow.tsx`** — Same change on its jobsheet step (~line 394)
-- Add the same AI Suggest button and logic
-
-**3. `supabase/functions/ai-suggest-description/index.ts`** — Update prompt
-- Change from a "scope of works" writer to a "job completion notes" writer
-- Given a job title like "Solar Install", generate practical completion notes like: "Arrived on site. Spoke with customer regarding installation location. Installed solar panel system as per requirements. Tested and commissioned system, confirmed operational. Cleaned up site."
-- Keep it trade-focused, plain text, Australian language
-
-### No new files needed
-The edge function already exists and handles the API call. Just need to update the prompt and add the button to the two close-out flows.
+No other files need changes. The carousel navigation, dot indicators, Skip/Next/Get Started buttons, and localStorage persistence all work unchanged with 4 slides.
 
