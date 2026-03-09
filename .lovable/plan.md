@@ -1,25 +1,16 @@
 
 
-## Plan: Add AI Suggest to Job Sheet Steps
+## Fix: Servicing as Home Sidebar Tab (not separate route)
 
-The "AI Suggest" button and edge function already exist in the Scope tab but are missing from the two close-out flows where you actually write job notes. The screenshot shows the "Job Sheet" step in the sole trader close-out flow — that's where you need it.
+The `/servicing` route was removed from `App.tsx` but you're still navigating to it. The fix is to make Servicing a **sidebar tab view** inside the Index page — same as how Quotes and Invoices work (they're views within the home page, not separate routes).
 
-### What changes
+### Changes
 
-**1. `src/components/job/SoleTraderCloseOutFlow.tsx`** — Job Notes step (line ~362)
-- Add an "AI Suggest" button next to the "What was done on this job?" label (or alongside Dictate)
-- On press, call `supabase.functions.invoke("ai-suggest-description", { body: { jobTitle: job.jobName, client: job.client, address: job.address } })`
-- Replace/append the jobSheet textarea content with the AI response
-- Show a loading spinner while generating
+1. **`src/components/HomeSidebar.tsx`** — Add "Servicing" to the `HomeView` type and tabs array with Wrench icon (no `path`, so it stays in-app like Quotes/Invoices)
 
-**2. `src/components/job/JobCompletionFlow.tsx`** — Same change on its jobsheet step (~line 394)
-- Add the same AI Suggest button and logic
+2. **`src/pages/Index.tsx`** — Add "servicing" to the `HomeView` type, and render `ServicingPage` content when `activeView === "servicing"`
 
-**3. `supabase/functions/ai-suggest-description/index.ts`** — Update prompt
-- Change from a "scope of works" writer to a "job completion notes" writer
-- Given a job title like "Solar Install", generate practical completion notes like: "Arrived on site. Spoke with customer regarding installation location. Installed solar panel system as per requirements. Tested and commissioned system, confirmed operational. Cleaned up site."
-- Keep it trade-focused, plain text, Australian language
+3. **`src/pages/ServicingPage.tsx`** — Convert from standalone page to an embeddable component (remove its own header/back button since the home layout provides that)
 
-### No new files needed
-The edge function already exists and handles the API call. Just need to update the prompt and add the button to the two close-out flows.
+This means clicking "Servicing" in the sidebar switches the main content area — same pattern as Pipeline, Quotes, Invoices — keeping all headers, sidebar, and layout intact.
 
