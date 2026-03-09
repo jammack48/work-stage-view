@@ -1,4 +1,4 @@
-import { Home, Users, DollarSign, FileText, Settings, Columns, LayoutGrid } from "lucide-react";
+import { Home, Users, DollarSign, FileText, Settings, Columns, LayoutGrid, Wrench } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
