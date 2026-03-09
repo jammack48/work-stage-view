@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { DemoCustomer } from "@/types/demoData";
+import customersSeed from "@/demo-data/customers.json";
 
 /** Map DB row → DemoCustomer */
 function rowToCustomer(r: any): DemoCustomer {
@@ -18,8 +19,41 @@ function rowToCustomer(r: any): DemoCustomer {
   };
 }
 
-/** Fetch all customers from the external Supabase */
+/** Seed customers from JSON if table is empty */
+async function seedCustomersIfEmpty(): Promise<void> {
+  const { count, error } = await supabase
+    .from("customers")
+    .select("id", { count: "exact", head: true });
+
+  if (error) throw error;
+  if ((count ?? 0) > 0) return; // already seeded
+
+  const rows = (customersSeed as unknown as DemoCustomer[]).map((c) => ({
+    id: c.id,
+    name: c.name,
+    phone: c.phone,
+    email: c.email,
+    address: c.address,
+    jobs: c.jobs,
+    status: c.status,
+    total_spend: c.totalSpend,
+    notes: c.notes,
+    contacts: c.contacts,
+    job_history: c.jobHistory,
+  }));
+
+  // Insert in batches of 20
+  for (let i = 0; i < rows.length; i += 20) {
+    const batch = rows.slice(i, i + 20);
+    const { error: insertErr } = await supabase.from("customers").insert(batch);
+    if (insertErr) console.error("Seed customers error:", insertErr);
+  }
+}
+
+/** Fetch all customers from the external Supabase, auto-seeding if empty */
 export async function fetchCustomers(): Promise<DemoCustomer[]> {
+  await seedCustomersIfEmpty();
+
   const { data, error } = await supabase
     .from("customers")
     .select("*")
