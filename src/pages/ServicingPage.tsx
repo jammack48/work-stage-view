@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Search, Wrench, CalendarClock, AlertTriangle, CheckCircle2, Send, Trash2 } from "lucide-react";
+import { Plus, Search, Wrench, CalendarClock, AlertTriangle, CheckCircle2, Send, Trash2 } from "lucide-react";
 import { format, isPast, addDays, isWithinInterval, addMonths } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
