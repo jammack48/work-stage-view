@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Wrench, Settings as SettingsIcon, GraduationCap, Shield, LayoutGrid, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
