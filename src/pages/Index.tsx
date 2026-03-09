@@ -261,7 +261,9 @@ const Index = () => {
         }
       >
 
-        {activeView === "manager" ? (
+        {activeView === "servicing" ? (
+          <ServicingPage />
+        ) : activeView === "manager" ? (
           <ManagerMode
             initialStage={managerState?.stage as any}
             initialPriority={managerState?.priority as any}
