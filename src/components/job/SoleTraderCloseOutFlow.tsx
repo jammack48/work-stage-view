@@ -6,6 +6,7 @@ import {
   DollarSign, Receipt, Send, CheckCircle2, Plus, Trash2, Eye, EyeOff,
   AlertTriangle, Mail, MessageSquare, CalendarDays, FileCheck, Sparkles, Loader2,
 } from "lucide-react";
+import { ServiceReminderSection } from "@/components/job/ServiceReminderSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
