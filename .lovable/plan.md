@@ -1,25 +1,38 @@
 
 
-## Plan: Add AI Suggest to Job Sheet Steps
+## Problem
 
-The "AI Suggest" button and edge function already exist in the Scope tab but are missing from the two close-out flows where you actually write job notes. The screenshot shows the "Job Sheet" step in the sole trader close-out flow — that's where you need it.
+The `seedCustomersIfEmpty` function inserts rows with **explicit `id` values** (e.g., 1–8 from the JSON seed). This doesn't advance Postgres's `serial` sequence counter, so when a new customer is inserted (auto-increment), Postgres tries `id = 1` again → **duplicate key error (409/23505)**.
 
-### What changes
+Additionally, after the insert fails, `addCustomer` returns `undefined`, so the navigation to the new customer card never fires.
 
-**1. `src/components/job/SoleTraderCloseOutFlow.tsx`** — Job Notes step (line ~362)
-- Add an "AI Suggest" button next to the "What was done on this job?" label (or alongside Dictate)
-- On press, call `supabase.functions.invoke("ai-suggest-description", { body: { jobTitle: job.jobName, client: job.client, address: job.address } })`
-- Replace/append the jobSheet textarea content with the AI response
-- Show a loading spinner while generating
+## Fix
 
-**2. `src/components/job/JobCompletionFlow.tsx`** — Same change on its jobsheet step (~line 394)
-- Add the same AI Suggest button and logic
+### Step 1: Fix the sequence in the external Supabase
+After seeding, the serial sequence needs to be reset. Update `seedCustomersIfEmpty` in `dbDemoService.ts` to **not include explicit `id` values** in the insert — let Postgres auto-assign them. The seed JSON IDs aren't meaningful since `CustomerCard` looks up by DB-assigned ID.
 
-**3. `supabase/functions/ai-suggest-description/index.ts`** — Update prompt
-- Change from a "scope of works" writer to a "job completion notes" writer
-- Given a job title like "Solar Install", generate practical completion notes like: "Arrived on site. Spoke with customer regarding installation location. Installed solar panel system as per requirements. Tested and commissioned system, confirmed operational. Cleaned up site."
-- Keep it trade-focused, plain text, Australian language
+Alternatively, remove `id` from the seed insert mapping so auto-increment handles it correctly.
 
-### No new files needed
-The edge function already exists and handles the API call. Just need to update the prompt and add the button to the two close-out flows.
+### Step 2: Remove `id` from seed insert rows
+In `dbDemoService.ts`, change the seed mapping to exclude `id`:
+
+```typescript
+const rows = (customersSeed as unknown as DemoCustomer[]).map((c) => ({
+  name: c.name,
+  phone: c.phone,
+  // ... other fields, but NOT id
+}));
+```
+
+### Step 3: Reset sequence on external DB (one-time)
+You'll need to run this SQL on your external Supabase to fix the existing sequence:
+
+```sql
+SELECT setval('customers_id_seq', (SELECT MAX(id) FROM customers));
+```
+
+This ensures the next auto-increment value is above the max existing ID.
+
+### Files changed
+- `src/services/dbDemoService.ts` — remove `id` from seed insert rows
 
