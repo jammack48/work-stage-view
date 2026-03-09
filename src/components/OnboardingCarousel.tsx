@@ -17,22 +17,28 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: 1,
-    image: "/placeholder.svg",
-    title: "Manage Jobs Anywhere",
-    description: "Keep track of all your jobs, quotes, and invoices directly from your phone.",
+    image: "/onboarding/slide-1.jpg",
+    title: "Stay Connected",
+    description: "See every SMS, email and reply in one timeline — know exactly where each customer stands.",
   },
   {
     id: 2,
-    image: "/placeholder.svg",
-    title: "Track Time & Materials",
-    description: "Easily log your hours and record materials used on site.",
+    image: "/onboarding/slide-2.jpg",
+    title: "Quote Jobs Fast",
+    description: "Build detailed quotes with labour, materials and markup — right from your phone.",
   },
   {
     id: 3,
-    image: "/placeholder.svg",
-    title: "Stay Connected",
-    description: "Keep your team and customers in the loop with built-in messaging.",
-  }
+    image: "/onboarding/slide-3.jpg",
+    title: "Send & Track Quotes",
+    description: "Review totals, attach cover letters, and send quotes with one tap.",
+  },
+  {
+    id: 4,
+    image: "/onboarding/slide-4.jpg",
+    title: "Auto Follow-ups",
+    description: "Set up SMS and email sequences that chase quotes for you — no manual follow-up needed.",
+  },
 ];
 
 interface OnboardingCarouselProps {
