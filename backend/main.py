@@ -12,6 +12,11 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+async def root():
+    return {"api": "online"}
+
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
