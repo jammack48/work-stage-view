@@ -196,8 +196,9 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
 
   // Photos state
   const [jobPhotos, setJobPhotos] = useState<CapturedPhoto[]>([]);
-  const beforeInputRef = useRef<HTMLInputElement>(null);
-  const afterInputRef = useRef<HTMLInputElement>(null);
+  const [activePhotoType, setActivePhotoType] = useState<"before" | "after" | null>(null);
+  const cameraPhotoInputRef = useRef<HTMLInputElement>(null);
+  const galleryPhotoInputRef = useRef<HTMLInputElement>(null);
 
   // Certificates state
   const [complianceRequired, setComplianceRequired] = useState(false);
@@ -268,11 +269,17 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
     toast({ title: "Coming soon", description: "AI suggestions will be available once the backend is connected." });
   };
 
-  const handlePhotoCapture = (type: "before" | "after") => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => { setJobPhotos(prev => [...prev, { id: `${type}-${Date.now()}`, type, dataUrl: reader.result as string }]); };
-    reader.readAsDataURL(file); e.target.value = "";
+  const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !activePhotoType) return;
+    Array.from(files).forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setJobPhotos((prev) => [...prev, { id: `${activePhotoType}-${Date.now()}-${index}`, type: activePhotoType, dataUrl: reader.result as string }]);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
   };
 
   const handleReceiptCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -552,9 +559,19 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
             <div className="space-y-3">
               <Label>Job photos</Label>
               <div className="grid grid-cols-2 gap-2">
-                <Card className="border-dashed cursor-pointer" onClick={() => beforeInputRef.current?.click()}><CardContent className="p-6 flex flex-col items-center justify-center text-center"><Camera className="w-8 h-8 text-muted-foreground mb-2" /><p className="text-xs text-muted-foreground">Before photos</p><p className="text-xs font-medium text-primary mt-1">Tap to capture</p></CardContent></Card>
-                <Card className="border-dashed cursor-pointer" onClick={() => afterInputRef.current?.click()}><CardContent className="p-6 flex flex-col items-center justify-center text-center"><Camera className="w-8 h-8 text-muted-foreground mb-2" /><p className="text-xs text-muted-foreground">After photos</p><p className="text-xs font-medium text-primary mt-1">Tap to capture</p></CardContent></Card>
+                <Card className="border-dashed cursor-pointer" onClick={() => setActivePhotoType("before")}><CardContent className="p-6 flex flex-col items-center justify-center text-center"><Camera className="w-8 h-8 text-muted-foreground mb-2" /><p className="text-xs text-muted-foreground">Before photos</p><p className="text-xs font-medium text-primary mt-1">Tap to add</p></CardContent></Card>
+                <Card className="border-dashed cursor-pointer" onClick={() => setActivePhotoType("after")}><CardContent className="p-6 flex flex-col items-center justify-center text-center"><Camera className="w-8 h-8 text-muted-foreground mb-2" /><p className="text-xs text-muted-foreground">After photos</p><p className="text-xs font-medium text-primary mt-1">Tap to add</p></CardContent></Card>
               </div>
+              {activePhotoType && (
+                <div className="rounded-lg border border-border p-3 bg-accent/20 space-y-2">
+                  <p className="text-xs text-muted-foreground">Adding <span className="font-semibold text-card-foreground">{activePhotoType}</span> photos</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button size="sm" variant="outline" onClick={() => cameraPhotoInputRef.current?.click()}>Take Pic</Button>
+                    <Button size="sm" variant="outline" onClick={() => galleryPhotoInputRef.current?.click()}>Gallery</Button>
+                    <Button size="sm" onClick={() => setActivePhotoType(null)}>Finished</Button>
+                  </div>
+                </div>
+              )}
               {jobPhotos.length > 0 && (<div className="space-y-2"><p className="text-xs text-muted-foreground">{jobPhotos.length} photo(s) added</p><div className="flex gap-2 flex-wrap">{jobPhotos.map((photo) => (<div key={photo.id} className="relative"><img src={photo.dataUrl} alt={photo.type} className="w-16 h-16 rounded-lg object-cover border border-border" /><span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[8px] px-1 rounded-full uppercase">{photo.type[0]}</span></div>))}</div></div>)}
             </div>
           )}
@@ -658,8 +675,8 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
         )}
 
         {/* Hidden inputs */}
-        <input ref={beforeInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoCapture("before")} />
-        <input ref={afterInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoCapture("after")} />
+        <input ref={cameraPhotoInputRef} type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={handlePhotoCapture} />
+        <input ref={galleryPhotoInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoCapture} />
         <input ref={receiptInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleReceiptCapture} />
         <input ref={paperworkInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handlePaperworkAttach} />
       </DialogContent>
