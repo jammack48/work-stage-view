@@ -1,7 +1,6 @@
 import { useBackend } from "@/contexts/BackendContext";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Power, PowerOff, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -49,7 +48,11 @@ export function BackendLogPanel() {
         </div>
 
         {/* Log entries */}
-        <ScrollArea className="flex-1 px-4 py-2">
+        <div className="px-4 py-2 text-[11px] text-muted-foreground border-b border-border">
+          Health checks every 25s • request timeout after 8s
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 py-2">
           {logs.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-8">No logs yet</p>
           ) : (
@@ -66,7 +69,7 @@ export function BackendLogPanel() {
               ))}
             </div>
           )}
-        </ScrollArea>
+        </div>
       </SheetContent>
     </Sheet>
   );

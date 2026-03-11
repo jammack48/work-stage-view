@@ -27,7 +27,7 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const addLog = useCallback((message: string, ok: boolean) => {
-    setLogs((prev) => [{ time: new Date(), message, ok }, ...prev].slice(0, 100));
+    setLogs((prev) => [...prev, { time: new Date(), message, ok }].slice(-100));
   }, []);
 
   const ping = useCallback(async () => {
