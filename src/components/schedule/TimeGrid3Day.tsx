@@ -1,8 +1,9 @@
-import { useMemo, useRef, useCallback } from "react";
+import { useMemo, useRef, useCallback, useEffect, useState } from "react";
 import { format, isToday, startOfWeek, differenceInCalendarDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_DESKTOP, formatTime, generateWeekJobs } from "./scheduleData";
 import { ScheduleJobCard } from "./ScheduleJobCard";
+import { fetchVariationCounts } from "@/services/variationsService";
 
 interface TimeGrid3DayProps {
   dates: Date[];
@@ -43,8 +44,29 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
 }
 
 export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe, jobs: externalJobs, onSlotClick, activeSlot, activeDuration }: TimeGrid3DayProps) {
+  const [variationCounts, setVariationCounts] = useState<Record<string, number>>({});
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
   const totalHeight = hours.length * HOUR_HEIGHT_DESKTOP;
+
+  const visibleJobIds = useMemo(
+    () => [...new Set(dayLayouts.flatMap((layout) => layout.map(({ job }) => job.id)))],
+    [dayLayouts]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    fetchVariationCounts(visibleJobIds)
+      .then((counts) => {
+        if (mounted) setVariationCounts(counts);
+      })
+      .catch(() => {
+        if (mounted) setVariationCounts({});
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [visibleJobIds]);
 
   // Touch swipe
   const touchStartX = useRef<number | null>(null);
@@ -175,7 +197,7 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe, jobs: 
                       width: `${widthPct}%`,
                     }}
                   >
-                    <ScheduleJobCard job={job} compact style={{ height: "100%" }} />
+                    <ScheduleJobCard job={job} variationCount={variationCounts[job.id] ?? 0} compact style={{ height: "100%" }} />
                   </div>
                 );
               })}

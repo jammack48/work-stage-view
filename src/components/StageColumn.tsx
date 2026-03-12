@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Job } from "@/data/dummyJobs";
@@ -10,6 +11,7 @@ import { TutorialTip } from "@/components/TutorialTip";
 import { LeadActionMenu } from "@/components/LeadActionMenu";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
 import { Badge } from "@/components/ui/badge";
+import { fetchVariationCounts } from "@/services/variationsService";
 
 function countByStatus(jobs: Job[], greenMax: number, orangeMax: number) {
   let red = 0, orange = 0, green = 0;
@@ -32,7 +34,7 @@ function UnreadDot() {
 }
 
 /** Job preview row inside a color band */
-function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse" }) {
+function JobPreview({ job, notifStyle, variationCount = 0 }: { job: Job; notifStyle: "icon" | "pulse"; variationCount?: number }) {
   const { prefix } = useJobPrefix();
   const navigate = useNavigate();
   const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
@@ -49,6 +51,13 @@ function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse
         </Badge>
       </div>
       <div className="truncate opacity-75">{displayId} · {job.jobName}</div>
+      {variationCount > 0 && (
+        <div className="mt-0.5">
+          <Badge className="h-4 px-1.5 py-0 text-[9px] font-semibold border-white/35 bg-black/25 text-white shadow-sm">
+            V{variationCount}
+          </Badge>
+        </div>
+      )}
       {job.hasUnread && (
         <button
           onPointerDown={(e) => { e.stopPropagation(); e.preventDefault(); }}
@@ -104,6 +113,27 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
   const firstOrange = jobs.find(j => !j.urgent && j.ageDays > thresholds.greenMax && j.ageDays <= thresholds.orangeMax);
   const firstRed = jobs.find(j => j.urgent || j.ageDays > thresholds.orangeMax);
   const isLeadStage = stage === "Lead";
+  const [variationCounts, setVariationCounts] = useState<Record<string, number>>({});
+
+  const previewJobIds = useMemo(
+    () => [...new Set([firstGreen, firstOrange, firstRed].filter((job): job is Job => !!job).map((job) => job.id))],
+    [firstGreen, firstOrange, firstRed]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    fetchVariationCounts(previewJobIds)
+      .then((counts) => {
+        if (mounted) setVariationCounts(counts);
+      })
+      .catch(() => {
+        if (mounted) setVariationCounts({});
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [previewJobIds]);
 
   const navState = { fromStage: stage };
 
@@ -187,7 +217,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
                 <span className="text-sm font-bold text-white">{counts.green}</span>
               </div>
               {firstGreen ? (
-                <JobPreview job={firstGreen} notifStyle={notifStyle} />
+                <JobPreview job={firstGreen} notifStyle={notifStyle} variationCount={variationCounts[firstGreen.id] ?? 0} />
               ) : counts.green === 0 ? (
                 <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
               ) : null}
@@ -208,7 +238,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
                 <span className="text-sm font-bold text-white">{counts.orange}</span>
               </div>
               {firstOrange ? (
-                <JobPreview job={firstOrange} notifStyle={notifStyle} />
+                <JobPreview job={firstOrange} notifStyle={notifStyle} variationCount={variationCounts[firstOrange.id] ?? 0} />
               ) : counts.orange === 0 ? (
                 <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
               ) : null}
@@ -229,7 +259,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
                 <span className="text-sm font-bold text-white">{counts.red}</span>
               </div>
               {firstRed ? (
-                <JobPreview job={firstRed} notifStyle={notifStyle} />
+                <JobPreview job={firstRed} notifStyle={notifStyle} variationCount={variationCounts[firstRed.id] ?? 0} />
               ) : counts.red === 0 ? (
                 <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
               ) : null}

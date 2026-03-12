@@ -11,6 +11,7 @@ import {
   addVariation,
   updateVariationStatus,
   deleteVariation,
+  formatVariationCode,
   type Variation,
   type MaterialItem,
   type LabourItem,
@@ -86,6 +87,7 @@ export function VariationsTab({ jobId }: VariationsTabProps) {
       const value = calcTotal(materials, labour);
       const v = await addVariation({
         job_id: jobId,
+        job_number: jobId,
         description: desc.trim(),
         value,
         status: "Pending",
@@ -238,7 +240,10 @@ export function VariationsTab({ jobId }: VariationsTabProps) {
               className="w-full flex items-center gap-2 p-3 text-left"
             >
               <Icon className="w-4 h-4 shrink-0" />
-              <span className="flex-1 text-sm font-medium text-card-foreground truncate">{v.description}</span>
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] text-muted-foreground font-medium truncate">{formatVariationCode(v)}</div>
+                <span className="text-sm font-medium text-card-foreground truncate block">{v.description}</span>
+              </div>
               <span className="text-sm font-bold text-card-foreground">${v.value.toLocaleString()}</span>
               <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", STATUS_STYLES[v.status])}>
                 {v.status}
@@ -248,6 +253,7 @@ export function VariationsTab({ jobId }: VariationsTabProps) {
 
             {expanded && (
               <div className="border-t border-border p-3 space-y-3">
+                <div className="text-xs font-medium text-muted-foreground">Variation Ref: {formatVariationCode(v)}</div>
                 {v.materials.length > 0 && (
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground mb-1 flex items-center gap-1"><Package className="w-3 h-3" /> Materials</p>

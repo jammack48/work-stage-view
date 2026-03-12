@@ -16,6 +16,8 @@ export interface LabourItem {
 export interface Variation {
   id: string;
   job_id: string;
+  job_number: string;
+  variation_number: number;
   description: string;
   value: number;
   status: "Pending" | "Approved" | "Rejected";
@@ -24,14 +26,26 @@ export interface Variation {
   created_at: string;
 }
 
-export type VariationInsert = Omit<Variation, "id" | "created_at">;
+export interface VariationInsert {
+  job_id: string;
+  job_number?: string;
+  description: string;
+  value: number;
+  status: Variation["status"];
+  materials: MaterialItem[];
+  labour: LabourItem[];
+}
 
 const STORAGE_KEY = "tradie-toolbelt:variations";
 
 function rowToVariation(r: any): Variation {
+  const jobRef = r.job_number ?? r.job_id;
+  const variationNumber = Number(r.variation_number ?? 1);
   return {
     id: r.id,
     job_id: r.job_id,
+    job_number: jobRef,
+    variation_number: Number.isFinite(variationNumber) && variationNumber > 0 ? variationNumber : 1,
     description: r.description,
     value: Number(r.value ?? 0),
     status: r.status ?? "Pending",
@@ -39,6 +53,11 @@ function rowToVariation(r: any): Variation {
     labour: (r.labour ?? []) as LabourItem[],
     created_at: r.created_at,
   };
+}
+
+function isMissingVariationColumnError(error: any): boolean {
+  const message = String(error?.message ?? "").toLowerCase();
+  return message.includes("variation_number") || message.includes("job_number");
 }
 
 function isMissingVariationsTableError(error: any): boolean {
@@ -68,6 +87,48 @@ function writeLocalVariations(variations: Variation[]): void {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(variations));
 }
 
+function getNextVariationNumber(existing: Variation[], jobId: string): number {
+  const max = existing
+    .filter((variation) => variation.job_id === jobId)
+    .reduce((highest, variation) => Math.max(highest, variation.variation_number ?? 0), 0);
+  return max + 1;
+}
+
+export function formatVariationCode(variation: Pick<Variation, "job_number" | "job_id" | "variation_number">): string {
+  const jobRef = variation.job_number || variation.job_id;
+  const number = variation.variation_number || 1;
+  return `${jobRef}V${number}`;
+}
+
+export async function fetchVariationCounts(jobIds: string[]): Promise<Record<string, number>> {
+  if (jobIds.length === 0) return {};
+  const uniqueJobIds = [...new Set(jobIds)];
+  const { data, error } = await (supabase as any)
+    .from("variations")
+    .select("job_id")
+    .in("job_id", uniqueJobIds);
+
+  if (!error) {
+    const counts: Record<string, number> = {};
+    for (const row of data ?? []) {
+      const key = String(row.job_id);
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  if (!isMissingVariationsTableError(error)) {
+    throw new Error("Failed to fetch variation counts: " + error.message);
+  }
+
+  const counts: Record<string, number> = {};
+  for (const variation of readLocalVariations()) {
+    if (!uniqueJobIds.includes(variation.job_id)) continue;
+    counts[variation.job_id] = (counts[variation.job_id] ?? 0) + 1;
+  }
+  return counts;
+}
+
 export async function fetchVariations(jobId: string): Promise<Variation[]> {
   const { data, error } = await (supabase as any)
     .from("variations")
@@ -89,8 +150,12 @@ export async function fetchVariations(jobId: string): Promise<Variation[]> {
 }
 
 export async function addVariation(v: VariationInsert): Promise<Variation> {
+  const existingRows = await fetchVariations(v.job_id);
+  const nextVariationNumber = getNextVariationNumber(existingRows, v.job_id);
   const payload = {
     job_id: v.job_id,
+    job_number: v.job_number || v.job_id,
+    variation_number: nextVariationNumber,
     description: v.description,
     value: v.value,
     status: v.status,
@@ -108,6 +173,31 @@ export async function addVariation(v: VariationInsert): Promise<Variation> {
     return rowToVariation(data);
   }
 
+  if (isMissingVariationColumnError(error)) {
+    const minimalPayload = {
+      job_id: v.job_id,
+      description: v.description,
+      value: v.value,
+      status: v.status,
+      materials: v.materials,
+      labour: v.labour,
+    };
+
+    const retry = await (supabase as any)
+      .from("variations")
+      .insert(minimalPayload)
+      .select("*")
+      .single();
+
+    if (!retry.error) {
+      return rowToVariation({
+        ...retry.data,
+        job_number: v.job_number || v.job_id,
+        variation_number: nextVariationNumber,
+      });
+    }
+  }
+
   if (!isMissingVariationsTableError(error)) {
     throw new Error("Failed to add variation: " + error.message);
   }
@@ -115,6 +205,8 @@ export async function addVariation(v: VariationInsert): Promise<Variation> {
   const localVariation: Variation = {
     id: crypto.randomUUID(),
     created_at: new Date().toISOString(),
+    job_number: v.job_number || v.job_id,
+    variation_number: nextVariationNumber,
     ...payload,
   };
   const existing = readLocalVariations();

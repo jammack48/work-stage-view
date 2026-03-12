@@ -1,7 +1,8 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_MOBILE, formatTime } from "./scheduleData";
 import { ScheduleJobCard } from "./ScheduleJobCard";
 import { cn } from "@/lib/utils";
+import { fetchVariationCounts } from "@/services/variationsService";
 
 interface TimeGridMobileProps {
   jobs: ScheduleJob[];
@@ -41,6 +42,7 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
 }
 
 export function TimeGridMobile({ jobs, dayOffset, onDayChange, onNextWeek, onPrevWeek, onSlotClick, activeSlot, activeDuration = 2 }: TimeGridMobileProps) {
+  const [variationCounts, setVariationCounts] = useState<Record<string, number>>({});
   const isBookingMode = !!onSlotClick;
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -98,6 +100,21 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onNextWeek, onPre
   const dayJobs = useMemo(() => jobs.filter((j) => j.dayOffset === dayOffset), [jobs, dayOffset]);
   const layout = useMemo(() => computeOverlapLayout(dayJobs), [dayJobs]);
 
+  useEffect(() => {
+    let mounted = true;
+    fetchVariationCounts(jobs.map((job) => job.id))
+      .then((counts) => {
+        if (mounted) setVariationCounts(counts);
+      })
+      .catch(() => {
+        if (mounted) setVariationCounts({});
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [jobs]);
+
   return (
     <div className="grid grid-cols-[40px_1fr] touch-pan-y" style={{ height: totalHeight, overscrollBehaviorX: "none" }} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
       {/* Time labels */}
@@ -142,7 +159,11 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onNextWeek, onPre
                 width: `${widthPct}%`,
               }}
             >
-              <ScheduleJobCard job={job} style={{ height: "100%", pointerEvents: isBookingMode ? "none" : undefined }} />
+              <ScheduleJobCard
+                job={job}
+                variationCount={variationCounts[job.id] ?? 0}
+                style={{ height: "100%", pointerEvents: isBookingMode ? "none" : undefined }}
+              />
             </div>
           );
         })}
