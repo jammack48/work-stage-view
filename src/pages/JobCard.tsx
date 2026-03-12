@@ -91,6 +91,7 @@ export default function JobCard() {
     time: <TimeTab timeEntries={job.timeEntries} />,
     forms: <FormsTab />,
     invoice: <InvoiceTab job={job} />,
+    variations: <VariationsTab jobId={job.id} />,
     sequences: <SequencesTab category="invoices" />,
   };
 

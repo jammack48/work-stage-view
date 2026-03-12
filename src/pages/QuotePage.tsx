@@ -220,6 +220,7 @@ export default function QuotePage() {
         } />
       </div>
     ),
+    variations: <VariationsTab jobId={job.id} />,
     sequences: <SequencesTab category="quotes" />,
     notes: <NotesTab notes={job.notes} />,
     history: <HistoryTab job={job} />,

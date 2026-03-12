@@ -111,6 +111,7 @@ export default function WorkJobCard() {
     notes: <NotesTab notes={job.notes} />,
     photos: <PhotosTab photos={job.photos} />,
     forms: <FormsTab completedChecklists={completedChecklists} />,
+    variations: <VariationsTab jobId={job.id} />,
   };
 
   const jobHeading = (
