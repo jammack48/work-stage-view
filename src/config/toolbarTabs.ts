@@ -3,7 +3,7 @@ import {
   ClipboardList, List, StickyNote, History, DollarSign, Clock, Camera,
   ClipboardCheck, Star, Archive, Building2, Bell, Palette, CreditCard,
   Shield, Wrench, Briefcase, UserPlus, BarChart3, Plus, Mail, MessageSquare,
-  ArrowLeft, Receipt, FileCheck,
+  ArrowLeft, Receipt, FileCheck, GitBranch,
 } from "lucide-react";
 
 export interface ToolbarTab {
