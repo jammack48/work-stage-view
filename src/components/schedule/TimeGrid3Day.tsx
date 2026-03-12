@@ -48,26 +48,6 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe, jobs: 
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
   const totalHeight = hours.length * HOUR_HEIGHT_DESKTOP;
 
-  const visibleJobIds = useMemo(
-    () => [...new Set(dayLayouts.flatMap((layout) => layout.map(({ job }) => job.id)))],
-    [dayLayouts]
-  );
-
-  useEffect(() => {
-    let mounted = true;
-    fetchVariationCounts(visibleJobIds)
-      .then((counts) => {
-        if (mounted) setVariationCounts(counts);
-      })
-      .catch(() => {
-        if (mounted) setVariationCounts({});
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [visibleJobIds]);
-
   // Touch swipe
   const touchStartX = useRef<number | null>(null);
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
