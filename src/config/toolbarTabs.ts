@@ -51,7 +51,6 @@ export const BUNDLES_EXTRAS: ToolbarTab[] = [
 export const QUOTE_EXTRAS: ToolbarTab[] = [
   BACK_TAB,
   { id: "overview", label: "Overview", icon: ClipboardList },
-  { id: "stages", label: "Stages", icon: Layers },
   { id: "messages", label: "Messages", icon: Mail },
   { id: "line-items", label: "Line Items", icon: List },
   { id: "sequences", label: "Sequences", icon: Settings },

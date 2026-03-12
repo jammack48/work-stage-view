@@ -212,7 +212,6 @@ export default function QuotePage() {
 
   const tabContent: Record<QuotePageTab, React.ReactNode> = {
     overview: <QuoteOverviewTab job={job} scope={job.description || ""} onScopeChange={() => {}} />,
-    stages: <StagesTab stages={job.stages} jobId={job.id} />,
     messages: <MessagesTab recordType="quote" recordId={job.id} showPipelineLink pipelinePath="/" />,
     "line-items": (
       <div className="space-y-4">
