@@ -21,12 +21,12 @@ function rowToCustomer(r: any): DemoCustomer {
 
 /** Seed customers from JSON if table is empty */
 async function seedCustomersIfEmpty(): Promise<void> {
-  const { count, error } = await supabase
+  const { count, error } = await (supabase as any)
     .from("customers")
     .select("id", { count: "exact", head: true });
 
   if (error) throw error;
-  if ((count ?? 0) > 0) return; // already seeded
+  if ((count ?? 0) > 0) return;
 
   const rows = (customersSeed as unknown as DemoCustomer[]).map((c) => ({
     name: c.name,
@@ -41,10 +41,9 @@ async function seedCustomersIfEmpty(): Promise<void> {
     job_history: c.jobHistory,
   }));
 
-  // Insert in batches of 20
   for (let i = 0; i < rows.length; i += 20) {
     const batch = rows.slice(i, i + 20);
-    const { error: insertErr } = await supabase.from("customers").insert(batch);
+    const { error: insertErr } = await (supabase as any).from("customers").insert(batch);
     if (insertErr) console.error("Seed customers error:", insertErr);
   }
 }
@@ -53,7 +52,7 @@ async function seedCustomersIfEmpty(): Promise<void> {
 export async function fetchCustomers(): Promise<DemoCustomer[]> {
   await seedCustomersIfEmpty();
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("customers")
     .select("*")
     .order("id", { ascending: true });
@@ -62,9 +61,9 @@ export async function fetchCustomers(): Promise<DemoCustomer[]> {
   return (data ?? []).map(rowToCustomer);
 }
 
-/** Add a new customer to the external Supabase */
+/** Add a new customer */
 export async function dbAddCustomer(customer: Omit<DemoCustomer, "id">): Promise<DemoCustomer> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("customers")
     .insert({
       name: customer.name,
@@ -85,7 +84,7 @@ export async function dbAddCustomer(customer: Omit<DemoCustomer, "id">): Promise
   return rowToCustomer(data);
 }
 
-/** Update a customer in the external Supabase */
+/** Update a customer */
 export async function dbUpdateCustomer(id: number, updates: Partial<DemoCustomer>): Promise<void> {
   const dbUpdates: Record<string, any> = {};
   if (updates.name !== undefined) dbUpdates.name = updates.name;
@@ -99,7 +98,7 @@ export async function dbUpdateCustomer(id: number, updates: Partial<DemoCustomer
   if (updates.contacts !== undefined) dbUpdates.contacts = updates.contacts;
   if (updates.jobHistory !== undefined) dbUpdates.job_history = updates.jobHistory;
 
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("customers")
     .update(dbUpdates)
     .eq("id", id);
