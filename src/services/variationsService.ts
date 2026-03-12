@@ -37,18 +37,6 @@ export interface VariationInsert {
 }
 
 const STORAGE_KEY = "tradie-toolbelt:variations";
-const VARIATIONS_CHANGED_EVENT = "tradie-toolbelt:variations-changed";
-
-function emitVariationsChanged(): void {
-  if (typeof window === "undefined") return;
-  window.dispatchEvent(new CustomEvent(VARIATIONS_CHANGED_EVENT));
-}
-
-export function onVariationsChanged(callback: () => void): () => void {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener(VARIATIONS_CHANGED_EVENT, callback);
-  return () => window.removeEventListener(VARIATIONS_CHANGED_EVENT, callback);
-}
 
 function rowToVariation(r: any): Variation {
   const jobRef = r.job_number ?? r.job_id;
@@ -115,23 +103,16 @@ export function formatVariationCode(variation: Pick<Variation, "job_number" | "j
 export async function fetchVariationCounts(jobIds: string[]): Promise<Record<string, number>> {
   if (jobIds.length === 0) return {};
   const uniqueJobIds = [...new Set(jobIds)];
-  const localCounts: Record<string, number> = {};
-  for (const variation of readLocalVariations()) {
-    if (!uniqueJobIds.includes(variation.job_id)) continue;
-    localCounts[variation.job_id] = (localCounts[variation.job_id] ?? 0) + 1;
-  }
-
   const { data, error } = await (supabase as any)
     .from("variations")
     .select("job_id")
     .in("job_id", uniqueJobIds);
 
   if (!error) {
-    const counts: Record<string, number> = { ...localCounts };
+    const counts: Record<string, number> = {};
     for (const row of data ?? []) {
       const key = String(row.job_id);
-      const remoteCount = (counts[key] ?? 0) + 1;
-      counts[key] = Math.max(remoteCount, localCounts[key] ?? 0);
+      counts[key] = (counts[key] ?? 0) + 1;
     }
     return counts;
   }
@@ -140,7 +121,12 @@ export async function fetchVariationCounts(jobIds: string[]): Promise<Record<str
     throw new Error("Failed to fetch variation counts: " + error.message);
   }
 
-  return localCounts;
+  const counts: Record<string, number> = {};
+  for (const variation of readLocalVariations()) {
+    if (!uniqueJobIds.includes(variation.job_id)) continue;
+    counts[variation.job_id] = (counts[variation.job_id] ?? 0) + 1;
+  }
+  return counts;
 }
 
 export async function fetchVariations(jobId: string): Promise<Variation[]> {
@@ -184,7 +170,6 @@ export async function addVariation(v: VariationInsert): Promise<Variation> {
     .single();
 
   if (!error) {
-    emitVariationsChanged();
     return rowToVariation(data);
   }
 
@@ -205,7 +190,6 @@ export async function addVariation(v: VariationInsert): Promise<Variation> {
       .single();
 
     if (!retry.error) {
-      emitVariationsChanged();
       return rowToVariation({
         ...retry.data,
         job_number: v.job_number || v.job_id,
@@ -227,7 +211,6 @@ export async function addVariation(v: VariationInsert): Promise<Variation> {
   };
   const existing = readLocalVariations();
   writeLocalVariations([localVariation, ...existing]);
-  emitVariationsChanged();
   return localVariation;
 }
 
@@ -241,7 +224,6 @@ export async function updateVariationStatus(
     .eq("id", id);
 
   if (!error) {
-    emitVariationsChanged();
     return;
   }
 
@@ -251,7 +233,6 @@ export async function updateVariationStatus(
 
   const existing = readLocalVariations();
   writeLocalVariations(existing.map((variation) => (variation.id === id ? { ...variation, status } : variation)));
-  emitVariationsChanged();
 }
 
 export async function deleteVariation(id: string): Promise<void> {
@@ -261,7 +242,6 @@ export async function deleteVariation(id: string): Promise<void> {
     .eq("id", id);
 
   if (!error) {
-    emitVariationsChanged();
     return;
   }
 
@@ -271,5 +251,4 @@ export async function deleteVariation(id: string): Promise<void> {
 
   const existing = readLocalVariations();
   writeLocalVariations(existing.filter((variation) => variation.id !== id));
-  emitVariationsChanged();
 }

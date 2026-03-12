@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_MOBILE, formatTime } from "./scheduleData";
 import { ScheduleJobCard } from "./ScheduleJobCard";
 import { cn } from "@/lib/utils";
-import { fetchVariationCounts, onVariationsChanged } from "@/services/variationsService";
+import { fetchVariationCounts } from "@/services/variationsService";
 
 interface TimeGridMobileProps {
   jobs: ScheduleJob[];
@@ -102,23 +102,16 @@ export function TimeGridMobile({ jobs, dayOffset, onDayChange, onNextWeek, onPre
 
   useEffect(() => {
     let mounted = true;
-
-    const refreshVariationCounts = () => {
-      fetchVariationCounts(jobs.map((job) => job.id))
-        .then((counts) => {
-          if (mounted) setVariationCounts(counts);
-        })
-        .catch(() => {
-          if (mounted) setVariationCounts({});
-        });
-    };
-
-    refreshVariationCounts();
-    const unsubscribe = onVariationsChanged(refreshVariationCounts);
+    fetchVariationCounts(jobs.map((job) => job.id))
+      .then((counts) => {
+        if (mounted) setVariationCounts(counts);
+      })
+      .catch(() => {
+        if (mounted) setVariationCounts({});
+      });
 
     return () => {
       mounted = false;
-      unsubscribe();
     };
   }, [jobs]);
 

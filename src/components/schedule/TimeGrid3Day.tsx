@@ -3,7 +3,7 @@ import { format, isToday, startOfWeek, differenceInCalendarDays } from "date-fns
 import { cn } from "@/lib/utils";
 import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_DESKTOP, formatTime, generateWeekJobs } from "./scheduleData";
 import { ScheduleJobCard } from "./ScheduleJobCard";
-import { fetchVariationCounts, onVariationsChanged } from "@/services/variationsService";
+import { fetchVariationCounts } from "@/services/variationsService";
 
 interface TimeGrid3DayProps {
   dates: Date[];
@@ -47,33 +47,6 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe, jobs: 
   const [variationCounts, setVariationCounts] = useState<Record<string, number>>({});
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
   const totalHeight = hours.length * HOUR_HEIGHT_DESKTOP;
-
-  const visibleJobIds = useMemo(
-    () => [...new Set(dayLayouts.flatMap((layout) => layout.map(({ job }) => job.id)))],
-    [dayLayouts]
-  );
-
-  useEffect(() => {
-    let mounted = true;
-
-    const refreshVariationCounts = () => {
-      fetchVariationCounts(visibleJobIds)
-        .then((counts) => {
-          if (mounted) setVariationCounts(counts);
-        })
-        .catch(() => {
-          if (mounted) setVariationCounts({});
-        });
-    };
-
-    refreshVariationCounts();
-    const unsubscribe = onVariationsChanged(refreshVariationCounts);
-
-    return () => {
-      mounted = false;
-      unsubscribe();
-    };
-  }, [visibleJobIds]);
 
   // Touch swipe
   const touchStartX = useRef<number | null>(null);
@@ -121,6 +94,23 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe, jobs: 
       return computeOverlapLayout(dayJobs);
     });
   }, [dates, staffFilter, externalJobs]);
+
+  const visibleJobIds = useMemo(
+    () => [...new Set(dayLayouts.flatMap((layout) => layout.map(({ job }) => job.id)))],
+    [dayLayouts]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    fetchVariationCounts(visibleJobIds)
+      .then((counts) => {
+        if (mounted) setVariationCounts(counts);
+      })
+      .catch(() => {
+        if (mounted) setVariationCounts({});
+      });
+    return () => { mounted = false; };
+  }, [visibleJobIds]);
 
   return (
     <div className="overflow-hidden touch-pan-y" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>

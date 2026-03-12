@@ -3,7 +3,7 @@ import { addDays, format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_DESKTOP, formatTime } from "./scheduleData";
 import { ScheduleJobCard } from "./ScheduleJobCard";
-import { fetchVariationCounts, onVariationsChanged } from "@/services/variationsService";
+import { fetchVariationCounts } from "@/services/variationsService";
 
 interface TimeGridDesktopProps {
   weekStart: Date;
@@ -53,23 +53,16 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
 
   useEffect(() => {
     let mounted = true;
-
-    const refreshVariationCounts = () => {
-      fetchVariationCounts(jobs.map((job) => job.id))
-        .then((counts) => {
-          if (mounted) setVariationCounts(counts);
-        })
-        .catch(() => {
-          if (mounted) setVariationCounts({});
-        });
-    };
-
-    refreshVariationCounts();
-    const unsubscribe = onVariationsChanged(refreshVariationCounts);
+    fetchVariationCounts(jobs.map((job) => job.id))
+      .then((counts) => {
+        if (mounted) setVariationCounts(counts);
+      })
+      .catch(() => {
+        if (mounted) setVariationCounts({});
+      });
 
     return () => {
       mounted = false;
-      unsubscribe();
     };
   }, [jobs]);
 
