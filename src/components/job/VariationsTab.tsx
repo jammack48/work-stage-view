@@ -93,6 +93,7 @@ export function VariationsTab({ jobId }: VariationsTabProps) {
         labour: labour.filter((l) => l.description.trim()),
       });
       setVariations((prev) => [v, ...prev]);
+      setExpandedId(v.id);
       resetForm();
       toast({ title: "Variation added" });
     } catch (e: any) {
@@ -224,7 +225,7 @@ export function VariationsTab({ jobId }: VariationsTabProps) {
 
       {/* List */}
       {variations.length === 0 && !showForm && (
-        <p className="text-sm text-muted-foreground text-center py-8">No variations yet. Tap Add to create one.</p>
+        <p className="text-sm text-muted-foreground text-center py-8">No variations yet. Tap Add to create the variation first, then open it to complete details.</p>
       )}
 
       {variations.map((v) => {
