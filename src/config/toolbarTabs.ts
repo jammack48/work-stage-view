@@ -150,6 +150,7 @@ export const WORK_JOB_EXTRAS: ToolbarTab[] = [
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "photos", label: "Photos", icon: Camera },
   { id: "forms", label: "Forms", icon: ClipboardCheck },
+  { id: "variations", label: "Variations", icon: GitBranch },
 ];
 
 /** Build tabs for the Home/Pipeline page (prepends common tabs) */
