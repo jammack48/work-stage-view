@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { JobDetail } from "@/data/dummyJobDetails";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { formatJobNumber } from "@/lib/jobNumber";
 
 interface WorkOverviewTabProps {
   job: JobDetail;
@@ -21,7 +22,7 @@ function getStageSummary(stage: string): string {
 
 export function WorkOverviewTab({ job }: WorkOverviewTabProps) {
   const { prefix } = useJobPrefix();
-  const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
+  const displayId = formatJobNumber(job.id, prefix);
   const mapsUrl = job.address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.address)}`
     : null;

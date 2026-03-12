@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Clock3, CircleCheck } from "lucide-react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
@@ -20,6 +20,7 @@ import { stageForPipelineEvent, stageFromQuoteStatus } from "@/services/pipeline
 import { useThresholds } from "@/contexts/ThresholdContext";
 import type { DemoCustomer } from "@/types/demoData";
 import { LeadBadge } from "@/components/LeadBadge";
+import { fetchVariationCounts } from "@/services/variationsService";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
@@ -59,6 +60,7 @@ export default function QuotePage() {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
+  const [variationCount, setVariationCount] = useState(0);
   const { jobs, updateJobStage } = useDemoData();
   const { getThresholds, getLabel } = useThresholds();
 
@@ -111,6 +113,14 @@ export default function QuotePage() {
     setShowLeaveDialog(false);
     setPendingNavId(null);
   };
+
+  useEffect(() => {
+    if (isNew || !id) {
+      setVariationCount(0);
+      return;
+    }
+    fetchVariationCounts([id]).then((counts) => setVariationCount(counts[id] ?? 0)).catch(() => setVariationCount(0));
+  }, [id, isNew]);
 
   if (isNew && !funnelComplete) {
     return (
@@ -264,6 +274,7 @@ export default function QuotePage() {
         activeTab={activeTab}
         onTabChange={handleTabChange}
         pageHeading={quoteHeading}
+        highlightedTabs={variationCount > 0 ? ["variations"] : []}
       >
         {tabContent[activeTab]}
       </PageToolbar>

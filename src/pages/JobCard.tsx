@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { JOB_EXTRAS } from "@/config/toolbarTabs";
 import { useDemoData } from "@/contexts/DemoDataContext";
 import { LeadBadge } from "@/components/LeadBadge";
+import { fetchVariationCounts } from "@/services/variationsService";
 
 type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences" | "messages" | "variations";
 
@@ -40,6 +41,7 @@ export default function JobCard() {
   const initialTab = (searchParams.get("tab") as JobTab) || "overview";
   const [activeTab, setActiveTab] = useState<JobTab>(initialTab);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
+  const [variationCount, setVariationCount] = useState(0);
   const actionParam = searchParams.get("action");
   const { jobs } = useDemoData();
 
@@ -71,6 +73,12 @@ export default function JobCard() {
       setCloseOutOpen(true);
     }
   }, [actionParam, isToInvoice]);
+
+  useEffect(() => {
+    if (!job) return;
+    fetchVariationCounts([job.id]).then((counts) => setVariationCount(counts[job.id] ?? 0)).catch(() => setVariationCount(0));
+  }, [job?.id]);
+
 
   if (!job) {
     return (
@@ -133,6 +141,7 @@ export default function JobCard() {
           setActiveTab(id as JobTab);
         }}
         pageHeading={jobHeading}
+        highlightedTabs={variationCount > 0 ? ["variations"] : []}
       >
         {tabContent[activeTab]}
       </PageToolbar>

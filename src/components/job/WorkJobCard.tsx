@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { getJobDetail } from "@/data/dummyJobDetails";
 import { PageToolbar } from "@/components/PageToolbar";
@@ -21,6 +21,8 @@ import { useAppMode } from "@/contexts/AppModeContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { fetchVariationCounts } from "@/services/variationsService";
+import { formatJobNumber } from "@/lib/jobNumber";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { MaterialItem } from "@/data/dummyJobDetails";
 import type { CompletedChecklist } from "@/data/dummyChecklists";
@@ -91,9 +93,15 @@ export default function WorkJobCard() {
   const returnDate = searchParams.get("returnDate") || "";
   const returnTime = searchParams.get("returnTime") || "";
   const [showBookedBanner, setShowBookedBanner] = useState(returnBooked);
+  const [variationCount, setVariationCount] = useState(0);
 
   const job = getJobDetail(id || "", locState || undefined);
-  const displayId = job ? job.id.replace(/^[A-Z]+-/, `${prefix}-`) : "";
+  const displayId = job ? formatJobNumber(job.id, prefix) : "";
+
+  useEffect(() => {
+    if (!job) return;
+    fetchVariationCounts([job.id]).then((counts) => setVariationCount(counts[job.id] ?? 0)).catch(() => setVariationCount(0));
+  }, [job?.id]);
 
   if (!job) {
     return (
@@ -132,6 +140,7 @@ export default function WorkJobCard() {
           setActiveTab(tabId as WorkJobTab);
         }}
         pageHeading={jobHeading}
+        highlightedTabs={variationCount > 0 ? ["variations"] : []}
         tutorialKey="work-job"
       >
         {/* Return visit booked banner */}
