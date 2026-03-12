@@ -32,7 +32,7 @@ function UnreadDot() {
 }
 
 /** Job preview row inside a color band */
-function JobPreview({ job, notifStyle }: { job: Job & { jobType?: string }; notifStyle: "icon" | "pulse" }) {
+function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse" }) {
   const { prefix } = useJobPrefix();
   const navigate = useNavigate();
   const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
