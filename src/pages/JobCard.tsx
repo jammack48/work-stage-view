@@ -82,7 +82,6 @@ export default function JobCard() {
 
   const tabContent: Record<JobTab, React.ReactNode> = {
     overview: <OverviewTab job={job} />,
-    stages: <StagesTab stages={job.stages} jobId={job.id} />,
     messages: <MessagesTab recordType="job" recordId={job.id} showPipelineLink pipelinePath="/" />,
     history: <HistoryTab job={job} />,
     quote: <QuoteTab job={job} />,
