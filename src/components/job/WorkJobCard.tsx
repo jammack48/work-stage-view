@@ -8,6 +8,7 @@ import { TimeTab } from "@/components/job/TimeTab";
 import { NotesTab } from "@/components/job/NotesTab";
 import { PhotosTab } from "@/components/job/PhotosTab";
 import { FormsTab } from "@/components/job/FormsTab";
+import { VariationsTab } from "@/components/job/VariationsTab";
 import { JobCompletionFlow } from "@/components/job/JobCompletionFlow";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { SoleTraderCloseOutFlow } from "@/components/job/SoleTraderCloseOutFlow";
