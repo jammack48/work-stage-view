@@ -8,6 +8,7 @@ interface ScheduleJobCardProps {
   job: ScheduleJob;
   style?: React.CSSProperties;
   compact?: boolean;
+  variationCount?: number;
 }
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
@@ -16,7 +17,7 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
   Invoiced: "outline",
 };
 
-export function ScheduleJobCard({ job, style, compact }: ScheduleJobCardProps) {
+export function ScheduleJobCard({ job, style, compact, variationCount = 0 }: ScheduleJobCardProps) {
   const navigate = useNavigate();
   const { prefix } = useJobPrefix();
   const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
@@ -42,6 +43,13 @@ export function ScheduleJobCard({ job, style, compact }: ScheduleJobCardProps) {
           <div className={cn("text-muted-foreground truncate", compact ? "text-[9px]" : "text-[11px]")}>
             {job.client}
           </div>
+          {variationCount > 0 && (
+            <div className="mt-0.5">
+              <Badge variant="outline" className={cn("text-[9px] h-4 px-1.5 py-0", compact && "text-[8px]")}>
+                V{variationCount}
+              </Badge>
+            </div>
+          )}
         </div>
         {!compact && (
           <Badge variant={STATUS_VARIANT[job.status] || "secondary"} className="text-[9px] px-1.5 py-0 shrink-0 h-4">

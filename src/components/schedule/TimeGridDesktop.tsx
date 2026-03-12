@@ -1,8 +1,9 @@
-import { useMemo, useRef, useCallback } from "react";
+import { useMemo, useRef, useCallback, useEffect, useState } from "react";
 import { addDays, format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_DESKTOP, formatTime } from "./scheduleData";
 import { ScheduleJobCard } from "./ScheduleJobCard";
+import { fetchVariationCounts } from "@/services/variationsService";
 
 interface TimeGridDesktopProps {
   weekStart: Date;
@@ -48,6 +49,23 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
 }
 
 export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, activeSlot, activeDuration = 2, visibleDays = 7, startDayOffset = 0, onWindowShift }: TimeGridDesktopProps) {
+  const [variationCounts, setVariationCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let mounted = true;
+    fetchVariationCounts(jobs.map((job) => job.id))
+      .then((counts) => {
+        if (mounted) setVariationCounts(counts);
+      })
+      .catch(() => {
+        if (mounted) setVariationCounts({});
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [jobs]);
+
   // Touch swipe handling
   const touchStartX = useRef<number | null>(null);
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -148,7 +166,12 @@ export function TimeGridDesktop({ weekStart, jobs, selectedDay, onSlotClick, act
                       width: `${widthPct}%`,
                     }}
                   >
-                    <ScheduleJobCard job={job} compact={totalCols > 2 || visibleDays <= 3} style={{ height: "100%", pointerEvents: onSlotClick ? "none" : undefined }} />
+                    <ScheduleJobCard
+                      job={job}
+                      variationCount={variationCounts[job.id] ?? 0}
+                      compact={totalCols > 2 || visibleDays <= 3}
+                      style={{ height: "100%", pointerEvents: onSlotClick ? "none" : undefined }}
+                    />
                   </div>
                 );
               })}
