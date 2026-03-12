@@ -10,6 +10,7 @@ import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
 import { TutorialTip } from "@/components/TutorialTip";
 import { LeadActionMenu } from "@/components/LeadActionMenu";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { formatJobNumber } from "@/lib/jobNumber";
 import { LeadBadge } from "@/components/LeadBadge";
 
 interface ExpandedStagePanelProps {
@@ -91,7 +92,7 @@ export function ExpandedStagePanel({ stage, jobs, onClose }: ExpandedStagePanelP
               onClick={isLeadStage ? undefined : () => navigate(isQuoteStage ? `/quote/${job.id}` : `/job/${job.id}${isToInvoice ? '?action=closeout' : ''}`, { state: { fromStage: stage } })}
             >
               <span className={cn("w-3 h-3 rounded-full shrink-0", getStatusDot(job, thresholds.greenMax, thresholds.orangeMax))} />
-              <span className="hidden sm:inline font-mono text-xs text-muted-foreground">{job.id.replace(/^[A-Z]+-/, `${prefix}-`)}</span>
+              <span className="hidden sm:inline font-mono text-xs text-muted-foreground">{formatJobNumber(job.id, prefix)}</span>
               <div className="flex-1 sm:flex-none flex items-center gap-2 min-w-0">
                 <span className="font-semibold text-card-foreground truncate">{job.client}</span>
                 <LeadBadge compact className="border-border/60 bg-secondary/70 text-foreground" />

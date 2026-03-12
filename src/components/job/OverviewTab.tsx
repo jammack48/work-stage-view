@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import type { JobDetail } from "@/data/dummyJobDetails";
 import { DUMMY_CUSTOMERS } from "@/data/dummyCustomers";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { formatJobNumber } from "@/lib/jobNumber";
 
 interface OverviewTabProps {
   job: JobDetail;
@@ -23,7 +24,7 @@ function getStageSummary(stage: string): string {
 export function OverviewTab({ job }: OverviewTabProps) {
   const navigate = useNavigate();
   const { prefix } = useJobPrefix();
-  const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
+  const displayId = formatJobNumber(job.id, prefix);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full">

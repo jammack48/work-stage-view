@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { formatVariationLabel } from "@/lib/jobNumber";
 
 export interface MaterialItem {
   name: string;
@@ -95,9 +96,9 @@ function getNextVariationNumber(existing: Variation[], jobId: string): number {
 }
 
 export function formatVariationCode(variation: Pick<Variation, "job_number" | "job_id" | "variation_number">): string {
-  const jobRef = variation.job_number || variation.job_id;
+  const jobRef = variation.job_id || variation.job_number;
   const number = variation.variation_number || 1;
-  return `${jobRef}V${number}`;
+  return formatVariationLabel(jobRef, number);
 }
 
 export async function fetchVariationCounts(jobIds: string[]): Promise<Record<string, number>> {

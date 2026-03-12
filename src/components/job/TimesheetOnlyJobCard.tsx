@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { DEMO_JOBS, generateWeekJobs } from "@/components/schedule/scheduleData";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { formatJobNumber } from "@/lib/jobNumber";
 import { startOfWeek } from "date-fns";
 import { toast } from "@/hooks/use-toast";
 
@@ -57,7 +58,7 @@ export default function TimesheetOnlyJobCard() {
   const manualHoursValue = Number(manualHours);
   const manualHoursValid = manualHours === "" || (!Number.isNaN(manualHoursValue) && manualHoursValue >= 0 && manualHoursValue <= 24);
   const canSubmit = manualHoursValid;
-  const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
+  const displayId = formatJobNumber(job.id, prefix);
   const elapsedHours = elapsedSeconds / 3600;
   const totalHours = manualHours === "" ? elapsedHours : manualHoursValue;
   const formatElapsed = (seconds: number) => {
