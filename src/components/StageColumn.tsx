@@ -11,7 +11,7 @@ import { TutorialTip } from "@/components/TutorialTip";
 import { LeadActionMenu } from "@/components/LeadActionMenu";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
 import { Badge } from "@/components/ui/badge";
-import { fetchVariationCounts } from "@/services/variationsService";
+import { fetchVariationCounts, onVariationsChanged } from "@/services/variationsService";
 
 function countByStatus(jobs: Job[], greenMax: number, orangeMax: number) {
   let red = 0, orange = 0, green = 0;
@@ -122,16 +122,23 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
 
   useEffect(() => {
     let mounted = true;
-    fetchVariationCounts(previewJobIds)
-      .then((counts) => {
-        if (mounted) setVariationCounts(counts);
-      })
-      .catch(() => {
-        if (mounted) setVariationCounts({});
-      });
+
+    const refreshVariationCounts = () => {
+      fetchVariationCounts(previewJobIds)
+        .then((counts) => {
+          if (mounted) setVariationCounts(counts);
+        })
+        .catch(() => {
+          if (mounted) setVariationCounts({});
+        });
+    };
+
+    refreshVariationCounts();
+    const unsubscribe = onVariationsChanged(refreshVariationCounts);
 
     return () => {
       mounted = false;
+      unsubscribe();
     };
   }, [previewJobIds]);
 

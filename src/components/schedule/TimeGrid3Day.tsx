@@ -3,7 +3,7 @@ import { format, isToday, startOfWeek, differenceInCalendarDays } from "date-fns
 import { cn } from "@/lib/utils";
 import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_DESKTOP, formatTime, generateWeekJobs } from "./scheduleData";
 import { ScheduleJobCard } from "./ScheduleJobCard";
-import { fetchVariationCounts } from "@/services/variationsService";
+import { fetchVariationCounts, onVariationsChanged } from "@/services/variationsService";
 
 interface TimeGrid3DayProps {
   dates: Date[];
@@ -55,16 +55,23 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe, jobs: 
 
   useEffect(() => {
     let mounted = true;
-    fetchVariationCounts(visibleJobIds)
-      .then((counts) => {
-        if (mounted) setVariationCounts(counts);
-      })
-      .catch(() => {
-        if (mounted) setVariationCounts({});
-      });
+
+    const refreshVariationCounts = () => {
+      fetchVariationCounts(visibleJobIds)
+        .then((counts) => {
+          if (mounted) setVariationCounts(counts);
+        })
+        .catch(() => {
+          if (mounted) setVariationCounts({});
+        });
+    };
+
+    refreshVariationCounts();
+    const unsubscribe = onVariationsChanged(refreshVariationCounts);
 
     return () => {
       mounted = false;
+      unsubscribe();
     };
   }, [visibleJobIds]);
 
