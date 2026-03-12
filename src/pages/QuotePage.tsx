@@ -24,7 +24,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-type QuotePageTab = "overview" | "messages" | "line-items" | "sequences" | "notes" | "history";
+type QuotePageTab = "overview" | "stages" | "messages" | "line-items" | "sequences" | "notes" | "history";
 
 interface QuotePageLocationState {
   customer?: DemoCustomer | null;
