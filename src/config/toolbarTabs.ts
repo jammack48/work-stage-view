@@ -3,7 +3,7 @@ import {
   ClipboardList, List, StickyNote, History, DollarSign, Clock, Camera,
   ClipboardCheck, Star, Archive, Building2, Bell, Palette, CreditCard,
   Shield, Wrench, Briefcase, UserPlus, BarChart3, Plus, Mail, MessageSquare,
-  ArrowLeft, Receipt, FileCheck,
+  ArrowLeft, Receipt, FileCheck, GitBranch,
 } from "lucide-react";
 
 export interface ToolbarTab {
@@ -53,6 +53,7 @@ export const QUOTE_EXTRAS: ToolbarTab[] = [
   { id: "overview", label: "Overview", icon: ClipboardList },
   { id: "messages", label: "Messages", icon: Mail },
   { id: "line-items", label: "Line Items", icon: List },
+  { id: "variations", label: "Variations", icon: GitBranch },
   { id: "sequences", label: "Sequences", icon: Settings },
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "history", label: "History", icon: History },
@@ -70,6 +71,7 @@ export const JOB_EXTRAS: ToolbarTab[] = [
   { id: "time", label: "Time", icon: Clock },
   { id: "forms", label: "Forms", icon: ClipboardCheck },
   { id: "invoice", label: "Invoice", icon: FileText },
+  { id: "variations", label: "Variations", icon: GitBranch },
   { id: "sequences", label: "Sequences", icon: Settings },
 ];
 
@@ -149,6 +151,7 @@ export const WORK_JOB_EXTRAS: ToolbarTab[] = [
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "photos", label: "Photos", icon: Camera },
   { id: "forms", label: "Forms", icon: ClipboardCheck },
+  { id: "variations", label: "Variations", icon: GitBranch },
 ];
 
 /** Build tabs for the Home/Pipeline page (prepends common tabs) */

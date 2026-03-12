@@ -15,13 +15,14 @@ import { FormsTab } from "@/components/job/FormsTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequencesTab } from "@/components/SequencesTab";
 import { MessagesTab } from "@/components/job/MessagesTab";
+import { VariationsTab } from "@/components/job/VariationsTab";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { cn } from "@/lib/utils";
 import { JOB_EXTRAS } from "@/config/toolbarTabs";
 import { useDemoData } from "@/contexts/DemoDataContext";
 import { LeadBadge } from "@/components/LeadBadge";
 
-type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences" | "messages";
+type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences" | "messages" | "variations";
 
 function statusColor(stage: string) {
   if (stage.includes("Paid")) return "bg-[hsl(var(--status-green))] text-white";
@@ -90,6 +91,7 @@ export default function JobCard() {
     time: <TimeTab timeEntries={job.timeEntries} />,
     forms: <FormsTab />,
     invoice: <InvoiceTab job={job} />,
+    variations: <VariationsTab jobId={job.id} />,
     sequences: <SequencesTab category="invoices" />,
   };
 

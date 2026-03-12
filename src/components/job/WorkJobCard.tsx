@@ -8,6 +8,7 @@ import { TimeTab } from "@/components/job/TimeTab";
 import { NotesTab } from "@/components/job/NotesTab";
 import { PhotosTab } from "@/components/job/PhotosTab";
 import { FormsTab } from "@/components/job/FormsTab";
+import { VariationsTab } from "@/components/job/VariationsTab";
 import { JobCompletionFlow } from "@/components/job/JobCompletionFlow";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { SoleTraderCloseOutFlow } from "@/components/job/SoleTraderCloseOutFlow";
@@ -24,7 +25,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import type { MaterialItem } from "@/data/dummyJobDetails";
 import type { CompletedChecklist } from "@/data/dummyChecklists";
 
-type WorkJobTab = "overview" | "scope" | "time" | "materials" | "notes" | "photos" | "forms";
+type WorkJobTab = "overview" | "scope" | "time" | "materials" | "notes" | "photos" | "forms" | "variations";
 
 function WorkMaterialsTab({ materials, showPricing }: { materials: MaterialItem[]; showPricing?: boolean }) {
   return (
@@ -110,6 +111,7 @@ export default function WorkJobCard() {
     notes: <NotesTab notes={job.notes} />,
     photos: <PhotosTab photos={job.photos} />,
     forms: <FormsTab completedChecklists={completedChecklists} />,
+    variations: <VariationsTab jobId={job.id} />,
   };
 
   const jobHeading = (
