@@ -95,6 +95,23 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe, jobs: 
     });
   }, [dates, staffFilter, externalJobs]);
 
+  const visibleJobIds = useMemo(
+    () => [...new Set(dayLayouts.flatMap((layout) => layout.map(({ job }) => job.id)))],
+    [dayLayouts]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    fetchVariationCounts(visibleJobIds)
+      .then((counts) => {
+        if (mounted) setVariationCounts(counts);
+      })
+      .catch(() => {
+        if (mounted) setVariationCounts({});
+      });
+    return () => { mounted = false; };
+  }, [visibleJobIds]);
+
   return (
     <div className="overflow-hidden touch-pan-y" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       {/* Day headers */}
