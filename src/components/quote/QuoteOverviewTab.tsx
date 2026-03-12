@@ -56,6 +56,31 @@ export function QuoteOverviewTab({ job, scope, onScopeChange }: QuoteOverviewTab
         </CardContent>
       </Card>
 
+      {job.stages && job.stages.length > 0 && (
+        <Card>
+          <CardContent className="pt-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <Layers className="w-4 h-4 text-primary" />
+              <Label className="text-xs text-muted-foreground">Project Stages</Label>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold">
+                {job.stages.filter(s => s.status === "Complete" || s.status === "Invoiced").length}/{job.stages.length} complete
+              </span>
+              <span className="text-xs text-muted-foreground">
+                ${job.stages.reduce((s, st) => s + st.quotedValue, 0).toLocaleString()} quoted
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full bg-[hsl(var(--status-green))] transition-all"
+                style={{ width: `${(job.stages.filter(s => s.status === "Complete" || s.status === "Invoiced").length / job.stages.length) * 100}%` }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {job.staff.length > 0 && (
         <Card>
           <CardContent className="pt-4 space-y-2">
