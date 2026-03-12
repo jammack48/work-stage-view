@@ -53,6 +53,7 @@ export const QUOTE_EXTRAS: ToolbarTab[] = [
   { id: "overview", label: "Overview", icon: ClipboardList },
   { id: "messages", label: "Messages", icon: Mail },
   { id: "line-items", label: "Line Items", icon: List },
+  { id: "variations", label: "Variations", icon: GitBranch },
   { id: "sequences", label: "Sequences", icon: Settings },
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "history", label: "History", icon: History },
