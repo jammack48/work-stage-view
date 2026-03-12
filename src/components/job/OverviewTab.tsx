@@ -161,6 +161,48 @@ export function OverviewTab({ job }: OverviewTabProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Stages Summary — project jobs only */}
+      {job.jobType === "project" && job.stages && job.stages.length > 0 && (
+        <Card>
+          <CardContent className="p-3 space-y-2">
+            <div className="text-sm font-medium flex items-center gap-2">
+              <Layers className="w-4 h-4 text-muted-foreground" /> Stages
+            </div>
+            {(() => {
+              const completed = job.stages!.filter((s) => s.status === "Complete" || s.status === "Invoiced").length;
+              const total = job.stages!.length;
+              const totalVariations = job.stages!.reduce((sum, s) => sum + s.variations.length, 0);
+              return (
+                <>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Progress</span>
+                    <span className="font-semibold">{completed}/{total} complete</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-[hsl(var(--status-green))] transition-all"
+                      style={{ width: `${(completed / total) * 100}%` }}
+                    />
+                  </div>
+                  {job.stages!.map((s) => (
+                    <div key={s.id} className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">{s.name}</span>
+                      <Badge variant="secondary" className="text-[10px]">{s.status}</Badge>
+                    </div>
+                  ))}
+                  {totalVariations > 0 && (
+                    <div className="flex items-center gap-1.5 text-xs text-[hsl(var(--status-orange))]">
+                      <AlertTriangle className="w-3 h-3" />
+                      {totalVariations} variation{totalVariations > 1 ? "s" : ""} across stages
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
