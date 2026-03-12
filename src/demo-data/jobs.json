@@ -207,8 +207,7 @@
     "ageDays": 1,
     "urgent": false,
     "stage": "Quote Sent",
-    "hasUnread": false,
-    "jobType": "project"
+    "hasUnread": false
   },
   {
     "id": "TB-0302",
