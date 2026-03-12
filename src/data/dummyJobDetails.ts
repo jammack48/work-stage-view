@@ -40,28 +40,6 @@ export interface TimeEntry {
   description: string;
 }
 
-export type StageStatus = "Pending" | "In Progress" | "Complete" | "Invoiced";
-export type VariationStatus = "Pending" | "Approved" | "Rejected";
-
-export interface JobVariation {
-  id: string;
-  description: string;
-  status: VariationStatus;
-  value: number;
-  materials: MaterialItem[];
-  labour: TimeEntry[];
-}
-
-export interface JobStage {
-  id: string;
-  name: string;
-  quotedValue: number;
-  status: StageStatus;
-  materials: MaterialItem[];
-  labour: TimeEntry[];
-  variations: JobVariation[];
-}
-
 export interface JobDetail {
   id: string;
   jobName: string;
@@ -84,8 +62,6 @@ export interface JobDetail {
   invoiceStatus: "Draft" | "Sent" | "Paid";
   labourTotal: number;
   extrasTotal: number;
-  jobType?: "service" | "project";
-  stages?: JobStage[];
 }
 
 const staffPool: StaffMember[] = [
@@ -219,89 +195,6 @@ const addresses = [
 // Schedule demo IDs → generate a valid JobDetail from schedule data
 import { DEMO_JOBS } from "@/components/schedule/scheduleData";
 
-// Project job IDs — these get stages & variations
-const PROJECT_JOB_IDS = new Set(["TB-0101", "TB-0301", "TB-0501"]);
-
-function isProjectJob(jobId: string): boolean {
-  return PROJECT_JOB_IDS.has(jobId);
-}
-
-function generateProjectStages(jobName: string): JobStage[] {
-  return [
-    {
-      id: "01",
-      name: "Prewire",
-      quotedValue: 3500,
-      status: "Complete",
-      materials: [
-        { id: "sm1", name: "Twin & Earth 2.5mm²", quantity: 3, unit: "roll", unitPrice: 89, supplier: "Sparky Supplies" },
-        { id: "sm2", name: "Junction Box IP65", quantity: 6, unit: "pcs", unitPrice: 8.5, supplier: "Sparky Supplies" },
-      ],
-      labour: [
-        { id: "sl1", date: "Mon 3 Feb", staff: "Jake Turner", hours: 8, description: "Cable runs and conduit install" },
-        { id: "sl2", date: "Tue 4 Feb", staff: "Ben Kowalski", hours: 8, description: "Assist cable pulls, clip and tidy" },
-      ],
-      variations: [],
-    },
-    {
-      id: "02",
-      name: "Fit-off",
-      quotedValue: 4500,
-      status: "In Progress",
-      materials: [
-        { id: "sm3", name: "LED Downlight 10W", quantity: 12, unit: "pcs", unitPrice: 24, supplier: "Sparky Supplies" },
-        { id: "sm4", name: "Copper Pipe 15mm (3m)", quantity: 4, unit: "length", unitPrice: 32, supplier: "PlumbWorld" },
-      ],
-      labour: [
-        { id: "sl3", date: "Wed 12 Feb", staff: "Jake Turner", hours: 6, description: "Mount switches, GPOs and lights" },
-      ],
-      variations: [
-        {
-          id: "V1",
-          description: "Add outdoor socket",
-          status: "Approved",
-          value: 380,
-          materials: [
-            { id: "vm1", name: "Weatherproof GPO IP54", quantity: 1, unit: "pcs", unitPrice: 42, supplier: "Sparky Supplies" },
-          ],
-          labour: [
-            { id: "vl1", date: "Thu 13 Feb", staff: "Jake Turner", hours: 1.5, description: "Run cable and install outdoor GPO" },
-          ],
-        },
-        {
-          id: "V2",
-          description: "Install dimmer switches",
-          status: "Pending",
-          value: 220,
-          materials: [
-            { id: "vm2", name: "LED Dimmer Switch", quantity: 3, unit: "pcs", unitPrice: 38, supplier: "Sparky Supplies" },
-          ],
-          labour: [],
-        },
-      ],
-    },
-    {
-      id: "03",
-      name: "Final",
-      quotedValue: 2500,
-      status: "Pending",
-      materials: [],
-      labour: [],
-      variations: [
-        {
-          id: "V1",
-          description: "Add smoke alarm compliance upgrade",
-          status: "Approved",
-          value: 450,
-          materials: [
-            { id: "vm3", name: "Interconnected Smoke Alarm", quantity: 4, unit: "pcs", unitPrice: 65, supplier: "Sparky Supplies" },
-          ],
-          labour: [],
-        },
-      ],
-    },
-  ];
-}
 
 export function getJobDetail(jobId: string, overrides?: { client?: string; address?: string; description?: string }): JobDetail | null {
   if (jobId === "TB-NEW") {
@@ -400,8 +293,6 @@ export function getJobDetail(jobId: string, overrides?: { client?: string; addre
   const staffCount = (idx % 3) + 1;
   const matCount = (idx % 4) + 5;
 
-  const isProject = isProjectJob(jobId);
-
   return {
     ...job,
     clientPhone: `021 ${300 + idx} ${1000 + idx}`,
@@ -418,7 +309,6 @@ export function getJobDetail(jobId: string, overrides?: { client?: string; addre
     invoiceStatus: idx % 3 === 0 ? "Paid" : idx % 3 === 1 ? "Sent" : "Draft",
     labourTotal: timePool.slice(0, (idx % 3) + 3).reduce((s, t) => s + t.hours * 85, 0),
     extrasTotal: (idx % 5) * 75,
-    ...(isProject ? { jobType: "project" as const, stages: generateProjectStages(job.jobName) } : { jobType: "service" as const }),
   };
 }
 
