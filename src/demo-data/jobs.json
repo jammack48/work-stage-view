@@ -7,7 +7,8 @@
     "ageDays": 1,
     "urgent": false,
     "stage": "Lead",
-    "hasUnread": false
+    "hasUnread": false,
+    "jobType": "project"
   },
   {
     "id": "TB-0102",
