@@ -9,6 +9,7 @@ export interface DemoJob {
   urgent: boolean;
   stage: Stage;
   hasUnread?: boolean;
+  jobType?: "service" | "project";
 }
 
 export interface DemoCustomer {

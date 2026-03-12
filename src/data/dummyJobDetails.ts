@@ -40,6 +40,28 @@ export interface TimeEntry {
   description: string;
 }
 
+export type StageStatus = "Pending" | "In Progress" | "Complete" | "Invoiced";
+export type VariationStatus = "Pending" | "Approved" | "Rejected";
+
+export interface JobVariation {
+  id: string;
+  description: string;
+  status: VariationStatus;
+  value: number;
+  materials: MaterialItem[];
+  labour: TimeEntry[];
+}
+
+export interface JobStage {
+  id: string;
+  name: string;
+  quotedValue: number;
+  status: StageStatus;
+  materials: MaterialItem[];
+  labour: TimeEntry[];
+  variations: JobVariation[];
+}
+
 export interface JobDetail {
   id: string;
   jobName: string;
@@ -62,6 +84,8 @@ export interface JobDetail {
   invoiceStatus: "Draft" | "Sent" | "Paid";
   labourTotal: number;
   extrasTotal: number;
+  jobType?: "service" | "project";
+  stages?: JobStage[];
 }
 
 const staffPool: StaffMember[] = [
