@@ -293,8 +293,6 @@ export function getJobDetail(jobId: string, overrides?: { client?: string; addre
   const staffCount = (idx % 3) + 1;
   const matCount = (idx % 4) + 5;
 
-  const isProject = isProjectJob(jobId);
-
   return {
     ...job,
     clientPhone: `021 ${300 + idx} ${1000 + idx}`,
@@ -311,7 +309,6 @@ export function getJobDetail(jobId: string, overrides?: { client?: string; addre
     invoiceStatus: idx % 3 === 0 ? "Paid" : idx % 3 === 1 ? "Sent" : "Draft",
     labourTotal: timePool.slice(0, (idx % 3) + 3).reduce((s, t) => s + t.hours * 85, 0),
     extrasTotal: (idx % 5) * 75,
-    ...(isProject ? { jobType: "project" as const, stages: generateProjectStages(job.jobName) } : { jobType: "service" as const }),
   };
 }
 
