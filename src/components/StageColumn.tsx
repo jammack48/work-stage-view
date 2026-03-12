@@ -32,7 +32,7 @@ function UnreadDot() {
 }
 
 /** Job preview row inside a color band */
-function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse" }) {
+function JobPreview({ job, notifStyle }: { job: Job & { jobType?: string }; notifStyle: "icon" | "pulse" }) {
   const { prefix } = useJobPrefix();
   const navigate = useNavigate();
   const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
@@ -43,10 +43,15 @@ function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse
       job.hasUnread && notifStyle === "pulse" && "animate-card-pulse bg-white/10"
     )}>
       <div className="font-semibold truncate">{job.client}</div>
-      <div className="mt-0.5">
+      <div className="mt-0.5 flex items-center gap-1">
         <Badge className="h-4 px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wide border-white/35 bg-black/25 text-white shadow-sm">
           {stageLabel}
         </Badge>
+        {job.jobType === "project" && (
+          <Badge className="h-4 px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wide border-primary/50 bg-primary/30 text-white shadow-sm">
+            Project
+          </Badge>
+        )}
       </div>
       <div className="truncate opacity-75">{displayId} · {job.jobName}</div>
       {job.hasUnread && (

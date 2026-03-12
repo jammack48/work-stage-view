@@ -7,7 +7,8 @@
     "ageDays": 1,
     "urgent": false,
     "stage": "Lead",
-    "hasUnread": false
+    "hasUnread": false,
+    "jobType": "project"
   },
   {
     "id": "TB-0102",
@@ -207,7 +208,8 @@
     "ageDays": 1,
     "urgent": false,
     "stage": "Quote Sent",
-    "hasUnread": false
+    "hasUnread": false,
+    "jobType": "project"
   },
   {
     "id": "TB-0302",
@@ -407,7 +409,8 @@
     "ageDays": 1,
     "urgent": false,
     "stage": "In Progress",
-    "hasUnread": false
+    "hasUnread": false,
+    "jobType": "project"
   },
   {
     "id": "TB-0502",

@@ -12,6 +12,7 @@ import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequenceSelector } from "@/components/quote/SequenceSelector";
 import { SequencesTab } from "@/components/SequencesTab";
 import { MessagesTab } from "@/components/job/MessagesTab";
+import { StagesTab } from "@/components/job/StagesTab";
 import { cn } from "@/lib/utils";
 import { QUOTE_EXTRAS } from "@/config/toolbarTabs";
 import { useDemoData } from "@/contexts/DemoDataContext";
@@ -24,7 +25,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-type QuotePageTab = "overview" | "messages" | "line-items" | "sequences" | "notes" | "history";
+type QuotePageTab = "overview" | "stages" | "messages" | "line-items" | "sequences" | "notes" | "history";
 
 interface QuotePageLocationState {
   customer?: DemoCustomer | null;
@@ -211,6 +212,7 @@ export default function QuotePage() {
 
   const tabContent: Record<QuotePageTab, React.ReactNode> = {
     overview: <QuoteOverviewTab job={job} scope={job.description || ""} onScopeChange={() => {}} />,
+    stages: <StagesTab stages={job.stages} jobId={job.id} />,
     messages: <MessagesTab recordType="quote" recordId={job.id} showPipelineLink pipelinePath="/" />,
     "line-items": (
       <div className="space-y-4">
