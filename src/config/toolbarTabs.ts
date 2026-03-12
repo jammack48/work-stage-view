@@ -71,6 +71,7 @@ export const JOB_EXTRAS: ToolbarTab[] = [
   { id: "time", label: "Time", icon: Clock },
   { id: "forms", label: "Forms", icon: ClipboardCheck },
   { id: "invoice", label: "Invoice", icon: FileText },
+  { id: "variations", label: "Variations", icon: GitBranch },
   { id: "sequences", label: "Sequences", icon: Settings },
 ];
 
