@@ -14,6 +14,7 @@ import { QuoteTab } from "@/components/job/QuoteTab";
 import { FormsTab } from "@/components/job/FormsTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequencesTab } from "@/components/SequencesTab";
+import { StagesTab } from "@/components/job/StagesTab";
 import { MessagesTab } from "@/components/job/MessagesTab";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,7 @@ import { JOB_EXTRAS } from "@/config/toolbarTabs";
 import { useDemoData } from "@/contexts/DemoDataContext";
 import { LeadBadge } from "@/components/LeadBadge";
 
-type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences" | "messages";
+type JobTab = "overview" | "stages" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences" | "messages";
 
 function statusColor(stage: string) {
   if (stage.includes("Paid")) return "bg-[hsl(var(--status-green))] text-white";
@@ -81,6 +82,7 @@ export default function JobCard() {
 
   const tabContent: Record<JobTab, React.ReactNode> = {
     overview: <OverviewTab job={job} />,
+    stages: <StagesTab stages={job.stages} jobId={job.id} />,
     messages: <MessagesTab recordType="job" recordId={job.id} showPipelineLink pipelinePath="/" />,
     history: <HistoryTab job={job} />,
     quote: <QuoteTab job={job} />,
