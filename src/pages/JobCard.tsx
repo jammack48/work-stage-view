@@ -15,6 +15,7 @@ import { FormsTab } from "@/components/job/FormsTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequencesTab } from "@/components/SequencesTab";
 import { MessagesTab } from "@/components/job/MessagesTab";
+import { VariationsTab } from "@/components/job/VariationsTab";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { cn } from "@/lib/utils";
 import { JOB_EXTRAS } from "@/config/toolbarTabs";
