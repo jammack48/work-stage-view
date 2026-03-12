@@ -25,7 +25,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import type { MaterialItem } from "@/data/dummyJobDetails";
 import type { CompletedChecklist } from "@/data/dummyChecklists";
 
-type WorkJobTab = "overview" | "scope" | "time" | "materials" | "notes" | "photos" | "forms";
+type WorkJobTab = "overview" | "scope" | "time" | "materials" | "notes" | "photos" | "forms" | "variations";
 
 function WorkMaterialsTab({ materials, showPricing }: { materials: MaterialItem[]; showPricing?: boolean }) {
   return (
