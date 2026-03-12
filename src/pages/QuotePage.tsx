@@ -12,6 +12,7 @@ import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequenceSelector } from "@/components/quote/SequenceSelector";
 import { SequencesTab } from "@/components/SequencesTab";
 import { MessagesTab } from "@/components/job/MessagesTab";
+import { StagesTab } from "@/components/job/StagesTab";
 import { cn } from "@/lib/utils";
 import { QUOTE_EXTRAS } from "@/config/toolbarTabs";
 import { useDemoData } from "@/contexts/DemoDataContext";
