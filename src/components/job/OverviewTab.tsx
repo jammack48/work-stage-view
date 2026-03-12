@@ -1,4 +1,4 @@
-import { MapPin, Users, Calendar, AlertTriangle, Briefcase, Phone, Mail, User, Layers } from "lucide-react";
+import { MapPin, Users, Calendar, AlertTriangle, Briefcase, Phone, Mail, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
