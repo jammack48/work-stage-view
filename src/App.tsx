@@ -11,7 +11,7 @@ import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
 import { TutorialProvider } from "@/contexts/TutorialContext";
 import { AppModeProvider, useAppMode } from "@/contexts/AppModeContext";
 import { DemoDataProvider } from "@/contexts/DemoDataContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { JobPrefixProvider } from "@/contexts/JobPrefixContext";
 import { BackendProvider } from "@/contexts/BackendContext";
 import { BackendLogPanel } from "@/components/BackendLogPanel";
@@ -49,11 +49,20 @@ import { OnboardingCarousel } from "./components/OnboardingCarousel";
 const queryClient = new QueryClient();
 
 function AppLayout() {
-  const { mode, isWorkMode, isTimesheetOnlyMode, isIntroMode } = useAppMode();
+  const { mode, isWorkMode, isTimesheetOnlyMode, isIntroMode, clearMode } = useAppMode();
   const [splashDismissed, setSplashDismissed] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(() => {
     return localStorage.getItem("onboardingSeen") === "true";
   });
+
+  // Each fresh browser session starts at splash → mode picker (clears cached mode)
+  useEffect(() => {
+    const started = sessionStorage.getItem("appSessionStarted");
+    if (!started) {
+      sessionStorage.setItem("appSessionStarted", "true");
+      clearMode();
+    }
+  }, [clearMode]);
 
   if (!splashDismissed) {
     return <SplashPage onStart={() => setSplashDismissed(true)} />;
