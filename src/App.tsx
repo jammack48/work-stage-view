@@ -48,7 +48,7 @@ import { OnboardingCarousel } from "./components/OnboardingCarousel";
 const queryClient = new QueryClient();
 
 function AppLayout() {
-  const { mode, isWorkMode, isTimesheetOnlyMode } = useAppMode();
+  const { mode, isWorkMode, isTimesheetOnlyMode, isIntroMode } = useAppMode();
   const [splashDismissed, setSplashDismissed] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(() => {
     return localStorage.getItem("onboardingSeen") === "true";
@@ -87,6 +87,19 @@ function AppLayout() {
                 <Route path="/timesheet" element={<WorkTimesheet />} />
                 <Route path="/schedule" element={<TimesheetHome />} />
                 <Route path="*" element={<TimesheetHome />} />
+              </>
+            ) : isIntroMode ? (
+              <>
+                <Route path="/" element={<WorkNewJob />} />
+                <Route path="/new-job" element={<WorkNewJob />} />
+                <Route path="/job/:id" element={<WorkJobCard />} />
+                <Route path="/timesheet" element={<WorkTimesheet />} />
+                <Route path="/hub" element={<WorkNewJob />} />
+                <Route path="/work-notes" element={<WorkNewJob />} />
+                <Route path="/work-chat" element={<WorkNewJob />} />
+                <Route path="/work-hub" element={<WorkNewJob />} />
+                <Route path="/schedule" element={<WorkNewJob />} />
+                <Route path="*" element={<WorkNewJob />} />
               </>
             ) : (
               <>

@@ -31,6 +31,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   job: JobDetail;
   resumeAfterBooking?: boolean;
+  introMode?: boolean;
   onChecklistComplete?: (checklist: import("@/data/dummyChecklists").CompletedChecklist) => void;
 }
 
@@ -150,7 +151,7 @@ function buildInvoiceLines(job: JobDetail, parts: PartUsed[], actualHours: numbe
   return lines;
 }
 
-export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBooking, onChecklistComplete }: Props) {
+export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBooking, introMode = false, onChecklistComplete }: Props) {
   const navigate = useNavigate();
   const { updateJobStage } = useDemoData();
   const { soleTraderPrefs } = useAppMode();
@@ -188,7 +189,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
   const [actualHours, setActualHours] = useState(budgetedHours.toString());
 
   // Materials state
-  const [parts, setParts] = useState<PartUsed[]>(() => job.materials.map((m) => ({ ...m, used: true, source: "van-stock" as const })));
+  const [parts, setParts] = useState<PartUsed[]>(() => job.materials.map((m) => ({ ...m, used: true, source: introMode ? "supplier" as const : "van-stock" as const })));
   const [extraPartName, setExtraPartName] = useState("");
   const [extraPartQty, setExtraPartQty] = useState("1");
   const receiptInputRef = useRef<HTMLInputElement>(null);
@@ -221,6 +222,9 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
   // Build active steps based on prefs and status
   const activeSteps = useMemo(() => {
     return ALL_STEPS.filter((s) => {
+      if (introMode) {
+        return ["status", "jobsheet", "time", "materials", "photos", "invoice", "send", "done"].includes(s.id);
+      }
       // If coming back and NOT invoicing now, only show status + done
       if (!jobFinished && !invoiceNow) {
         return s.id === "status" || s.id === "done";
@@ -229,7 +233,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
       if (s.id === "paperwork" && !soleTraderPrefs.reconcileDocs) return false;
       return true;
     });
-  }, [jobFinished, invoiceNow, soleTraderPrefs.reconcileDocs]);
+  }, [introMode, jobFinished, invoiceNow, soleTraderPrefs.reconcileDocs]);
 
   const currentStep = activeSteps[step];
   const canNext = step < activeSteps.length - 1;
@@ -368,9 +372,11 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
                   <button onClick={() => setJobFinished(true)} className={cn("flex-1 py-3 rounded-lg border-2 text-sm font-medium transition-all", jobFinished ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:bg-accent")}>
                     <CheckCircle2 className="w-5 h-5 mx-auto mb-1" /> Job Finished
                   </button>
-                  <button onClick={() => setJobFinished(false)} className={cn("flex-1 py-3 rounded-lg border-2 text-sm font-medium transition-all", !jobFinished ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:bg-accent")}>
-                    <CalendarDays className="w-5 h-5 mx-auto mb-1" /> Coming Back
-                  </button>
+                  {!introMode && (
+                    <button onClick={() => setJobFinished(false)} className={cn("flex-1 py-3 rounded-lg border-2 text-sm font-medium transition-all", !jobFinished ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:bg-accent")}>
+                      <CalendarDays className="w-5 h-5 mx-auto mb-1" /> Coming Back
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -477,7 +483,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
           {/* ===== MATERIALS USED ===== */}
           {currentStep?.id === "materials" && (
             <div className="space-y-3">
-              {soleTraderPrefs.vanStock ? (
+              {soleTraderPrefs.vanStock && !introMode ? (
                 <p className="text-sm text-muted-foreground">Mark items as <strong>Van Stock</strong> or <strong>Supplier</strong>.</p>
               ) : (
                 <p className="text-sm text-muted-foreground">List the parts and materials used on this job.</p>
@@ -491,7 +497,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
                       <Input type="number" className="w-16 h-7 text-xs text-right" value={p.quantity} disabled={!p.used} onChange={(e) => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, quantity: Number(e.target.value) || 0 } : pp))} />
                       <span className="text-xs text-muted-foreground w-8">{p.unit}</span>
                     </div>
-                    {p.used && soleTraderPrefs.vanStock && (
+                    {p.used && soleTraderPrefs.vanStock && !introMode && (
                       <div className="flex items-center gap-1.5 pl-6 flex-wrap">
                         <button type="button" onClick={() => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, source: "van-stock" } : pp))} className={cn("flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors", p.source === "van-stock" ? "bg-primary/15 text-primary ring-1 ring-primary/30" : "bg-muted text-muted-foreground hover:bg-accent")}>
                           <Truck className="w-3 h-3" /> Van Stock
@@ -506,7 +512,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
                         )}
                       </div>
                     )}
-                    {p.used && soleTraderPrefs.vanStock && p.source === "supplier" && (
+                    {p.used && soleTraderPrefs.vanStock && !introMode && p.source === "supplier" && (
                       <Input className="h-7 text-xs ml-6 w-auto bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400" placeholder="Supplier name..." value={p.supplierName || ""} onChange={(e) => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, supplierName: e.target.value } : pp))} />
                     )}
                   </div>
@@ -522,7 +528,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
               </div>
 
               {/* Inline Restock PO if vanStock is on and items used from van */}
-              {soleTraderPrefs.vanStock && vanStockUsed.length > 0 && (
+              {soleTraderPrefs.vanStock && !introMode && vanStockUsed.length > 0 && (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-3 mt-2">
                   <div className="flex items-center gap-2"><ClipboardList className="w-4 h-4 text-primary" /><p className="text-sm font-bold text-foreground">Restock PO</p></div>
                   <div className="border-t border-border pt-2 space-y-1">
@@ -636,7 +642,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
                 </div>
               </div>
 
-              <ServiceReminderSection customerName={job.client} jobName={job.jobName} />
+              {!introMode && <ServiceReminderSection customerName={job.client} jobName={job.jobName} />}
             </div>
           )}
 

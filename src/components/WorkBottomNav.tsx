@@ -17,6 +17,11 @@ const TIMESHEET_NAV_ITEMS = [
   { id: "time", icon: Clock, label: "Timesheet", path: "/timesheet" },
 ];
 
+const INTRO_NAV_ITEMS = [
+  { id: "home", icon: Home, label: "Jobs", path: "/" },
+  { id: "time", icon: Clock, label: "Timesheet", path: "/timesheet" },
+];
+
 // Count urgent alerts assigned to current user (Dave)
 const getUrgentCount = () =>
   INITIAL_NOTES.filter(
@@ -26,9 +31,9 @@ const getUrgentCount = () =>
 export function WorkBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isTimesheetOnlyMode } = useAppMode();
+  const { isTimesheetOnlyMode, isIntroMode } = useAppMode();
   const urgentCount = getUrgentCount();
-  const items = isTimesheetOnlyMode ? TIMESHEET_NAV_ITEMS : NAV_ITEMS;
+  const items = isTimesheetOnlyMode ? TIMESHEET_NAV_ITEMS : isIntroMode ? INTRO_NAV_ITEMS : NAV_ITEMS;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-sm safe-area-bottom">
