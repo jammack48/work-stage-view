@@ -55,6 +55,15 @@ function AppLayout() {
     return localStorage.getItem("onboardingSeen") === "true";
   });
 
+  // Clear previous mode on fresh app load so user always starts at mode picker
+  useEffect(() => {
+    const freshStart = sessionStorage.getItem("appSessionStarted");
+    if (!freshStart) {
+      sessionStorage.setItem("appSessionStarted", "true");
+      // Don't auto-clear — user explicitly picks mode each session via splash + onboarding
+    }
+  }, []);
+
   if (!splashDismissed) {
     return <SplashPage onStart={() => setSplashDismissed(true)} />;
   }
