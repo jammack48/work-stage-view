@@ -49,20 +49,20 @@ import { OnboardingCarousel } from "./components/OnboardingCarousel";
 const queryClient = new QueryClient();
 
 function AppLayout() {
-  const { mode, isWorkMode, isTimesheetOnlyMode, isIntroMode } = useAppMode();
+  const { mode, isWorkMode, isTimesheetOnlyMode, isIntroMode, clearMode } = useAppMode();
   const [splashDismissed, setSplashDismissed] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(() => {
     return localStorage.getItem("onboardingSeen") === "true";
   });
 
-  // Clear previous mode on fresh app load so user always starts at mode picker
+  // Each fresh browser session starts at splash → mode picker (clears cached mode)
   useEffect(() => {
-    const freshStart = sessionStorage.getItem("appSessionStarted");
-    if (!freshStart) {
+    const started = sessionStorage.getItem("appSessionStarted");
+    if (!started) {
       sessionStorage.setItem("appSessionStarted", "true");
-      // Don't auto-clear — user explicitly picks mode each session via splash + onboarding
+      clearMode();
     }
-  }, []);
+  }, [clearMode]);
 
   if (!splashDismissed) {
     return <SplashPage onStart={() => setSplashDismissed(true)} />;
