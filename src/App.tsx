@@ -91,16 +91,8 @@ function AppLayout() {
               </>
             ) : isIntroMode ? (
               <>
-                <Route path="/" element={<WorkNewJob />} />
-                <Route path="/new-job" element={<WorkNewJob />} />
-                <Route path="/job/:id" element={<WorkJobCard />} />
-                <Route path="/timesheet" element={<WorkTimesheet />} />
-                <Route path="/hub" element={<WorkNewJob />} />
-                <Route path="/work-notes" element={<WorkNewJob />} />
-                <Route path="/work-chat" element={<WorkNewJob />} />
-                <Route path="/work-hub" element={<WorkNewJob />} />
-                <Route path="/schedule" element={<WorkNewJob />} />
-                <Route path="*" element={<WorkNewJob />} />
+                <Route path="/" element={<IntroJobFlow />} />
+                <Route path="*" element={<IntroJobFlow />} />
               </>
             ) : (
               <>
