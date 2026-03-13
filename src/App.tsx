@@ -26,6 +26,7 @@ import TimesheetHome from "./pages/TimesheetHome";
 import WorkJobCard from "./components/job/WorkJobCard";
 import TimesheetOnlyJobCard from "./components/job/TimesheetOnlyJobCard";
 import WorkNewJob from "./pages/WorkNewJob";
+import IntroJobFlow from "./pages/IntroJobFlow";
 import Customers from "./pages/Customers";
 import CustomerCard from "./pages/CustomerCard";
 import SettingsPage from "./pages/SettingsPage";
