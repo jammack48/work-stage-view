@@ -26,6 +26,7 @@ import TimesheetHome from "./pages/TimesheetHome";
 import WorkJobCard from "./components/job/WorkJobCard";
 import TimesheetOnlyJobCard from "./components/job/TimesheetOnlyJobCard";
 import WorkNewJob from "./pages/WorkNewJob";
+import IntroJobFlow from "./pages/IntroJobFlow";
 import Customers from "./pages/Customers";
 import CustomerCard from "./pages/CustomerCard";
 import SettingsPage from "./pages/SettingsPage";
@@ -90,16 +91,8 @@ function AppLayout() {
               </>
             ) : isIntroMode ? (
               <>
-                <Route path="/" element={<WorkNewJob />} />
-                <Route path="/new-job" element={<WorkNewJob />} />
-                <Route path="/job/:id" element={<WorkJobCard />} />
-                <Route path="/timesheet" element={<WorkTimesheet />} />
-                <Route path="/hub" element={<WorkNewJob />} />
-                <Route path="/work-notes" element={<WorkNewJob />} />
-                <Route path="/work-chat" element={<WorkNewJob />} />
-                <Route path="/work-hub" element={<WorkNewJob />} />
-                <Route path="/schedule" element={<WorkNewJob />} />
-                <Route path="*" element={<WorkNewJob />} />
+                <Route path="/" element={<IntroJobFlow />} />
+                <Route path="*" element={<IntroJobFlow />} />
               </>
             ) : (
               <>
