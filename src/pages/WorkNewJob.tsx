@@ -49,11 +49,11 @@ function CustomerPicker({
   const [showDropdown, setShowDropdown] = useState(false);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return DUMMY_CUSTOMERS.slice(0, 5);
+    if (!search.trim()) return DUMMY_CUSTOMERS;
     const q = search.toLowerCase();
     return DUMMY_CUSTOMERS.filter(c =>
       c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q)
-    ).slice(0, 5);
+    );
   }, [search]);
 
   const selectCustomer = (c: typeof DUMMY_CUSTOMERS[0]) => {
@@ -105,7 +105,7 @@ function CustomerPicker({
               />
             </div>
             {showDropdown && (
-              <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-lg border border-border bg-popover shadow-lg overflow-hidden">
+              <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-lg border border-border bg-popover shadow-lg overflow-hidden max-h-80 overflow-y-auto">
                 <button
                   onClick={switchToNew}
                   className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-primary hover:bg-accent transition-colors border-b border-border"
@@ -441,7 +441,7 @@ export default function WorkNewJob() {
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex-1">
-          <h1 className="text-lg font-bold text-foreground">{isIntroMode ? "Ready to Invoice" : "New Job"}</h1>
+          <h1 className="text-lg font-bold text-foreground">{isIntroMode ? "Job Ready to Invoice" : "New Job"}</h1>
         </div>
         {!isIntroMode && <StepDots current={step} />}
       </div>
@@ -457,7 +457,7 @@ export default function WorkNewJob() {
             requireDescription
           />
           <Button className="w-full h-12 gap-2" disabled={!introDetailsValid} onClick={handleIntroComplete}>
-            <Check className="w-4 h-4" /> Continue to Invoice
+            <Check className="w-4 h-4" /> Job Ready to Invoice
           </Button>
         </div>
       )}
