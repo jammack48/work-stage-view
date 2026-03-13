@@ -137,11 +137,15 @@ export function ModePicker() {
                 <Receipt className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-card-foreground">Job Completed - Ready to Invoice</h2>
-                <p className="text-sm text-muted-foreground">Next steps: add work done, check totals, and send the invoice.</p>
+                <h2 className="text-base font-bold text-card-foreground">Intro Tutorial</h2>
+                <p className="text-sm text-muted-foreground">See the basics of the app and how it works.</p>
               </div>
             </div>
           </button>
+
+          <div className="pt-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Next steps (more advanced)</p>
+          </div>
 
           <button
             onClick={() => setSubStep("manager-choice")}
