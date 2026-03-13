@@ -129,7 +129,7 @@ interface InvoiceLine {
 const ALL_STEPS = [
   { id: "status", label: "Job Status", icon: CheckCircle2 },
   { id: "checklist", label: "Checklist", icon: ClipboardList },
-  { id: "jobsheet", label: "Job Notes", icon: FileText },
+  { id: "jobsheet", label: "Work Done", icon: FileText },
   { id: "time", label: "Labour", icon: Clock },
   { id: "materials", label: "Materials Used", icon: Package },
   { id: "paperwork", label: "Paperwork", icon: FileCheck },
@@ -421,7 +421,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
                 })}
               </div>
               <div className="flex items-center justify-between">
-                <Label>What was done on this job?</Label>
+                <Label>{introMode ? "Work done" : "What was done on this job?"}</Label>
                 <div className="flex gap-1.5">
                   <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8" disabled={aiLoading} onClick={handleAiJobSheetAssist}>
                     {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} {isAiCleanupMode ? "AI Cleanup" : "AI Suggest"}
