@@ -75,14 +75,15 @@ export default function WorkJobCard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { prefix } = useJobPrefix();
-  const { isSoleTrader } = useAppMode();
+  const { isSoleTrader, isIntroMode } = useAppMode();
   const [searchParams, setSearchParams] = useSearchParams();
   const locState = location.state as { customer?: string; address?: string; description?: string } | null;
   const [activeTab, setActiveTab] = useState<WorkJobTab>("overview");
   const resumeCompletion = searchParams.get("resumeCompletion") === "true";
-  const [completionOpen, setCompletionOpen] = useState(resumeCompletion && !isSoleTrader);
+  const isInvoiceOnlyMode = isSoleTrader || isIntroMode;
+  const [completionOpen, setCompletionOpen] = useState(resumeCompletion && !isInvoiceOnlyMode);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
-  const [unifiedFlowOpen, setUnifiedFlowOpen] = useState(resumeCompletion && isSoleTrader);
+  const [unifiedFlowOpen, setUnifiedFlowOpen] = useState(resumeCompletion && isInvoiceOnlyMode);
 
   // Checklist state
   const [arrivalChecklistOpen, setArrivalChecklistOpen] = useState(false);
@@ -130,10 +131,14 @@ export default function WorkJobCard() {
     </div>
   );
 
+  const visibleTabs = isIntroMode
+    ? WORK_JOB_EXTRAS.filter((tab) => ["back", "overview", "time", "materials", "photos"].includes(tab.id))
+    : WORK_JOB_EXTRAS;
+
   return (
     <>
       <PageToolbar
-        tabs={WORK_JOB_EXTRAS}
+        tabs={visibleTabs}
         activeTab={activeTab}
         onTabChange={(tabId) => {
           if (tabId === "back") { navigate("/"); return; }
@@ -174,15 +179,17 @@ export default function WorkJobCard() {
 
         {/* Action buttons */}
         <div className="flex gap-2 mb-3">
-          <Button
-            size="lg"
-            variant="outline"
-            className="flex-1 min-w-0 gap-2 h-12 text-sm font-bold truncate"
-            onClick={() => setArrivalChecklistOpen(true)}
-          >
-            <ClipboardCheck className="w-4 h-4 shrink-0" /> Arrived on Site
-          </Button>
-          {isSoleTrader ? (
+          {!isIntroMode && (
+            <Button
+              size="lg"
+              variant="outline"
+              className="flex-1 min-w-0 gap-2 h-12 text-sm font-bold truncate"
+              onClick={() => setArrivalChecklistOpen(true)}
+            >
+              <ClipboardCheck className="w-4 h-4 shrink-0" /> Arrived on Site
+            </Button>
+          )}
+          {isInvoiceOnlyMode ? (
             <Button
               size="lg"
               className="flex-1 min-w-0 gap-2 h-12 text-sm font-bold truncate"
@@ -219,12 +226,13 @@ export default function WorkJobCard() {
         onChecklistComplete={(cl) => setCompletedChecklists((prev) => [...prev, cl])}
       />
 
-      {isSoleTrader && (
+      {isInvoiceOnlyMode && (
         <SoleTraderCloseOutFlow
           open={unifiedFlowOpen}
           onOpenChange={setUnifiedFlowOpen}
           job={job}
           resumeAfterBooking={resumeCompletion}
+          introMode={isIntroMode}
           onChecklistComplete={(cl) => setCompletedChecklists((prev) => [...prev, cl])}
         />
       )}
