@@ -129,14 +129,12 @@ interface InvoiceLine {
 const ALL_STEPS = [
   { id: "status", label: "Job Status", icon: CheckCircle2 },
   { id: "checklist", label: "Checklist", icon: ClipboardList },
-  { id: "jobsheet", label: "Work Done", icon: FileText },
   { id: "time", label: "Labour", icon: Clock },
   { id: "materials", label: "Materials Used", icon: Package },
   { id: "paperwork", label: "Paperwork", icon: FileCheck },
   { id: "photos", label: "Photos", icon: Camera },
   { id: "certificates", label: "Certificates", icon: Shield },
-  { id: "invoice", label: "Invoice Summary", icon: Receipt },
-  { id: "send", label: "Send", icon: Send },
+  { id: "invoice", label: "Invoice", icon: Receipt },
   { id: "done", label: "Done", icon: CheckCircle2 },
 ];
 
@@ -223,12 +221,13 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
   const activeSteps = useMemo(() => {
     return ALL_STEPS.filter((s) => {
       if (introMode) {
-        return ["status", "jobsheet", "time", "materials", "photos", "invoice", "send", "done"].includes(s.id);
+        return ["status", "time", "materials", "photos", "invoice"].includes(s.id);
       }
       // If coming back and NOT invoicing now, only show status + done
       if (!jobFinished && !invoiceNow) {
         return s.id === "status" || s.id === "done";
       }
+      if (["jobsheet", "send", "done"].includes(s.id)) return false;
       // Paperwork only if reconcileDocs pref is on
       if (s.id === "paperwork" && !soleTraderPrefs.reconcileDocs) return false;
       return true;
@@ -619,12 +618,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
 
               <Card><CardContent className="pt-3 pb-3 space-y-1"><div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span className="font-semibold text-card-foreground">${invoiceSubtotal.toFixed(2)}</span></div><div className="flex justify-between text-sm"><span className="text-muted-foreground">GST (15%)</span><span className="text-card-foreground">${gst.toFixed(2)}</span></div><div className="flex justify-between text-base font-bold pt-1 border-t border-border"><span>Total</span><span>${invoiceTotal.toFixed(2)}</span></div></CardContent></Card>
               <div className="space-y-1.5"><Label>Invoice note (optional)</Label><Textarea value={invoiceNote} onChange={(e) => setInvoiceNote(e.target.value)} placeholder="e.g. Payment due within 14 days..." rows={2} className="text-sm" /></div>
-            </div>
-          )}
 
-          {/* ===== SEND ===== */}
-          {currentStep?.id === "send" && (
-            <div className="space-y-4">
               <Card><CardContent className="pt-4 space-y-3">
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">To</span><span className="font-semibold text-card-foreground">{job.client}</span></div>
                 {job.clientEmail && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Email</span><span className="text-card-foreground">{job.clientEmail}</span></div>}
@@ -643,6 +637,8 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
               </div>
 
               {!introMode && <ServiceReminderSection customerName={job.client} jobName={job.jobName} />}
+
+              <Button size="lg" className="w-full h-12 gap-2" onClick={handleComplete}><Send className="w-5 h-5" /> Send Invoice & Close Out</Button>
             </div>
           )}
 
@@ -672,7 +668,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
         </div>
 
         {/* Navigation */}
-        {currentStep?.id !== "done" && !(currentStep?.id === "status" && !jobFinished && !invoiceNow) && (
+        {currentStep?.id !== "done" && currentStep?.id !== "invoice" && !(currentStep?.id === "status" && !jobFinished && !invoiceNow) && (
           <div className="flex items-center justify-between pt-2 border-t border-border">
             <Button variant="ghost" size="sm" onClick={() => goToStep(step - 1)} disabled={!canPrev} className="gap-1"><ChevronLeft className="w-4 h-4" /> Back</Button>
             <span className="text-xs text-muted-foreground">{step + 1} of {activeSteps.length}</span>
