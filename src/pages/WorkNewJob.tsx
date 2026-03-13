@@ -37,11 +37,13 @@ function CustomerPicker({
   address, setAddress,
   description, setDescription,
   isNewCustomer, setIsNewCustomer,
+  requireDescription = false,
 }: {
   customer: string; setCustomer: (v: string) => void;
   address: string; setAddress: (v: string) => void;
   description: string; setDescription: (v: string) => void;
   isNewCustomer: boolean; setIsNewCustomer: (v: boolean) => void;
+  requireDescription?: boolean;
 }) {
   const [search, setSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -145,11 +147,11 @@ function CustomerPicker({
       </div>
 
       <div className="space-y-2">
-        <Label className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Description (optional)</Label>
+        <Label className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> {requireDescription ? "Work done" : "Description (optional)"}</Label>
         <Textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
-          placeholder="What's the job? e.g. Replace hot water cylinder"
+          placeholder={requireDescription ? "What work was completed?" : "What's the job? e.g. Replace hot water cylinder"}
           className="min-h-[80px]"
         />
       </div>
@@ -397,6 +399,7 @@ export default function WorkNewJob() {
   const scheduledDate = addDays(weekStart, selectedDay);
 
   const detailsValid = customer.trim() && address.trim();
+  const introDetailsValid = detailsValid && description.trim();
 
   const jobState = { customer, address, description };
 
@@ -421,7 +424,7 @@ export default function WorkNewJob() {
   const handleIntroComplete = () => {
     toast({
       title: "Job ready for invoice ✅",
-      description: `${customer} — complete details then send invoice`,
+      description: `${customer} — work done captured, ready to invoice`,
       duration: 3000,
     });
     navigate("/job/TB-NEW?resumeCompletion=true", { state: { ...jobState, introQuickClose: true } });
@@ -438,21 +441,22 @@ export default function WorkNewJob() {
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex-1">
-          <h1 className="text-lg font-bold text-foreground">{isIntroMode ? "Intro Job" : "New Job"}</h1>
+          <h1 className="text-lg font-bold text-foreground">{isIntroMode ? "Ready to Invoice" : "New Job"}</h1>
         </div>
         {!isIntroMode && <StepDots current={step} />}
       </div>
 
       {isIntroMode && (
         <div className="space-y-5">
-          <h2 className="text-base font-semibold text-card-foreground">Complete job details</h2>
+          <h2 className="text-base font-semibold text-card-foreground">Work done</h2>
           <CustomerPicker
             customer={customer} setCustomer={setCustomer}
             address={address} setAddress={setAddress}
             description={description} setDescription={setDescription}
             isNewCustomer={isNewCustomer} setIsNewCustomer={setIsNewCustomer}
+            requireDescription
           />
-          <Button className="w-full h-12 gap-2" disabled={!detailsValid} onClick={handleIntroComplete}>
+          <Button className="w-full h-12 gap-2" disabled={!introDetailsValid} onClick={handleIntroComplete}>
             <Check className="w-4 h-4" /> Continue to Invoice
           </Button>
         </div>

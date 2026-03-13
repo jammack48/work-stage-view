@@ -129,6 +129,21 @@ export function ModePicker() {
 
         <div className="grid gap-3">
           <button
+            onClick={() => { setTutorialOn(false); setMode("intro"); }}
+            className="group rounded-xl border-2 border-border bg-card p-5 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">
+                <Receipt className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-card-foreground">Job Completed - Ready to Invoice</h2>
+                <p className="text-sm text-muted-foreground">Next steps: add work done, check totals, and send the invoice.</p>
+              </div>
+            </div>
+          </button>
+
+          <button
             onClick={() => setSubStep("manager-choice")}
             className="group rounded-xl border-2 border-border bg-card p-5 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
           >
@@ -154,21 +169,6 @@ export function ModePicker() {
               <div>
                 <h2 className="text-base font-bold text-card-foreground">Employee</h2>
                 <p className="text-sm text-muted-foreground">On the Tools app mode: can&apos;t invoice or see prices.</p>
-              </div>
-            </div>
-          </button>
-
-          <button
-            onClick={() => { setTutorialOn(false); setMode("intro"); }}
-            className="group rounded-xl border-2 border-border bg-card p-5 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">
-                <Receipt className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-base font-bold text-card-foreground">Intro Mode</h2>
-                <p className="text-sm text-muted-foreground">Start simple: complete jobs and send invoices without extra tools.</p>
               </div>
             </div>
           </button>
