@@ -18,8 +18,8 @@ const TIMESHEET_NAV_ITEMS = [
 ];
 
 const INTRO_NAV_ITEMS = [
-  { id: "home", icon: Home, label: "Jobs", path: "/" },
-  { id: "time", icon: Clock, label: "Timesheet", path: "/timesheet" },
+  { id: "home", icon: Home, label: "Home", path: "/" },
+  { id: "invoices", icon: FolderOpen, label: "Invoices", path: "/intro-invoices" },
 ];
 
 // Count urgent alerts assigned to current user (Dave)

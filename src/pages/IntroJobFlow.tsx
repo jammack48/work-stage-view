@@ -14,6 +14,32 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useAppMode } from "@/contexts/AppModeContext";
 
+const INTRO_INVOICES_KEY = "introSentInvoices";
+
+export interface IntroInvoiceRecord {
+  id: string;
+  customerName: string;
+  phone: string;
+  email: string;
+  total: number;
+  sentAt: string;
+}
+
+export function loadIntroInvoices(): IntroInvoiceRecord[] {
+  try {
+    const raw = localStorage.getItem(INTRO_INVOICES_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveIntroInvoice(invoice: IntroInvoiceRecord) {
+  const invoices = loadIntroInvoices();
+  localStorage.setItem(INTRO_INVOICES_KEY, JSON.stringify([invoice, ...invoices]));
+}
+
 /* ─── Types ─── */
 interface LabourLine { id: string; hours: number; rate: number; }
 interface AddOn { id: string; label: string; amount: number; enabled: boolean; icon: typeof Truck; }
@@ -35,7 +61,7 @@ const DEFAULT_ADDONS: AddOn[] = [
 
 /* ─── Guided tooltip data per step ─── */
 const STEP_TIPS: Record<number, { text: string; delay: number; duration: number }[]> = {
-  0: [{ text: "Click here to change dark / light display colours.", delay: 300, duration: 5000 }],
+  0: [{ text: "Tap the little bars icon top-right to move your menu or change colours.", delay: 300, duration: 5000 }],
   1: [
     { text: "👆 Tap the blue chips to quickly add what you did", delay: 300, duration: 4000 },
     { text: "🎤 Or hit Dictate and speak — it types for you!", delay: 4500, duration: 4000 },
@@ -68,10 +94,10 @@ function GuidedTip({ tips, guidedMode }: { tips: typeof STEP_TIPS[0]; guidedMode
   if (!guidedMode || dismissed || visibleIdx < 0 || !tips[visibleIdx]) return null;
 
   return (
-    <div className="absolute left-0 right-0 top-2 z-20 bg-primary/15 border border-primary/30 rounded-xl px-3 py-2 flex items-start gap-2 animate-in fade-in slide-in-from-top-2 duration-300 shadow-sm">
-      <HelpCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-      <p className="text-sm font-medium text-primary flex-1">{tips[visibleIdx].text}</p>
-      <button onClick={() => setDismissed(true)} className="text-primary/60 hover:text-primary">
+    <div className="absolute left-0 right-0 top-2 z-20 bg-blue-600 border border-blue-500 rounded-xl px-3 py-2 flex items-start gap-2 animate-in fade-in slide-in-from-top-2 duration-300 shadow-md">
+      <HelpCircle className="w-5 h-5 text-blue-50 shrink-0 mt-0.5" />
+      <p className="text-sm font-medium text-blue-50 flex-1">{tips[visibleIdx].text}</p>
+      <button onClick={() => setDismissed(true)} className="text-blue-100/80 hover:text-blue-50">
         <X className="w-4 h-4" />
       </button>
     </div>
@@ -189,6 +215,14 @@ export default function IntroJobFlow() {
   const step1Valid = workDescription.trim().length > 0;
 
   const handleSendInvoice = () => {
+    saveIntroInvoice({
+      id: `inv-${Date.now()}`,
+      customerName,
+      phone,
+      email,
+      total,
+      sentAt: new Date().toISOString(),
+    });
     toast({ title: "Invoice Sent ✅", description: `$${total.toFixed(2)} invoice sent to ${customerName}.`, duration: 4000 });
     navigate("/");
   };
@@ -227,7 +261,7 @@ export default function IntroJobFlow() {
           )}
         >
           <HelpCircle className="w-3.5 h-3.5 inline mr-1" />
-          Guide {guidedMode ? "ON" : "OFF"}
+          Tutorial {guidedMode ? "ON" : "OFF"}
         </button>
         <StepDots current={step} />
       </div>

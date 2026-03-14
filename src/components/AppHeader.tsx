@@ -24,10 +24,10 @@ export function AppHeader() {
   const { isWorkMode, isSoleTrader, isTimesheetOnlyMode, clearMode, setMode } = useAppMode();
   const isMobile = useIsMobile();
   const { position, cyclePosition } = useToolbarPosition();
-  const [showModeHint, setShowModeHint] = useState(true);
+  const [showMenuHint, setShowMenuHint] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowModeHint(false), 5000);
+    const timer = setTimeout(() => setShowMenuHint(false), 5000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -46,26 +46,20 @@ export function AppHeader() {
         </h1>
       </button>
       <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
-        <DropdownMenu onOpenChange={() => setShowModeHint(false)}>
+        <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <div className="relative">
               <Button
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-9 rounded-lg gap-1.5 text-muted-foreground hover:bg-accent",
-                  showModeHint && "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                  "h-9 rounded-lg gap-1.5 text-muted-foreground hover:bg-accent"
                 )}
                 title="Mode selector"
               >
                 <span className="text-xs font-medium">Mode</span>
                 <ChevronDown className="w-4 h-4" />
               </Button>
-              {showModeHint && (
-                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap bg-primary text-primary-foreground text-[10px] font-medium px-2 py-0.5 rounded-md animate-pulse shadow-md z-50">
-                  Click to change mode ↑
-                </span>
-              )}
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -91,27 +85,31 @@ export function AppHeader() {
         </DropdownMenu>
 
         {(!isWorkMode || isSoleTrader || location.pathname.startsWith("/job/")) && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  if (isSoleTrader) {
-                    navigate("/");
-                    return;
-                  }
-                  cyclePosition(isWorkMode ? ["bottom"] : undefined);
-                }}
-                className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent"
-              >
-                <LayoutGrid className="w-5 h-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="text-xs">{isSoleTrader ? "Main menu" : `Layout: ${position}`}</p>
-            </TooltipContent>
-          </Tooltip>
+          <div className="relative">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => cyclePosition(isWorkMode ? ["bottom"] : undefined)}
+                  className={cn(
+                    "h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent",
+                    showMenuHint && "animate-pulse ring-2 ring-primary/70 ring-offset-1 ring-offset-background"
+                  )}
+                >
+                  <LayoutGrid className="w-5 h-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-blue-600 text-blue-50 border-blue-500">
+                <p className="text-xs">Menu location: {position}</p>
+              </TooltipContent>
+            </Tooltip>
+            {showMenuHint && (
+              <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap bg-blue-600 text-blue-50 text-[10px] font-medium px-2 py-0.5 rounded-md animate-pulse shadow-md z-50">
+                Tap to move menu
+              </span>
+            )}
+          </div>
         )}
 
         {!isWorkMode && (
