@@ -34,6 +34,7 @@ import QuotePage from "./pages/QuotePage";
 import ComingSoon from "./pages/ComingSoon";
 import WorkHub from "./pages/WorkHub";
 import WorkTimesheet from "./pages/WorkTimesheet";
+import IntroInvoices from "./pages/IntroInvoices";
 import WorkNotes from "./pages/WorkNotes";
 import WorkChat from "./pages/WorkChat";
 import BundlesPage from "./pages/BundlesPage";
@@ -101,6 +102,7 @@ function AppLayout() {
             ) : isIntroMode ? (
               <>
                 <Route path="/" element={<IntroJobFlow />} />
+                <Route path="/intro-invoices" element={<IntroInvoices />} />
                 <Route path="*" element={<IntroJobFlow />} />
               </>
             ) : (

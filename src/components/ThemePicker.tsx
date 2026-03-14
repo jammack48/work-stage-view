@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAppMode } from "@/contexts/AppModeContext";
 
 const THEMES: { id: Theme; label: string; color: string; darkColor: string }[] = [
   { id: "earthy",  label: "Earthy",  color: "#6b8f71",  darkColor: "#5a7a5f" },
@@ -36,6 +37,7 @@ function RiserIcon({ className }: { className?: string }) {
 
 export function ThemePicker() {
   const { theme, setTheme, isDark, setIsDark } = useTheme();
+  const { isIntroMode } = useAppMode();
 
   return (
     <Popover>
@@ -43,7 +45,7 @@ export function ThemePicker() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 w-8 p-0"
+          className={cn("h-8 w-8 p-0", isIntroMode && "animate-pulse ring-2 ring-primary/70 ring-offset-1 ring-offset-background")}
           title="Change theme"
         >
           <RiserIcon />
