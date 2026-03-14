@@ -20,8 +20,7 @@ interface AddOn { id: string; label: string; amount: number; enabled: boolean; i
 interface MaterialLine { id: string; name: string; costPrice: number; markup: number; qty: number; }
 
 const GST_RATE = 0.15;
-const fmtGST = (ex: number) => `$${ex.toFixed(0)}
-+GST ($${(ex * GST_RATE).toFixed(0)})`;
+const fmtGST = (ex: number) => `$${ex.toFixed(0)} +GST ($${(ex * GST_RATE).toFixed(0)})`;
 
 const QUICK_PHRASES = [
   "Arrived on site", "Spoke with customer", "Diagnosed fault", "Completed repair",
