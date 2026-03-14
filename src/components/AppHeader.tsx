@@ -81,25 +81,36 @@ export function AppHeader() {
             <DropdownMenuItem onClick={() => { setTutorialOn(false); setMode("timesheet"); navigate("/"); }}>
               Timesheet Only
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { setTutorialOn(true); setMode("intro"); navigate("/"); }}>
+              Introduction Mode
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => { clearMode(); navigate("/"); }}>
               Main Menu
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {(!isWorkMode || location.pathname.startsWith("/job/")) && (
+        {(!isWorkMode || isSoleTrader || location.pathname.startsWith("/job/")) && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => cyclePosition(isWorkMode ? ["bottom"] : undefined)}
+                onClick={() => {
+                  if (isSoleTrader) {
+                    navigate("/");
+                    return;
+                  }
+                  cyclePosition(isWorkMode ? ["bottom"] : undefined);
+                }}
                 className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent"
               >
                 <LayoutGrid className="w-5 h-5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent><p className="text-xs">Layout: {position}</p></TooltipContent>
+            <TooltipContent>
+              <p className="text-xs">{isSoleTrader ? "Main menu" : `Layout: ${position}`}</p>
+            </TooltipContent>
           </Tooltip>
         )}
 
