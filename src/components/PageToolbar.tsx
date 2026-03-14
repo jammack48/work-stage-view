@@ -24,11 +24,13 @@ interface PageToolbarProps {
   pageHeading?: React.ReactNode;
   /** ID of the common-nav tab to highlight for the current page (e.g. "customers") */
   currentPage?: string;
+  /** Tabs to call out visually (e.g. existing variations). */
+  highlightedTabs?: string[];
   /** Override tutorial key (e.g. "manager" when showing manager mode on pipeline route) */
   tutorialKey?: string;
 }
 
-export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading, currentPage, tutorialKey }: PageToolbarProps) {
+export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeading, currentPage, highlightedTabs = [], tutorialKey }: PageToolbarProps) {
   const isMobile = useIsMobile();
   const { position: rawPosition } = useToolbarPosition();
   const { isWorkMode } = useAppMode();
@@ -40,6 +42,8 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   const isActive = (id: string) => activeTab === id || currentPage === id;
 
   const isManager = (id: string) => id === "manager";
+  const isHighlighted = (id: string) => highlightedTabs.includes(id);
+  const highlightClass = "ring-1 ring-blue-400/70 bg-blue-500/15 text-blue-100 shadow-[0_0_14px_hsl(210_90%_60%/0.35)]";
   const managerInactive = "bg-blue-500/15 text-blue-500 shadow-[0_0_12px_2px_hsl(215_80%_55%/0.25)] animate-glow-ping-subtle";
   const managerActive = "bg-blue-500 text-white shadow-[0_0_16px_4px_hsl(215_80%_55%/0.35)]";
 
@@ -77,7 +81,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
                     ? (isActive(id) ? managerActive : managerInactive)
                     : isActive(id)
                       ? "bg-primary text-primary-foreground"
-                      : "text-foreground/70 hover:bg-accent hover:text-accent-foreground"
+                      : isHighlighted(id) ? highlightClass : "text-foreground/70 hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 <span className="relative">
@@ -126,7 +130,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
                   ? (isActive(id) ? managerActive : managerInactive)
                   : isActive(id)
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    : isHighlighted(id) ? highlightClass : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )}
             >
               <span className="relative">
@@ -187,7 +191,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
                   ? (isActive(id) ? managerActive : managerInactive)
                   : isActive(id)
                     ? "bg-primary text-primary-foreground"
-                    : "text-foreground/70 hover:bg-accent"
+                    : isHighlighted(id) ? highlightClass : "text-foreground/70 hover:bg-accent"
               )}
               title={label}
             >
@@ -227,7 +231,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               ? (isActive(id) ? managerActive : managerInactive)
               : isActive(id)
                 ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-accent"
+                : isHighlighted(id) ? highlightClass : "text-muted-foreground hover:bg-accent"
           )}
         >
           <span className="relative">

@@ -1,8 +1,10 @@
+import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Job } from "@/data/dummyJobs";
 import { STAGE_LABELS } from "@/data/dummyJobs";
 import { cn } from "@/lib/utils";
+import { formatJobNumber, getVariationTokens } from "@/lib/jobNumber";
 import { useThresholds } from "@/contexts/ThresholdContext";
 import { ThresholdSettings } from "@/components/ThresholdSettings";
 import { useNotificationStyle } from "@/contexts/NotificationStyleContext";
@@ -10,6 +12,7 @@ import { TutorialTip } from "@/components/TutorialTip";
 import { LeadActionMenu } from "@/components/LeadActionMenu";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
 import { Badge } from "@/components/ui/badge";
+import { fetchVariationCounts } from "@/services/variationsService";
 
 function countByStatus(jobs: Job[], greenMax: number, orangeMax: number) {
   let red = 0, orange = 0, green = 0;
@@ -32,10 +35,11 @@ function UnreadDot() {
 }
 
 /** Job preview row inside a color band */
-function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse" }) {
+function JobPreview({ job, notifStyle, variationCount = 0 }: { job: Job; notifStyle: "icon" | "pulse"; variationCount?: number }) {
   const { prefix } = useJobPrefix();
   const navigate = useNavigate();
-  const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
+  const displayId = formatJobNumber(job.id, prefix);
+  const variationTokens = getVariationTokens(variationCount);
   const stageLabel = (STAGE_LABELS[job.stage as keyof typeof STAGE_LABELS] ?? [job.stage])[0];
   return (
     <div className={cn(
@@ -49,6 +53,20 @@ function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse
         </Badge>
       </div>
       <div className="truncate opacity-75">{displayId} · {job.jobName}</div>
+      {variationTokens.length > 0 && (
+        <div className="mt-0.5 flex items-center gap-1 flex-wrap">
+          {variationTokens.slice(0, 3).map((token) => (
+            <Badge key={token} className="h-4 px-1.5 py-0 text-[9px] font-semibold border-white/35 bg-black/25 text-white shadow-sm">
+              {token}
+            </Badge>
+          ))}
+          {variationTokens.length > 3 && (
+            <Badge className="h-4 px-1.5 py-0 text-[9px] font-semibold border-white/35 bg-black/25 text-white shadow-sm">
+              +{variationTokens.length - 3}
+            </Badge>
+          )}
+        </div>
+      )}
       {job.hasUnread && (
         <button
           onPointerDown={(e) => { e.stopPropagation(); e.preventDefault(); }}
@@ -58,10 +76,14 @@ function JobPreview({ job, notifStyle }: { job: Job; notifStyle: "icon" | "pulse
             const isQ = ["Lead","To Quote","Quote Sent"].includes(job.stage);
             navigate(isQ ? `/quote/${job.id}?tab=messages&focus=inbound` : `/job/${job.id}?tab=messages&focus=inbound`);
           }}
-          className="mt-0.5 inline-flex items-center gap-1 animate-wiggle z-10 relative rounded-full px-1.5 py-0.5 bg-primary/25 border border-primary/40 hover:bg-primary/30 transition-colors"
+          className="mt-0.5 inline-flex items-center gap-1.5 z-10 relative rounded-full px-1.5 py-0.5 bg-blue-500/20 border border-blue-400/50 hover:bg-blue-500/30 transition-colors"
+          aria-label="Open messages"
         >
-          <Mail className="w-3 h-3 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
-          <span className="text-[9px] text-primary font-semibold">Message</span>
+          <span className="relative">
+            <Mail className="w-3 h-3 text-blue-200" />
+            <span className="absolute -inset-1 rounded-full bg-blue-400/30 animate-ping" />
+          </span>
+          <span className="text-[9px] text-blue-100 font-semibold">3</span>
         </button>
       )}
     </div>
@@ -104,6 +126,27 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
   const firstOrange = jobs.find(j => !j.urgent && j.ageDays > thresholds.greenMax && j.ageDays <= thresholds.orangeMax);
   const firstRed = jobs.find(j => j.urgent || j.ageDays > thresholds.orangeMax);
   const isLeadStage = stage === "Lead";
+  const [variationCounts, setVariationCounts] = useState<Record<string, number>>({});
+
+  const previewJobIds = useMemo(
+    () => [...new Set([firstGreen, firstOrange, firstRed].filter((job): job is Job => !!job).map((job) => job.id))],
+    [firstGreen, firstOrange, firstRed]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    fetchVariationCounts(previewJobIds)
+      .then((counts) => {
+        if (mounted) setVariationCounts(counts);
+      })
+      .catch(() => {
+        if (mounted) setVariationCounts({});
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [previewJobIds]);
 
   const navState = { fromStage: stage };
 
@@ -187,7 +230,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
                 <span className="text-sm font-bold text-white">{counts.green}</span>
               </div>
               {firstGreen ? (
-                <JobPreview job={firstGreen} notifStyle={notifStyle} />
+                <JobPreview job={firstGreen} notifStyle={notifStyle} variationCount={variationCounts[firstGreen.id] ?? 0} />
               ) : counts.green === 0 ? (
                 <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
               ) : null}
@@ -208,7 +251,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
                 <span className="text-sm font-bold text-white">{counts.orange}</span>
               </div>
               {firstOrange ? (
-                <JobPreview job={firstOrange} notifStyle={notifStyle} />
+                <JobPreview job={firstOrange} notifStyle={notifStyle} variationCount={variationCounts[firstOrange.id] ?? 0} />
               ) : counts.orange === 0 ? (
                 <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
               ) : null}
@@ -229,7 +272,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
                 <span className="text-sm font-bold text-white">{counts.red}</span>
               </div>
               {firstRed ? (
-                <JobPreview job={firstRed} notifStyle={notifStyle} />
+                <JobPreview job={firstRed} notifStyle={notifStyle} variationCount={variationCounts[firstRed.id] ?? 0} />
               ) : counts.red === 0 ? (
                 <div className="mt-1 text-[11px] text-white/50 italic">No jobs</div>
               ) : null}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Clock3, CircleCheck } from "lucide-react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
@@ -12,6 +12,7 @@ import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequenceSelector } from "@/components/quote/SequenceSelector";
 import { SequencesTab } from "@/components/SequencesTab";
 import { MessagesTab } from "@/components/job/MessagesTab";
+import { VariationsTab } from "@/components/job/VariationsTab";
 import { cn } from "@/lib/utils";
 import { QUOTE_EXTRAS } from "@/config/toolbarTabs";
 import { useDemoData } from "@/contexts/DemoDataContext";
@@ -19,12 +20,13 @@ import { stageForPipelineEvent, stageFromQuoteStatus } from "@/services/pipeline
 import { useThresholds } from "@/contexts/ThresholdContext";
 import type { DemoCustomer } from "@/types/demoData";
 import { LeadBadge } from "@/components/LeadBadge";
+import { fetchVariationCounts } from "@/services/variationsService";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-type QuotePageTab = "overview" | "messages" | "line-items" | "sequences" | "notes" | "history";
+type QuotePageTab = "overview" | "messages" | "line-items" | "variations" | "sequences" | "notes" | "history";
 
 interface QuotePageLocationState {
   customer?: DemoCustomer | null;
@@ -58,6 +60,7 @@ export default function QuotePage() {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
+  const [variationCount, setVariationCount] = useState(0);
   const { jobs, updateJobStage } = useDemoData();
   const { getThresholds, getLabel } = useThresholds();
 
@@ -110,6 +113,14 @@ export default function QuotePage() {
     setShowLeaveDialog(false);
     setPendingNavId(null);
   };
+
+  useEffect(() => {
+    if (isNew || !id) {
+      setVariationCount(0);
+      return;
+    }
+    fetchVariationCounts([id]).then((counts) => setVariationCount(counts[id] ?? 0)).catch(() => setVariationCount(0));
+  }, [id, isNew]);
 
   if (isNew && !funnelComplete) {
     return (
@@ -219,6 +230,7 @@ export default function QuotePage() {
         } />
       </div>
     ),
+    variations: <VariationsTab jobId={job.id} />,
     sequences: <SequencesTab category="quotes" />,
     notes: <NotesTab notes={job.notes} />,
     history: <HistoryTab job={job} />,
@@ -262,6 +274,7 @@ export default function QuotePage() {
         activeTab={activeTab}
         onTabChange={handleTabChange}
         pageHeading={quoteHeading}
+        highlightedTabs={variationCount > 0 ? ["variations"] : []}
       >
         {tabContent[activeTab]}
       </PageToolbar>

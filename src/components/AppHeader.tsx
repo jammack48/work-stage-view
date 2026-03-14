@@ -1,8 +1,10 @@
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Wrench, Settings as SettingsIcon, GraduationCap, Shield, LayoutGrid, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ThemePicker } from "@/components/ThemePicker";
+import { BackendStatus } from "@/components/BackendStatus";
 import { useTutorial } from "@/contexts/TutorialContext";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -22,6 +24,12 @@ export function AppHeader() {
   const { isWorkMode, isSoleTrader, isTimesheetOnlyMode, clearMode, setMode } = useAppMode();
   const isMobile = useIsMobile();
   const { position, cyclePosition } = useToolbarPosition();
+  const [showModeHint, setShowModeHint] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowModeHint(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -38,17 +46,27 @@ export function AppHeader() {
         </h1>
       </button>
       <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
-        <DropdownMenu>
+        <DropdownMenu onOpenChange={() => setShowModeHint(false)}>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 rounded-lg gap-1.5 text-muted-foreground hover:bg-accent"
-              title="Mode selector"
-            >
-              <span className="text-xs font-medium">Mode</span>
-              <ChevronDown className="w-4 h-4" />
-            </Button>
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "h-9 rounded-lg gap-1.5 text-muted-foreground hover:bg-accent",
+                  showModeHint && "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                )}
+                title="Mode selector"
+              >
+                <span className="text-xs font-medium">Mode</span>
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+              {showModeHint && (
+                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap bg-primary text-primary-foreground text-[10px] font-medium px-2 py-0.5 rounded-md animate-pulse shadow-md z-50">
+                  Click to change mode ↑
+                </span>
+              )}
+            </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => { setMode("manage"); navigate("/"); }}>
@@ -111,6 +129,7 @@ export function AppHeader() {
           <GraduationCap className="w-5 h-5" />
           {!isMobile && <span className="text-xs font-medium">Tutorial</span>}
         </Button>
+        <BackendStatus />
         <ThemePicker />
       </div>
     </header>

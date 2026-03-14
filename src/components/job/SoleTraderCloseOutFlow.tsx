@@ -6,6 +6,7 @@ import {
   DollarSign, Receipt, Send, CheckCircle2, Plus, Trash2, Eye, EyeOff,
   AlertTriangle, Mail, MessageSquare, CalendarDays, FileCheck, Sparkles, Loader2,
 } from "lucide-react";
+import { ServiceReminderSection } from "@/components/job/ServiceReminderSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,13 +24,14 @@ import { useDemoData } from "@/contexts/DemoDataContext";
 import { stageForPipelineEvent } from "@/services/pipelineTransitions";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { SequenceSelector } from "@/components/quote/SequenceSelector";
-import { supabase } from "@/integrations/supabase/client";
+
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   job: JobDetail;
   resumeAfterBooking?: boolean;
+  introMode?: boolean;
   onChecklistComplete?: (checklist: import("@/data/dummyChecklists").CompletedChecklist) => void;
 }
 
@@ -127,14 +129,12 @@ interface InvoiceLine {
 const ALL_STEPS = [
   { id: "status", label: "Job Status", icon: CheckCircle2 },
   { id: "checklist", label: "Checklist", icon: ClipboardList },
-  { id: "jobsheet", label: "Job Notes", icon: FileText },
   { id: "time", label: "Labour", icon: Clock },
   { id: "materials", label: "Materials Used", icon: Package },
   { id: "paperwork", label: "Paperwork", icon: FileCheck },
   { id: "photos", label: "Photos", icon: Camera },
   { id: "certificates", label: "Certificates", icon: Shield },
-  { id: "invoice", label: "Invoice Summary", icon: Receipt },
-  { id: "send", label: "Send", icon: Send },
+  { id: "invoice", label: "Invoice", icon: Receipt },
   { id: "done", label: "Done", icon: CheckCircle2 },
 ];
 
@@ -149,7 +149,7 @@ function buildInvoiceLines(job: JobDetail, parts: PartUsed[], actualHours: numbe
   return lines;
 }
 
-export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBooking, onChecklistComplete }: Props) {
+export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBooking, introMode = false, onChecklistComplete }: Props) {
   const navigate = useNavigate();
   const { updateJobStage } = useDemoData();
   const { soleTraderPrefs } = useAppMode();
@@ -187,7 +187,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
   const [actualHours, setActualHours] = useState(budgetedHours.toString());
 
   // Materials state
-  const [parts, setParts] = useState<PartUsed[]>(() => job.materials.map((m) => ({ ...m, used: true, source: "van-stock" as const })));
+  const [parts, setParts] = useState<PartUsed[]>(() => job.materials.map((m) => ({ ...m, used: true, source: introMode ? "supplier" as const : "van-stock" as const })));
   const [extraPartName, setExtraPartName] = useState("");
   const [extraPartQty, setExtraPartQty] = useState("1");
   const receiptInputRef = useRef<HTMLInputElement>(null);
@@ -195,8 +195,9 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
 
   // Photos state
   const [jobPhotos, setJobPhotos] = useState<CapturedPhoto[]>([]);
-  const beforeInputRef = useRef<HTMLInputElement>(null);
-  const afterInputRef = useRef<HTMLInputElement>(null);
+  const [activePhotoType, setActivePhotoType] = useState<"before" | "after" | null>(null);
+  const cameraPhotoInputRef = useRef<HTMLInputElement>(null);
+  const galleryPhotoInputRef = useRef<HTMLInputElement>(null);
 
   // Certificates state
   const [complianceRequired, setComplianceRequired] = useState(false);
@@ -219,15 +220,19 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
   // Build active steps based on prefs and status
   const activeSteps = useMemo(() => {
     return ALL_STEPS.filter((s) => {
+      if (introMode) {
+        return ["status", "time", "materials", "photos", "invoice"].includes(s.id);
+      }
       // If coming back and NOT invoicing now, only show status + done
       if (!jobFinished && !invoiceNow) {
         return s.id === "status" || s.id === "done";
       }
+      if (["jobsheet", "send", "done"].includes(s.id)) return false;
       // Paperwork only if reconcileDocs pref is on
       if (s.id === "paperwork" && !soleTraderPrefs.reconcileDocs) return false;
       return true;
     });
-  }, [jobFinished, invoiceNow, soleTraderPrefs.reconcileDocs]);
+  }, [introMode, jobFinished, invoiceNow, soleTraderPrefs.reconcileDocs]);
 
   const currentStep = activeSteps[step];
   const canNext = step < activeSteps.length - 1;
@@ -263,32 +268,21 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
 
   const isAiCleanupMode = jobSheet.trim().length > 0;
 
-  const handleAiJobSheetAssist = async () => {
-    const shouldCleanUp = jobSheet.trim().length > 0;
-    setAiLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("ai-suggest-description", {
-        body: shouldCleanUp
-          ? { jobTitle: job.jobName, client: job.client, address: job.address, rawNotes: jobSheet }
-          : { jobTitle: job.jobName, client: job.client, address: job.address },
-      });
-      if (error) throw error;
-      setJobSheet(data.description);
-      if (shouldCleanUp) {
-        toast({ title: "Job notes cleaned up ✨", description: "Your notes were rewritten to be clearer and more professional." });
-      }
-    } catch (e: any) {
-      toast({ title: shouldCleanUp ? "Couldn't clean up notes" : "Couldn't generate notes", description: e.message, variant: "destructive" });
-    } finally {
-      setAiLoading(false);
-    }
+  const handleAiJobSheetAssist = () => {
+    toast({ title: "Coming soon", description: "AI suggestions will be available once the backend is connected." });
   };
 
-  const handlePhotoCapture = (type: "before" | "after") => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => { setJobPhotos(prev => [...prev, { id: `${type}-${Date.now()}`, type, dataUrl: reader.result as string }]); };
-    reader.readAsDataURL(file); e.target.value = "";
+  const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !activePhotoType) return;
+    Array.from(files).forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setJobPhotos((prev) => [...prev, { id: `${activePhotoType}-${Date.now()}-${index}`, type: activePhotoType, dataUrl: reader.result as string }]);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
   };
 
   const handleReceiptCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -377,9 +371,11 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
                   <button onClick={() => setJobFinished(true)} className={cn("flex-1 py-3 rounded-lg border-2 text-sm font-medium transition-all", jobFinished ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:bg-accent")}>
                     <CheckCircle2 className="w-5 h-5 mx-auto mb-1" /> Job Finished
                   </button>
-                  <button onClick={() => setJobFinished(false)} className={cn("flex-1 py-3 rounded-lg border-2 text-sm font-medium transition-all", !jobFinished ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:bg-accent")}>
-                    <CalendarDays className="w-5 h-5 mx-auto mb-1" /> Coming Back
-                  </button>
+                  {!introMode && (
+                    <button onClick={() => setJobFinished(false)} className={cn("flex-1 py-3 rounded-lg border-2 text-sm font-medium transition-all", !jobFinished ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:bg-accent")}>
+                      <CalendarDays className="w-5 h-5 mx-auto mb-1" /> Coming Back
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -424,7 +420,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
                 })}
               </div>
               <div className="flex items-center justify-between">
-                <Label>What was done on this job?</Label>
+                <Label>{introMode ? "Work done" : "What was done on this job?"}</Label>
                 <div className="flex gap-1.5">
                   <Button type="button" variant="outline" size="sm" className="gap-1.5 h-8" disabled={aiLoading} onClick={handleAiJobSheetAssist}>
                     {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} {isAiCleanupMode ? "AI Cleanup" : "AI Suggest"}
@@ -486,7 +482,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
           {/* ===== MATERIALS USED ===== */}
           {currentStep?.id === "materials" && (
             <div className="space-y-3">
-              {soleTraderPrefs.vanStock ? (
+              {soleTraderPrefs.vanStock && !introMode ? (
                 <p className="text-sm text-muted-foreground">Mark items as <strong>Van Stock</strong> or <strong>Supplier</strong>.</p>
               ) : (
                 <p className="text-sm text-muted-foreground">List the parts and materials used on this job.</p>
@@ -500,7 +496,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
                       <Input type="number" className="w-16 h-7 text-xs text-right" value={p.quantity} disabled={!p.used} onChange={(e) => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, quantity: Number(e.target.value) || 0 } : pp))} />
                       <span className="text-xs text-muted-foreground w-8">{p.unit}</span>
                     </div>
-                    {p.used && soleTraderPrefs.vanStock && (
+                    {p.used && soleTraderPrefs.vanStock && !introMode && (
                       <div className="flex items-center gap-1.5 pl-6 flex-wrap">
                         <button type="button" onClick={() => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, source: "van-stock" } : pp))} className={cn("flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors", p.source === "van-stock" ? "bg-primary/15 text-primary ring-1 ring-primary/30" : "bg-muted text-muted-foreground hover:bg-accent")}>
                           <Truck className="w-3 h-3" /> Van Stock
@@ -515,7 +511,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
                         )}
                       </div>
                     )}
-                    {p.used && soleTraderPrefs.vanStock && p.source === "supplier" && (
+                    {p.used && soleTraderPrefs.vanStock && !introMode && p.source === "supplier" && (
                       <Input className="h-7 text-xs ml-6 w-auto bg-white dark:bg-[hsl(30,12%,24%)] border-2 border-border text-gray-900 dark:text-gray-100 placeholder:text-gray-400" placeholder="Supplier name..." value={p.supplierName || ""} onChange={(e) => setParts((prev) => prev.map((pp, ii) => ii === i ? { ...pp, supplierName: e.target.value } : pp))} />
                     )}
                   </div>
@@ -531,7 +527,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
               </div>
 
               {/* Inline Restock PO if vanStock is on and items used from van */}
-              {soleTraderPrefs.vanStock && vanStockUsed.length > 0 && (
+              {soleTraderPrefs.vanStock && !introMode && vanStockUsed.length > 0 && (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-3 mt-2">
                   <div className="flex items-center gap-2"><ClipboardList className="w-4 h-4 text-primary" /><p className="text-sm font-bold text-foreground">Restock PO</p></div>
                   <div className="border-t border-border pt-2 space-y-1">
@@ -568,9 +564,19 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
             <div className="space-y-3">
               <Label>Job photos</Label>
               <div className="grid grid-cols-2 gap-2">
-                <Card className="border-dashed cursor-pointer" onClick={() => beforeInputRef.current?.click()}><CardContent className="p-6 flex flex-col items-center justify-center text-center"><Camera className="w-8 h-8 text-muted-foreground mb-2" /><p className="text-xs text-muted-foreground">Before photos</p><p className="text-xs font-medium text-primary mt-1">Tap to capture</p></CardContent></Card>
-                <Card className="border-dashed cursor-pointer" onClick={() => afterInputRef.current?.click()}><CardContent className="p-6 flex flex-col items-center justify-center text-center"><Camera className="w-8 h-8 text-muted-foreground mb-2" /><p className="text-xs text-muted-foreground">After photos</p><p className="text-xs font-medium text-primary mt-1">Tap to capture</p></CardContent></Card>
+                <Card className="border-dashed cursor-pointer" onClick={() => setActivePhotoType("before")}><CardContent className="p-6 flex flex-col items-center justify-center text-center"><Camera className="w-8 h-8 text-muted-foreground mb-2" /><p className="text-xs text-muted-foreground">Before photos</p><p className="text-xs font-medium text-primary mt-1">Tap to add</p></CardContent></Card>
+                <Card className="border-dashed cursor-pointer" onClick={() => setActivePhotoType("after")}><CardContent className="p-6 flex flex-col items-center justify-center text-center"><Camera className="w-8 h-8 text-muted-foreground mb-2" /><p className="text-xs text-muted-foreground">After photos</p><p className="text-xs font-medium text-primary mt-1">Tap to add</p></CardContent></Card>
               </div>
+              {activePhotoType && (
+                <div className="rounded-lg border border-border p-3 bg-accent/20 space-y-2">
+                  <p className="text-xs text-muted-foreground">Adding <span className="font-semibold text-card-foreground">{activePhotoType}</span> photos</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button size="sm" variant="outline" onClick={() => cameraPhotoInputRef.current?.click()}>Take Pic</Button>
+                    <Button size="sm" variant="outline" onClick={() => galleryPhotoInputRef.current?.click()}>Gallery</Button>
+                    <Button size="sm" onClick={() => setActivePhotoType(null)}>Finished</Button>
+                  </div>
+                </div>
+              )}
               {jobPhotos.length > 0 && (<div className="space-y-2"><p className="text-xs text-muted-foreground">{jobPhotos.length} photo(s) added</p><div className="flex gap-2 flex-wrap">{jobPhotos.map((photo) => (<div key={photo.id} className="relative"><img src={photo.dataUrl} alt={photo.type} className="w-16 h-16 rounded-lg object-cover border border-border" /><span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[8px] px-1 rounded-full uppercase">{photo.type[0]}</span></div>))}</div></div>)}
             </div>
           )}
@@ -612,12 +618,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
 
               <Card><CardContent className="pt-3 pb-3 space-y-1"><div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span className="font-semibold text-card-foreground">${invoiceSubtotal.toFixed(2)}</span></div><div className="flex justify-between text-sm"><span className="text-muted-foreground">GST (15%)</span><span className="text-card-foreground">${gst.toFixed(2)}</span></div><div className="flex justify-between text-base font-bold pt-1 border-t border-border"><span>Total</span><span>${invoiceTotal.toFixed(2)}</span></div></CardContent></Card>
               <div className="space-y-1.5"><Label>Invoice note (optional)</Label><Textarea value={invoiceNote} onChange={(e) => setInvoiceNote(e.target.value)} placeholder="e.g. Payment due within 14 days..." rows={2} className="text-sm" /></div>
-            </div>
-          )}
 
-          {/* ===== SEND ===== */}
-          {currentStep?.id === "send" && (
-            <div className="space-y-4">
               <Card><CardContent className="pt-4 space-y-3">
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">To</span><span className="font-semibold text-card-foreground">{job.client}</span></div>
                 {job.clientEmail && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Email</span><span className="text-card-foreground">{job.clientEmail}</span></div>}
@@ -634,6 +635,10 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
                   ))}
                 </div>
               </div>
+
+              {!introMode && <ServiceReminderSection customerName={job.client} jobName={job.jobName} />}
+
+              <Button size="lg" className="w-full h-12 gap-2" onClick={handleComplete}><Send className="w-5 h-5" /> Send Invoice & Close Out</Button>
             </div>
           )}
 
@@ -663,7 +668,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
         </div>
 
         {/* Navigation */}
-        {currentStep?.id !== "done" && !(currentStep?.id === "status" && !jobFinished && !invoiceNow) && (
+        {currentStep?.id !== "done" && currentStep?.id !== "invoice" && !(currentStep?.id === "status" && !jobFinished && !invoiceNow) && (
           <div className="flex items-center justify-between pt-2 border-t border-border">
             <Button variant="ghost" size="sm" onClick={() => goToStep(step - 1)} disabled={!canPrev} className="gap-1"><ChevronLeft className="w-4 h-4" /> Back</Button>
             <span className="text-xs text-muted-foreground">{step + 1} of {activeSteps.length}</span>
@@ -672,8 +677,8 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
         )}
 
         {/* Hidden inputs */}
-        <input ref={beforeInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoCapture("before")} />
-        <input ref={afterInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoCapture("after")} />
+        <input ref={cameraPhotoInputRef} type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={handlePhotoCapture} />
+        <input ref={galleryPhotoInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoCapture} />
         <input ref={receiptInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleReceiptCapture} />
         <input ref={paperworkInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handlePaperworkAttach} />
       </DialogContent>

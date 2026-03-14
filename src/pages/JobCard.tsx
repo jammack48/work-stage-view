@@ -15,13 +15,15 @@ import { FormsTab } from "@/components/job/FormsTab";
 import { HistoryTab } from "@/components/job/HistoryTab";
 import { SequencesTab } from "@/components/SequencesTab";
 import { MessagesTab } from "@/components/job/MessagesTab";
+import { VariationsTab } from "@/components/job/VariationsTab";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { cn } from "@/lib/utils";
 import { JOB_EXTRAS } from "@/config/toolbarTabs";
 import { useDemoData } from "@/contexts/DemoDataContext";
 import { LeadBadge } from "@/components/LeadBadge";
+import { fetchVariationCounts } from "@/services/variationsService";
 
-type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences" | "messages";
+type JobTab = "overview" | "materials" | "notes" | "photos" | "time" | "quote" | "invoice" | "forms" | "history" | "sequences" | "messages" | "variations";
 
 function statusColor(stage: string) {
   if (stage.includes("Paid")) return "bg-[hsl(var(--status-green))] text-white";
@@ -39,6 +41,7 @@ export default function JobCard() {
   const initialTab = (searchParams.get("tab") as JobTab) || "overview";
   const [activeTab, setActiveTab] = useState<JobTab>(initialTab);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
+  const [variationCount, setVariationCount] = useState(0);
   const actionParam = searchParams.get("action");
   const { jobs } = useDemoData();
 
@@ -71,6 +74,12 @@ export default function JobCard() {
     }
   }, [actionParam, isToInvoice]);
 
+  useEffect(() => {
+    if (!job) return;
+    fetchVariationCounts([job.id]).then((counts) => setVariationCount(counts[job.id] ?? 0)).catch(() => setVariationCount(0));
+  }, [job?.id]);
+
+
   if (!job) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -90,6 +99,7 @@ export default function JobCard() {
     time: <TimeTab timeEntries={job.timeEntries} />,
     forms: <FormsTab />,
     invoice: <InvoiceTab job={job} />,
+    variations: <VariationsTab jobId={job.id} />,
     sequences: <SequencesTab category="invoices" />,
   };
 
@@ -131,6 +141,7 @@ export default function JobCard() {
           setActiveTab(id as JobTab);
         }}
         pageHeading={jobHeading}
+        highlightedTabs={variationCount > 0 ? ["variations"] : []}
       >
         {tabContent[activeTab]}
       </PageToolbar>

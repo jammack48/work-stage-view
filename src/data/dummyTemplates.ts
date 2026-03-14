@@ -28,6 +28,7 @@ export const TEMPLATE_VARIABLES = [
   "{{job_address}}",
   "{{review_link}}",
   "{{service_date}}",
+  "{{service_type}}",
 ];
 
 export const dummyTemplates: MessageTemplate[] = [
@@ -68,4 +69,10 @@ export const dummyTemplates: MessageTemplate[] = [
 
   // SMS — Reviews
   { id: "s-rv-1", name: "Review Request SMS", category: "reviews", channel: "sms", body: "Hi {{customer_name}}, hope you're happy with the job! We'd love a quick review: {{review_link}} Thanks! — {{business_name}}", timing: "after_3_days", isActive: true },
+
+  // EMAIL — Service Reminders
+  { id: "e-sr-1", name: "Service Reminder", category: "services", channel: "email", subject: "Your {{service_type}} is due for servicing", body: "Hi {{customer_name}},\n\nYour {{service_type}} at {{job_address}} is due for its scheduled service.\n\nWould you like us to book you in? Simply reply to this email or give us a call.\n\nCheers,\n{{business_name}}", timing: "immediately", isActive: true },
+
+  // SMS — Service Reminders
+  { id: "s-sr-1", name: "Service Reminder SMS", category: "services", channel: "sms", body: "Hi {{customer_name}}, your {{service_type}} service is due. Want us to book you in? Reply YES or call us. — {{business_name}}", timing: "immediately", isActive: true },
 ];

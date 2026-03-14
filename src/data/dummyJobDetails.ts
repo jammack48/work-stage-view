@@ -195,6 +195,7 @@ const addresses = [
 // Schedule demo IDs → generate a valid JobDetail from schedule data
 import { DEMO_JOBS } from "@/components/schedule/scheduleData";
 
+
 export function getJobDetail(jobId: string, overrides?: { client?: string; address?: string; description?: string }): JobDetail | null {
   if (jobId === "TB-NEW") {
     return {

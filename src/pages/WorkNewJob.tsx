@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { DUMMY_CUSTOMERS } from "@/data/dummyCustomers";
 import { DEMO_JOBS, WORK_START, WORK_END, HOUR_HEIGHT_MOBILE, formatTime } from "@/components/schedule/scheduleData";
 import { DayStrip } from "@/components/schedule/DayStrip";
+import { useAppMode } from "@/contexts/AppModeContext";
 
 /* ─── Step Indicator ─── */
 function StepDots({ current }: { current: number }) {
@@ -36,21 +37,23 @@ function CustomerPicker({
   address, setAddress,
   description, setDescription,
   isNewCustomer, setIsNewCustomer,
+  requireDescription = false,
 }: {
   customer: string; setCustomer: (v: string) => void;
   address: string; setAddress: (v: string) => void;
   description: string; setDescription: (v: string) => void;
   isNewCustomer: boolean; setIsNewCustomer: (v: boolean) => void;
+  requireDescription?: boolean;
 }) {
   const [search, setSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return DUMMY_CUSTOMERS.slice(0, 5);
+    if (!search.trim()) return DUMMY_CUSTOMERS;
     const q = search.toLowerCase();
     return DUMMY_CUSTOMERS.filter(c =>
       c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q)
-    ).slice(0, 5);
+    );
   }, [search]);
 
   const selectCustomer = (c: typeof DUMMY_CUSTOMERS[0]) => {
@@ -102,7 +105,7 @@ function CustomerPicker({
               />
             </div>
             {showDropdown && (
-              <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-lg border border-border bg-popover shadow-lg overflow-hidden">
+              <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-lg border border-border bg-popover shadow-lg overflow-hidden max-h-80 overflow-y-auto">
                 <button
                   onClick={switchToNew}
                   className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-primary hover:bg-accent transition-colors border-b border-border"
@@ -144,11 +147,11 @@ function CustomerPicker({
       </div>
 
       <div className="space-y-2">
-        <Label className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Description (optional)</Label>
+        <Label className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> {requireDescription ? "Work done" : "Description (optional)"}</Label>
         <Textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
-          placeholder="What's the job? e.g. Replace hot water cylinder"
+          placeholder={requireDescription ? "What work was completed?" : "What's the job? e.g. Replace hot water cylinder"}
           className="min-h-[80px]"
         />
       </div>
@@ -375,6 +378,7 @@ function ScheduleGrid({
 /* ─── Main Component ─── */
 export default function WorkNewJob() {
   const navigate = useNavigate();
+  const { isIntroMode } = useAppMode();
   const [step, setStep] = useState(1);
 
   // Step 1
@@ -395,6 +399,7 @@ export default function WorkNewJob() {
   const scheduledDate = addDays(weekStart, selectedDay);
 
   const detailsValid = customer.trim() && address.trim();
+  const introDetailsValid = detailsValid && description.trim();
 
   const jobState = { customer, address, description };
 
@@ -416,6 +421,15 @@ export default function WorkNewJob() {
     navigate("/job/TB-NEW", { state: jobState });
   };
 
+  const handleIntroComplete = () => {
+    toast({
+      title: "Job ready for invoice ✅",
+      description: `${customer} — work done captured, ready to invoice`,
+      duration: 3000,
+    });
+    navigate("/job/TB-NEW?resumeCompletion=true", { state: { ...jobState, introQuickClose: true } });
+  };
+
   return (
     <div className="px-3 sm:px-6 py-4 max-w-lg mx-auto pb-24">
       {/* Header */}
@@ -427,13 +441,29 @@ export default function WorkNewJob() {
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex-1">
-          <h1 className="text-lg font-bold text-foreground">New Job</h1>
+          <h1 className="text-lg font-bold text-foreground">{isIntroMode ? "Job Ready to Invoice" : "New Job"}</h1>
         </div>
-        <StepDots current={step} />
+        {!isIntroMode && <StepDots current={step} />}
       </div>
 
+      {isIntroMode && (
+        <div className="space-y-5">
+          <h2 className="text-base font-semibold text-card-foreground">Work done</h2>
+          <CustomerPicker
+            customer={customer} setCustomer={setCustomer}
+            address={address} setAddress={setAddress}
+            description={description} setDescription={setDescription}
+            isNewCustomer={isNewCustomer} setIsNewCustomer={setIsNewCustomer}
+            requireDescription
+          />
+          <Button className="w-full h-12 gap-2" disabled={!introDetailsValid} onClick={handleIntroComplete}>
+            <Check className="w-4 h-4" /> Job Ready to Invoice
+          </Button>
+        </div>
+      )}
+
       {/* Step 1: Customer */}
-      {step === 1 && (
+      {!isIntroMode && step === 1 && (
         <div className="space-y-5">
           <h2 className="text-base font-semibold text-card-foreground">Who's the job for?</h2>
           <CustomerPicker
@@ -454,7 +484,7 @@ export default function WorkNewJob() {
       )}
 
       {/* Step 2: Schedule */}
-      {step === 2 && (
+      {!isIntroMode && step === 2 && (
         <div className="space-y-5">
           <h2 className="text-base font-semibold text-card-foreground">When?</h2>
           <ScheduleGrid
@@ -477,7 +507,7 @@ export default function WorkNewJob() {
       )}
 
       {/* Step 3: Confirm */}
-      {step === 3 && (
+      {!isIntroMode && step === 3 && (
         <div className="space-y-5">
           <h2 className="text-base font-semibold text-card-foreground">Confirm & Start</h2>
 

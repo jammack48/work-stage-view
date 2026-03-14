@@ -17,9 +17,10 @@ import { useDemoData } from "@/contexts/DemoDataContext";
 import { PageToolbar } from "@/components/PageToolbar";
 import useEmblaCarousel from "embla-carousel-react";
 import { COMMON_TABS, PIPELINE_EXTRAS, buildTabs, handleCommonTab } from "@/config/toolbarTabs";
+import ServicingPage from "@/pages/ServicingPage";
 
 type Layout = "horizontal" | "vertical";
-type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings" | "manager";
+type HomeView = "pipeline" | "customers" | "quotes" | "invoices" | "settings" | "manager" | "servicing";
 
 const HOME_TABS = buildTabs(...PIPELINE_EXTRAS);
 
@@ -160,8 +161,8 @@ const Index = () => {
   }, []);
 
   const handleTabChange = (id: string) => {
-    if (id === "pipeline") {
-      setActiveView("pipeline");
+    if (id === "pipeline" || id === "servicing") {
+      setActiveView(id);
       return;
     }
     if (handleCommonTab(id, navigate)) return;
@@ -260,7 +261,9 @@ const Index = () => {
         }
       >
 
-        {activeView === "manager" ? (
+        {activeView === "servicing" ? (
+          <ServicingPage />
+        ) : activeView === "manager" ? (
           <ManagerMode
             initialStage={managerState?.stage as any}
             initialPriority={managerState?.priority as any}

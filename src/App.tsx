@@ -11,8 +11,10 @@ import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
 import { TutorialProvider } from "@/contexts/TutorialContext";
 import { AppModeProvider, useAppMode } from "@/contexts/AppModeContext";
 import { DemoDataProvider } from "@/contexts/DemoDataContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { JobPrefixProvider } from "@/contexts/JobPrefixContext";
+import { BackendProvider } from "@/contexts/BackendContext";
+import { BackendLogPanel } from "@/components/BackendLogPanel";
 import { AppHeader } from "@/components/AppHeader";
 import { ModePicker } from "@/components/ModePicker";
 import { WorkBottomNav } from "@/components/WorkBottomNav";
@@ -24,6 +26,7 @@ import TimesheetHome from "./pages/TimesheetHome";
 import WorkJobCard from "./components/job/WorkJobCard";
 import TimesheetOnlyJobCard from "./components/job/TimesheetOnlyJobCard";
 import WorkNewJob from "./pages/WorkNewJob";
+import IntroJobFlow from "./pages/IntroJobFlow";
 import Customers from "./pages/Customers";
 import CustomerCard from "./pages/CustomerCard";
 import SettingsPage from "./pages/SettingsPage";
@@ -38,17 +41,42 @@ import SchedulePage from "./pages/SchedulePage";
 import EmailTemplatesPage from "./pages/EmailTemplatesPage";
 import SmsTemplatesPage from "./pages/SmsTemplatesPage";
 import InvoicePage from "./pages/InvoicePage";
+
 import NotFound from "./pages/NotFound";
 import SplashPage from "./pages/SplashPage";
+import { OnboardingCarousel } from "./components/OnboardingCarousel";
 
 const queryClient = new QueryClient();
 
 function AppLayout() {
-  const { mode, isWorkMode, isTimesheetOnlyMode } = useAppMode();
+  const { mode, isWorkMode, isTimesheetOnlyMode, isIntroMode, clearMode } = useAppMode();
   const [splashDismissed, setSplashDismissed] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(() => {
+    return localStorage.getItem("onboardingSeen") === "true";
+  });
+
+  // Each fresh browser session starts at splash → mode picker (clears cached mode)
+  useEffect(() => {
+    const started = sessionStorage.getItem("appSessionStarted");
+    if (!started) {
+      sessionStorage.setItem("appSessionStarted", "true");
+      clearMode();
+    }
+  }, [clearMode]);
 
   if (!splashDismissed) {
     return <SplashPage onStart={() => setSplashDismissed(true)} />;
+  }
+
+  if (!onboardingCompleted) {
+    return (
+      <OnboardingCarousel 
+        onComplete={() => {
+          localStorage.setItem("onboardingSeen", "true");
+          setOnboardingCompleted(true);
+        }} 
+      />
+    );
   }
 
   if (!mode) {
@@ -69,6 +97,11 @@ function AppLayout() {
                 <Route path="/timesheet" element={<WorkTimesheet />} />
                 <Route path="/schedule" element={<TimesheetHome />} />
                 <Route path="*" element={<TimesheetHome />} />
+              </>
+            ) : isIntroMode ? (
+              <>
+                <Route path="/" element={<IntroJobFlow />} />
+                <Route path="*" element={<IntroJobFlow />} />
               </>
             ) : (
               <>
@@ -99,6 +132,7 @@ function AppLayout() {
               <Route path="/schedule" element={<SchedulePage />} />
               <Route path="/email-templates" element={<EmailTemplatesPage />} />
               <Route path="/sms-templates" element={<SmsTemplatesPage />} />
+              
               <Route path="/coming-soon" element={<ComingSoon />} />
               <Route path="*" element={<NotFound />} />
             </>
@@ -113,6 +147,7 @@ function AppLayout() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      <BackendProvider>
       <JobPrefixProvider>
       <AppModeProvider>
       <DemoDataProvider>
@@ -122,6 +157,7 @@ const App = () => (
       <NotificationStyleProvider>
         <TooltipProvider>
           <Toaster />
+          <BackendLogPanel />
           <BrowserRouter>
             <ScrollToTop />
             <AppLayout />
@@ -134,6 +170,7 @@ const App = () => (
       </DemoDataProvider>
       </AppModeProvider>
       </JobPrefixProvider>
+      </BackendProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

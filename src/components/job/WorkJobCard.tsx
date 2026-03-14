@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { getJobDetail } from "@/data/dummyJobDetails";
 import { PageToolbar } from "@/components/PageToolbar";
@@ -8,6 +8,7 @@ import { TimeTab } from "@/components/job/TimeTab";
 import { NotesTab } from "@/components/job/NotesTab";
 import { PhotosTab } from "@/components/job/PhotosTab";
 import { FormsTab } from "@/components/job/FormsTab";
+import { VariationsTab } from "@/components/job/VariationsTab";
 import { JobCompletionFlow } from "@/components/job/JobCompletionFlow";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
 import { SoleTraderCloseOutFlow } from "@/components/job/SoleTraderCloseOutFlow";
@@ -20,11 +21,13 @@ import { useAppMode } from "@/contexts/AppModeContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { fetchVariationCounts } from "@/services/variationsService";
+import { formatJobNumber } from "@/lib/jobNumber";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { MaterialItem } from "@/data/dummyJobDetails";
 import type { CompletedChecklist } from "@/data/dummyChecklists";
 
-type WorkJobTab = "overview" | "scope" | "time" | "materials" | "notes" | "photos" | "forms";
+type WorkJobTab = "overview" | "scope" | "time" | "materials" | "notes" | "photos" | "forms" | "variations";
 
 function WorkMaterialsTab({ materials, showPricing }: { materials: MaterialItem[]; showPricing?: boolean }) {
   return (
@@ -72,14 +75,15 @@ export default function WorkJobCard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { prefix } = useJobPrefix();
-  const { isSoleTrader } = useAppMode();
+  const { isSoleTrader, isIntroMode } = useAppMode();
   const [searchParams, setSearchParams] = useSearchParams();
   const locState = location.state as { customer?: string; address?: string; description?: string } | null;
   const [activeTab, setActiveTab] = useState<WorkJobTab>("overview");
   const resumeCompletion = searchParams.get("resumeCompletion") === "true";
-  const [completionOpen, setCompletionOpen] = useState(resumeCompletion && !isSoleTrader);
+  const isInvoiceOnlyMode = isSoleTrader || isIntroMode;
+  const [completionOpen, setCompletionOpen] = useState(resumeCompletion && !isInvoiceOnlyMode);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
-  const [unifiedFlowOpen, setUnifiedFlowOpen] = useState(resumeCompletion && isSoleTrader);
+  const [unifiedFlowOpen, setUnifiedFlowOpen] = useState(resumeCompletion && isInvoiceOnlyMode);
 
   // Checklist state
   const [arrivalChecklistOpen, setArrivalChecklistOpen] = useState(false);
@@ -90,9 +94,15 @@ export default function WorkJobCard() {
   const returnDate = searchParams.get("returnDate") || "";
   const returnTime = searchParams.get("returnTime") || "";
   const [showBookedBanner, setShowBookedBanner] = useState(returnBooked);
+  const [variationCount, setVariationCount] = useState(0);
 
   const job = getJobDetail(id || "", locState || undefined);
-  const displayId = job ? job.id.replace(/^[A-Z]+-/, `${prefix}-`) : "";
+  const displayId = job ? formatJobNumber(job.id, prefix) : "";
+
+  useEffect(() => {
+    if (!job) return;
+    fetchVariationCounts([job.id]).then((counts) => setVariationCount(counts[job.id] ?? 0)).catch(() => setVariationCount(0));
+  }, [job?.id]);
 
   if (!job) {
     return (
@@ -110,6 +120,7 @@ export default function WorkJobCard() {
     notes: <NotesTab notes={job.notes} />,
     photos: <PhotosTab photos={job.photos} />,
     forms: <FormsTab completedChecklists={completedChecklists} />,
+    variations: <VariationsTab jobId={job.id} />,
   };
 
   const jobHeading = (
@@ -120,16 +131,21 @@ export default function WorkJobCard() {
     </div>
   );
 
+  const visibleTabs = isIntroMode
+    ? WORK_JOB_EXTRAS.filter((tab) => ["back", "overview", "time", "materials", "photos"].includes(tab.id))
+    : WORK_JOB_EXTRAS;
+
   return (
     <>
       <PageToolbar
-        tabs={WORK_JOB_EXTRAS}
+        tabs={visibleTabs}
         activeTab={activeTab}
         onTabChange={(tabId) => {
           if (tabId === "back") { navigate("/"); return; }
           setActiveTab(tabId as WorkJobTab);
         }}
         pageHeading={jobHeading}
+        highlightedTabs={variationCount > 0 ? ["variations"] : []}
         tutorialKey="work-job"
       >
         {/* Return visit booked banner */}
@@ -163,15 +179,17 @@ export default function WorkJobCard() {
 
         {/* Action buttons */}
         <div className="flex gap-2 mb-3">
-          <Button
-            size="lg"
-            variant="outline"
-            className="flex-1 min-w-0 gap-2 h-12 text-sm font-bold truncate"
-            onClick={() => setArrivalChecklistOpen(true)}
-          >
-            <ClipboardCheck className="w-4 h-4 shrink-0" /> Arrived on Site
-          </Button>
-          {isSoleTrader ? (
+          {!isIntroMode && (
+            <Button
+              size="lg"
+              variant="outline"
+              className="flex-1 min-w-0 gap-2 h-12 text-sm font-bold truncate"
+              onClick={() => setArrivalChecklistOpen(true)}
+            >
+              <ClipboardCheck className="w-4 h-4 shrink-0" /> Arrived on Site
+            </Button>
+          )}
+          {isInvoiceOnlyMode ? (
             <Button
               size="lg"
               className="flex-1 min-w-0 gap-2 h-12 text-sm font-bold truncate"
@@ -208,12 +226,13 @@ export default function WorkJobCard() {
         onChecklistComplete={(cl) => setCompletedChecklists((prev) => [...prev, cl])}
       />
 
-      {isSoleTrader && (
+      {isInvoiceOnlyMode && (
         <SoleTraderCloseOutFlow
           open={unifiedFlowOpen}
           onOpenChange={setUnifiedFlowOpen}
           job={job}
           resumeAfterBooking={resumeCompletion}
+          introMode={isIntroMode}
           onChecklistComplete={(cl) => setCompletedChecklists((prev) => [...prev, cl])}
         />
       )}

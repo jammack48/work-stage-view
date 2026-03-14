@@ -3,11 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ScheduleJob, STAFF_COLORS, formatTime } from "./scheduleData";
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
+import { formatJobNumber, getVariationTokens } from "@/lib/jobNumber";
 
 interface ScheduleJobCardProps {
   job: ScheduleJob;
   style?: React.CSSProperties;
   compact?: boolean;
+  variationCount?: number;
 }
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
@@ -16,10 +18,11 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
   Invoiced: "outline",
 };
 
-export function ScheduleJobCard({ job, style, compact }: ScheduleJobCardProps) {
+export function ScheduleJobCard({ job, style, compact, variationCount = 0 }: ScheduleJobCardProps) {
   const navigate = useNavigate();
   const { prefix } = useJobPrefix();
-  const displayId = job.id.replace(/^[A-Z]+-/, `${prefix}-`);
+  const displayId = formatJobNumber(job.id, prefix);
+  const variationTokens = getVariationTokens(variationCount);
 
   return (
     <button
@@ -42,6 +45,15 @@ export function ScheduleJobCard({ job, style, compact }: ScheduleJobCardProps) {
           <div className={cn("text-muted-foreground truncate", compact ? "text-[9px]" : "text-[11px]")}>
             {job.client}
           </div>
+          {variationTokens.length > 0 && (
+            <div className="mt-0.5 flex items-center gap-1 flex-wrap">
+              {variationTokens.slice(0, 3).map((token) => (
+                <Badge key={token} variant="outline" className={cn("text-[9px] h-4 px-1.5 py-0", compact && "text-[8px]")}>
+                  {token}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
         {!compact && (
           <Badge variant={STATUS_VARIANT[job.status] || "secondary"} className="text-[9px] px-1.5 py-0 shrink-0 h-4">
@@ -49,9 +61,7 @@ export function ScheduleJobCard({ job, style, compact }: ScheduleJobCardProps) {
           </Badge>
         )}
       </div>
-      {!compact && (
-        <div className="text-[10px] text-muted-foreground truncate mt-0.5">{displayId} · {job.address}</div>
-      )}
+      <div className={cn("text-muted-foreground truncate mt-0.5", compact ? "text-[9px]" : "text-[10px]")}>{displayId}{!compact ? ` · ${job.address}` : ""}</div>
       <div className={cn("text-muted-foreground font-medium", compact ? "text-[9px]" : "text-[10px]")}>
         <span style={{ color: STAFF_COLORS[job.assignedTo] }}>{job.assignedTo}</span>
         {" · "}
