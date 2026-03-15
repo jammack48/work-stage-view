@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useAppMode } from "@/contexts/AppModeContext";
+import { useToolbarPosition } from "@/contexts/ToolbarPositionContext";
 
 const INTRO_INVOICES_KEY = "introSentInvoices";
 
@@ -125,6 +126,7 @@ function StepDots({ current }: { current: number }) {
 export default function IntroJobFlow() {
   const navigate = useNavigate();
   const { clearMode } = useAppMode();
+  const { position } = useToolbarPosition();
   const [step, setStep] = useState(0);
   const [guidedMode, setGuidedMode] = useState(() => {
     try { return localStorage.getItem("introGuided") !== "false"; } catch { return true; }
@@ -238,7 +240,12 @@ export default function IntroJobFlow() {
   const StepIcon = STEPS[step]?.icon || FileText;
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-48px)] overflow-hidden">
+    <div
+      className={cn(
+        "flex flex-col overflow-hidden",
+        position === "bottom" || position === "top" ? "h-[calc(100dvh-104px)]" : "h-[calc(100dvh-48px)]"
+      )}
+    >
       {/* Header bar */}
       <div className="px-3 py-2 border-b border-border bg-background flex items-center gap-3 shrink-0">
         <button
