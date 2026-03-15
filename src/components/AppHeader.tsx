@@ -84,33 +84,32 @@ export function AppHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {(!isWorkMode || isSoleTrader || location.pathname.startsWith("/job/")) && (
-          <div className="relative">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => cyclePosition(isWorkMode ? ["bottom"] : undefined)}
-                  className={cn(
-                    "h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent",
-                    showMenuHint && "animate-pulse ring-2 ring-primary/70 ring-offset-1 ring-offset-background"
-                  )}
-                >
-                  <LayoutGrid className="w-5 h-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="bg-blue-600 text-blue-50 border-blue-500">
-                <p className="text-xs">Menu location: {position}</p>
-              </TooltipContent>
-            </Tooltip>
-            {showMenuHint && (
-              <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap bg-blue-600 text-blue-50 text-[10px] font-medium px-2 py-0.5 rounded-md animate-pulse shadow-md z-50">
-                Tap to move menu
-              </span>
-            )}
-          </div>
-        )}
+        <div className="relative">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => cyclePosition(isWorkMode ? ["bottom"] : undefined)}
+                className={cn(
+                  "h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent",
+                  showMenuHint && "animate-pulse ring-2 ring-primary/70 ring-offset-1 ring-offset-background"
+                )}
+                title="Move menu"
+              >
+                <LayoutGrid className="w-5 h-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-blue-600 text-blue-50 border-blue-500">
+              <p className="text-xs">Menu location: {position}</p>
+            </TooltipContent>
+          </Tooltip>
+          {showMenuHint && (
+            <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap bg-blue-600 text-blue-50 text-[10px] font-medium px-2 py-0.5 rounded-md animate-pulse shadow-md z-50">
+              Tap to move menu
+            </span>
+          )}
+        </div>
 
         {!isWorkMode && (
           <Button
