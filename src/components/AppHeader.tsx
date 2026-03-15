@@ -90,7 +90,7 @@ export function AppHeader() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => cyclePosition(isWorkMode ? ["bottom"] : undefined)}
+                onClick={() => cyclePosition()}
                 className={cn(
                   "h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent",
                   showMenuHint && "animate-pulse ring-2 ring-primary/70 ring-offset-1 ring-offset-background"

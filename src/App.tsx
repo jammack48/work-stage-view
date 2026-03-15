@@ -2,12 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ThresholdProvider } from "@/contexts/ThresholdContext";
 import { NotificationStyleProvider } from "@/contexts/NotificationStyleContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { ToolbarPositionProvider } from "@/contexts/ToolbarPositionContext";
+import { ToolbarPositionProvider, useToolbarPosition } from "@/contexts/ToolbarPositionContext";
 import { TutorialProvider } from "@/contexts/TutorialContext";
 import { AppModeProvider, useAppMode } from "@/contexts/AppModeContext";
 import { DemoDataProvider } from "@/contexts/DemoDataContext";
@@ -46,11 +46,13 @@ import InvoicePage from "./pages/InvoicePage";
 import NotFound from "./pages/NotFound";
 import SplashPage from "./pages/SplashPage";
 import { OnboardingCarousel } from "./components/OnboardingCarousel";
+import { cn } from "@/lib/utils";
 
 const queryClient = new QueryClient();
 
 function AppLayout() {
   const { mode, isWorkMode, isTimesheetOnlyMode, isIntroMode, clearMode } = useAppMode();
+  const { position } = useToolbarPosition();
   const [splashDismissed, setSplashDismissed] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(() => {
     return localStorage.getItem("onboardingSeen") === "true";
@@ -87,7 +89,14 @@ function AppLayout() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <div className={isWorkMode ? "pb-16" : ""}>
+      <div
+        className={cn(
+          isWorkMode && position === "bottom" && "pb-16",
+          isWorkMode && position === "top" && "pt-14",
+          isWorkMode && position === "left" && "pl-16",
+          isWorkMode && position === "right" && "pr-16"
+        )}
+      >
         <Routes>
           {isWorkMode ? (
             isTimesheetOnlyMode ? (
