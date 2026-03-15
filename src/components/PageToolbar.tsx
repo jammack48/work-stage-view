@@ -56,18 +56,17 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
     </div>
   ) : null;
 
-  const effectivePosition = isMobile ? "top" : position;
-  const isVertical = effectivePosition === "left" || effectivePosition === "right";
-  const isHorizontal = effectivePosition === "top" || effectivePosition === "bottom";
+  const isVertical = position === "left" || position === "right";
+  const isHorizontal = position === "top" || position === "bottom";
 
 
   // Desktop vertical sidebar
   if (!isMobile && isVertical) {
     return (
-      <div className={cn("flex flex-row", effectivePosition === "right" && "flex-row-reverse")}>
+      <div className={cn("flex flex-row", position === "right" && "flex-row-reverse")}>
         <nav className={cn(
           "w-[200px] shrink-0 flex flex-col gap-1 py-2 px-2 bg-card sticky top-[48px] h-[calc(100vh-48px)] overflow-y-auto",
-          effectivePosition === "left" ? "rounded-r-xl border-r border-border" : "rounded-l-xl border-l border-border"
+          position === "left" ? "rounded-r-xl border-r border-border" : "rounded-l-xl border-l border-border"
         )}>
           
           {tabs.map(({ id, label, icon: Icon }) => {
@@ -96,7 +95,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
               return (
                 <Tooltip key={id}>
                   <TooltipTrigger asChild>{btn}</TooltipTrigger>
-                  <TooltipContent side={effectivePosition === "left" ? "right" : "left"}>
+                  <TooltipContent side={position === "left" ? "right" : "left"}>
                     <p className="text-xs">{tip}</p>
                   </TooltipContent>
                 </Tooltip>
@@ -158,13 +157,13 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
 
     return (
       <div className="flex flex-col">
-        {effectivePosition === "top" && bar}
+        {position === "top" && bar}
         {headingBar}
         <main className="flex-1 min-w-0">
           {tutorialBanner}
           <div className="p-4 sm:p-6">{children}</div>
         </main>
-        {effectivePosition === "bottom" && bar}
+        {position === "bottom" && bar}
       </div>
     );
   }
@@ -218,7 +217,7 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
     <nav
       className={cn(
         "bg-card flex items-center px-1 py-1 overflow-x-auto gap-0.5",
-        effectivePosition === "bottom" ? "fixed left-0 right-0 bottom-0 z-40 border-t border-border safe-area-pb pb-[env(safe-area-inset-bottom)]" : "sticky top-[48px] z-40 border-b border-border"
+        position === "bottom" ? "fixed left-0 right-0 bottom-0 z-40 border-t border-border safe-area-pb pb-[env(safe-area-inset-bottom)]" : "sticky top-[48px] z-40 border-b border-border"
       )}
     >
       
@@ -247,18 +246,18 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
 
   return (
     <div className="flex flex-col">
-      {effectivePosition === "top" && bar}
+      {position === "top" && bar}
       {headingBar}
       <main
         className={cn(
           "flex-1 min-w-0",
-          effectivePosition === "bottom" && "pb-24"
+          position === "bottom" && "pb-24"
         )}
       >
         {tutorialBanner}
         <div className="p-4">{children}</div>
       </main>
-      {effectivePosition === "bottom" && bar}
+      {position === "bottom" && bar}
     </div>
   );
 }
