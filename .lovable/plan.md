@@ -1,80 +1,23 @@
 
 
-## Trade Selection + Trade-Specific Demo Data
+## Fix: Mobile Job Card Width + Trade-Specific Jobs
 
-### Overview
-Add a "What's your trade?" step as the first screen in the ModePicker flow. Each trade gets its own set of dummy jobs stored in a Supabase `demo_jobs` table with a `trade` column. Remove the OnboardingCarousel intro explanation screen.
+### Two Issues
 
-### Flow Change
-```text
-Current:  Splash → OnboardingCarousel → ModePicker (Intro/Manager/Employee/Timesheet)
-New:      Splash → TradePicker → ModePicker (Intro/Manager/Employee/Timesheet)
-```
+**Issue 1 — Mobile job card content compressed**: On mobile (390px), the left sidebar nav takes 64px (`w-16`), leaving only ~326px for the job card content. The screenshot shows this clearly — buttons and cards are squeezed.
 
-### Trades (8 options)
-Electrical, HVAC, Plumbing, Glazing, Building, Mechanic, Painting, Landscaping
+**Fix**: Force the toolbar position to `"top"` on mobile for all modes (not just Work mode). The `PageToolbar` already has a mobile horizontal layout that works well. Currently only Work mode forces top when position is "bottom" — we need to force top for ALL positions on mobile.
 
----
+**File**: `src/components/PageToolbar.tsx`
+- At the top of the component, if `isMobile` is true, override position to `"top"` regardless of stored preference. This prevents the left/right sidebar from ever appearing on mobile.
 
-### Step 1 — Database: Create `demo_jobs` table
+**Issue 2 — Trade-specific jobs ARE loading correctly**: Network logs confirm the queries return 200 with correct trade-filtered data (verified electrical and glazing both return 10 jobs each). The 80 seed jobs across 8 trades are all in the database. If you're not seeing different jobs, it may be that you need to go through the full flow again (Splash → pick a different trade → pick mode) since each session clears and re-selects.
 
-Create table in your external Supabase with a `trade` column:
+No code changes needed for issue 2 — the data is there and loading.
 
-```sql
-CREATE TABLE public.demo_jobs (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  trade text NOT NULL,
-  job_id text NOT NULL,
-  client text NOT NULL,
-  job_name text NOT NULL,
-  value numeric NOT NULL DEFAULT 0,
-  age_days integer NOT NULL DEFAULT 0,
-  urgent boolean NOT NULL DEFAULT false,
-  stage text NOT NULL DEFAULT 'Lead',
-  has_unread boolean NOT NULL DEFAULT false
-);
-```
+### Summary of Changes
 
-Then seed ~10 jobs per trade (80 total) covering all pipeline stages — realistic job names/values per trade (e.g. Plumbing: "Hot Water Cylinder Replace $2,400", Painting: "3-Bedroom Interior Repaint $4,800").
-
-### Step 2 — Add trade to AppModeContext
-
-- Add `trade` state (stored in localStorage as `tradie-app-trade`)
-- Expose `trade`, `setTrade`, `clearTrade` from context
-- `clearMode` also clears trade
-
-### Step 3 — Create TradePicker component
-
-New `src/components/TradePicker.tsx`:
-- Grid of 8 trade cards with icons (Zap for Electrical, Droplets for Plumbing, etc.)
-- On tap, saves trade to context and proceeds to existing ModePicker
-- Simple, clean layout matching existing card style
-
-### Step 4 — Update App.tsx flow
-
-- Remove `OnboardingCarousel` and its `onboardingCompleted` state entirely
-- After splash, check `trade` — if null show `TradePicker`, then `ModePicker`
-- Flow: `!splashDismissed → Splash` → `!trade → TradePicker` → `!mode → ModePicker` → App
-
-### Step 5 — Update DemoDataContext to use trade-filtered data
-
-- Replace local `jobs.json` seed with a fetch from `demo_jobs` table filtered by selected trade
-- Service function: `fetchDemoJobs(trade: string)` in `dbDemoService.ts`
-- Jobs still reset on refresh (re-fetched from DB each time)
-
-### Step 6 — Seed data insertion
-
-Insert realistic demo jobs for all 8 trades via a seed script — 10 jobs each across the standard stages (Lead, To Quote, Quote Sent, Won, Scheduled, In Progress, To Invoice, Complete).
-
-### Files to create
-- `src/components/TradePicker.tsx`
-
-### Files to edit
-- `src/contexts/AppModeContext.tsx` — add trade state
-- `src/App.tsx` — remove OnboardingCarousel, add TradePicker step
-- `src/contexts/DemoDataContext.tsx` — fetch from `demo_jobs` by trade
-- `src/services/dbDemoService.ts` — add `fetchDemoJobs(trade)`
-
-### Files to delete
-- `src/components/OnboardingCarousel.tsx` (no longer needed)
+| File | Change |
+|------|--------|
+| `src/components/PageToolbar.tsx` | Force `position = "top"` when `isMobile` is true, preventing sidebar from compressing content on narrow screens |
 
