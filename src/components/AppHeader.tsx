@@ -21,7 +21,7 @@ export function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const { tutorialOn, setTutorialOn } = useTutorial();
-  const { isWorkMode, isSoleTrader, isTimesheetOnlyMode, clearMode, setMode } = useAppMode();
+  const { isWorkMode, isSoleTrader, isTimesheetOnlyMode, clearMode, clearTrade, setMode } = useAppMode();
   const isMobile = useIsMobile();
   const { position, cyclePosition } = useToolbarPosition();
   const [showMenuHint, setShowMenuHint] = useState(true);
