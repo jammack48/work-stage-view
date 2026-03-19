@@ -1,25 +1,80 @@
 
 
-## Plan: Add AI Suggest to Job Sheet Steps
+## Trade Selection + Trade-Specific Demo Data
 
-The "AI Suggest" button and edge function already exist in the Scope tab but are missing from the two close-out flows where you actually write job notes. The screenshot shows the "Job Sheet" step in the sole trader close-out flow — that's where you need it.
+### Overview
+Add a "What's your trade?" step as the first screen in the ModePicker flow. Each trade gets its own set of dummy jobs stored in a Supabase `demo_jobs` table with a `trade` column. Remove the OnboardingCarousel intro explanation screen.
 
-### What changes
+### Flow Change
+```text
+Current:  Splash → OnboardingCarousel → ModePicker (Intro/Manager/Employee/Timesheet)
+New:      Splash → TradePicker → ModePicker (Intro/Manager/Employee/Timesheet)
+```
 
-**1. `src/components/job/SoleTraderCloseOutFlow.tsx`** — Job Notes step (line ~362)
-- Add an "AI Suggest" button next to the "What was done on this job?" label (or alongside Dictate)
-- On press, call `supabase.functions.invoke("ai-suggest-description", { body: { jobTitle: job.jobName, client: job.client, address: job.address } })`
-- Replace/append the jobSheet textarea content with the AI response
-- Show a loading spinner while generating
+### Trades (8 options)
+Electrical, HVAC, Plumbing, Glazing, Building, Mechanic, Painting, Landscaping
 
-**2. `src/components/job/JobCompletionFlow.tsx`** — Same change on its jobsheet step (~line 394)
-- Add the same AI Suggest button and logic
+---
 
-**3. `supabase/functions/ai-suggest-description/index.ts`** — Update prompt
-- Change from a "scope of works" writer to a "job completion notes" writer
-- Given a job title like "Solar Install", generate practical completion notes like: "Arrived on site. Spoke with customer regarding installation location. Installed solar panel system as per requirements. Tested and commissioned system, confirmed operational. Cleaned up site."
-- Keep it trade-focused, plain text, Australian language
+### Step 1 — Database: Create `demo_jobs` table
 
-### No new files needed
-The edge function already exists and handles the API call. Just need to update the prompt and add the button to the two close-out flows.
+Create table in your external Supabase with a `trade` column:
+
+```sql
+CREATE TABLE public.demo_jobs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  trade text NOT NULL,
+  job_id text NOT NULL,
+  client text NOT NULL,
+  job_name text NOT NULL,
+  value numeric NOT NULL DEFAULT 0,
+  age_days integer NOT NULL DEFAULT 0,
+  urgent boolean NOT NULL DEFAULT false,
+  stage text NOT NULL DEFAULT 'Lead',
+  has_unread boolean NOT NULL DEFAULT false
+);
+```
+
+Then seed ~10 jobs per trade (80 total) covering all pipeline stages — realistic job names/values per trade (e.g. Plumbing: "Hot Water Cylinder Replace $2,400", Painting: "3-Bedroom Interior Repaint $4,800").
+
+### Step 2 — Add trade to AppModeContext
+
+- Add `trade` state (stored in localStorage as `tradie-app-trade`)
+- Expose `trade`, `setTrade`, `clearTrade` from context
+- `clearMode` also clears trade
+
+### Step 3 — Create TradePicker component
+
+New `src/components/TradePicker.tsx`:
+- Grid of 8 trade cards with icons (Zap for Electrical, Droplets for Plumbing, etc.)
+- On tap, saves trade to context and proceeds to existing ModePicker
+- Simple, clean layout matching existing card style
+
+### Step 4 — Update App.tsx flow
+
+- Remove `OnboardingCarousel` and its `onboardingCompleted` state entirely
+- After splash, check `trade` — if null show `TradePicker`, then `ModePicker`
+- Flow: `!splashDismissed → Splash` → `!trade → TradePicker` → `!mode → ModePicker` → App
+
+### Step 5 — Update DemoDataContext to use trade-filtered data
+
+- Replace local `jobs.json` seed with a fetch from `demo_jobs` table filtered by selected trade
+- Service function: `fetchDemoJobs(trade: string)` in `dbDemoService.ts`
+- Jobs still reset on refresh (re-fetched from DB each time)
+
+### Step 6 — Seed data insertion
+
+Insert realistic demo jobs for all 8 trades via a seed script — 10 jobs each across the standard stages (Lead, To Quote, Quote Sent, Won, Scheduled, In Progress, To Invoice, Complete).
+
+### Files to create
+- `src/components/TradePicker.tsx`
+
+### Files to edit
+- `src/contexts/AppModeContext.tsx` — add trade state
+- `src/App.tsx` — remove OnboardingCarousel, add TradePicker step
+- `src/contexts/DemoDataContext.tsx` — fetch from `demo_jobs` by trade
+- `src/services/dbDemoService.ts` — add `fetchDemoJobs(trade)`
+
+### Files to delete
+- `src/components/OnboardingCarousel.tsx` (no longer needed)
 
