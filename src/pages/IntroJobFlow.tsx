@@ -233,7 +233,7 @@ function IntroJobFlowInner({ onReset, clearMode, position }: { onReset: () => vo
       sentAt: new Date().toISOString(),
     });
     toast({ title: "Invoice Sent ✅", description: `$${total.toFixed(2)} invoice sent to ${customerName}.`, duration: 4000 });
-    navigate("/");
+    onReset();
   };
 
   const STEPS = [
