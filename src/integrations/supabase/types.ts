@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      demo_jobs: {
+        Row: {
+          age_days: number
+          client: string
+          has_unread: boolean
+          id: string
+          job_id: string
+          job_name: string
+          stage: string
+          trade: string
+          urgent: boolean
+          value: number
+        }
+        Insert: {
+          age_days?: number
+          client: string
+          has_unread?: boolean
+          id?: string
+          job_id: string
+          job_name: string
+          stage?: string
+          trade: string
+          urgent?: boolean
+          value?: number
+        }
+        Update: {
+          age_days?: number
+          client?: string
+          has_unread?: boolean
+          id?: string
+          job_id?: string
+          job_name?: string
+          stage?: string
+          trade?: string
+          urgent?: boolean
+          value?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

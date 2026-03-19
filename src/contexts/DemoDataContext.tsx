@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
-import type { DemoCustomer, DemoDataset, DemoJob, DemoMaterial, DemoScheduleItem } from "@/types/demoData";
+import type { DemoCustomer, DemoJob, DemoMaterial, DemoScheduleItem } from "@/types/demoData";
 import type { Stage } from "@/data/dummyJobs";
-import { fetchCustomers, dbAddCustomer } from "@/services/dbDemoService";
+import { fetchCustomers, dbAddCustomer, fetchDemoJobs } from "@/services/dbDemoService";
+import { useAppMode } from "@/contexts/AppModeContext";
 import jobsSeed from "@/demo-data/jobs.json";
 import materialsSeed from "@/demo-data/materials.json";
 import scheduleSeed from "@/demo-data/schedule.json";
@@ -21,15 +22,33 @@ interface DemoDataContextType {
 
 const DemoDataContext = createContext<DemoDataContextType | undefined>(undefined);
 
-/** Jobs always start fresh from seed data (wiped on refresh) */
 function loadSeedJobs(): DemoJob[] {
   return jobsSeed as unknown as DemoJob[];
 }
 
 export function DemoDataProvider({ children }: { children: ReactNode }) {
+  const { trade } = useAppMode();
   const [jobs, setJobs] = useState<DemoJob[]>(loadSeedJobs);
   const [customers, setCustomers] = useState<DemoCustomer[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Load jobs from Supabase filtered by trade, fallback to local seed
+  useEffect(() => {
+    if (!trade) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const tradeJobs = await fetchDemoJobs(trade);
+        if (!cancelled) {
+          setJobs(tradeJobs.length > 0 ? tradeJobs : loadSeedJobs());
+        }
+      } catch (err) {
+        console.error("Failed to load demo jobs:", err);
+        if (!cancelled) setJobs(loadSeedJobs());
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [trade]);
 
   // Load customers from Supabase on mount
   useEffect(() => {
@@ -40,7 +59,6 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
         if (!cancelled) setCustomers(custs);
       } catch (err) {
         console.error("Failed to load customers from DB:", err);
-        // Fall back to empty — seed data can be used as fallback if needed
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -80,8 +98,14 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetDemo = useCallback(() => {
-    setJobs(loadSeedJobs());
-  }, []);
+    if (trade) {
+      fetchDemoJobs(trade).then((tradeJobs) => {
+        setJobs(tradeJobs.length > 0 ? tradeJobs : loadSeedJobs());
+      }).catch(() => setJobs(loadSeedJobs()));
+    } else {
+      setJobs(loadSeedJobs());
+    }
+  }, [trade]);
 
   const value = useMemo<DemoDataContextType>(() => ({
     jobs,

@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { DemoCustomer } from "@/types/demoData";
+import type { DemoCustomer, DemoJob } from "@/types/demoData";
 import customersSeed from "@/demo-data/customers.json";
 
 /** Map DB row → DemoCustomer */
@@ -16,6 +16,20 @@ function rowToCustomer(r: any): DemoCustomer {
     notes: (r.notes ?? []) as string[],
     contacts: (r.contacts ?? []) as DemoCustomer["contacts"],
     jobHistory: (r.job_history ?? []) as DemoCustomer["jobHistory"],
+  };
+}
+
+/** Map DB row → DemoJob */
+function rowToJob(r: any): DemoJob {
+  return {
+    id: r.job_id,
+    client: r.client,
+    jobName: r.job_name,
+    value: Number(r.value ?? 0),
+    ageDays: Number(r.age_days ?? 0),
+    urgent: r.urgent ?? false,
+    stage: r.stage,
+    hasUnread: r.has_unread ?? false,
   };
 }
 
@@ -59,6 +73,17 @@ export async function fetchCustomers(): Promise<DemoCustomer[]> {
 
   if (error) throw new Error("Failed to fetch customers: " + error.message);
   return (data ?? []).map(rowToCustomer);
+}
+
+/** Fetch demo jobs for a specific trade */
+export async function fetchDemoJobs(trade: string): Promise<DemoJob[]> {
+  const { data, error } = await supabase
+    .from("demo_jobs")
+    .select("*")
+    .eq("trade", trade);
+
+  if (error) throw new Error("Failed to fetch demo jobs: " + error.message);
+  return (data ?? []).map(rowToJob);
 }
 
 /** Add a new customer */

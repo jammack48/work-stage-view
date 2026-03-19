@@ -17,6 +17,7 @@ import { BackendProvider } from "@/contexts/BackendContext";
 import { BackendLogPanel } from "@/components/BackendLogPanel";
 import { AppHeader } from "@/components/AppHeader";
 import { ModePicker } from "@/components/ModePicker";
+import { TradePicker } from "@/components/TradePicker";
 import { WorkBottomNav } from "@/components/WorkBottomNav";
 import Hub from "./pages/Hub";
 import Index from "./pages/Index";
@@ -45,41 +46,31 @@ import InvoicePage from "./pages/InvoicePage";
 
 import NotFound from "./pages/NotFound";
 import SplashPage from "./pages/SplashPage";
-import { OnboardingCarousel } from "./components/OnboardingCarousel";
 import { cn } from "@/lib/utils";
 
 const queryClient = new QueryClient();
 
 function AppLayout() {
-  const { mode, isWorkMode, isTimesheetOnlyMode, isIntroMode, clearMode } = useAppMode();
+  const { mode, trade, isWorkMode, isTimesheetOnlyMode, isIntroMode, clearMode, clearTrade } = useAppMode();
   const { position } = useToolbarPosition();
   const [splashDismissed, setSplashDismissed] = useState(false);
-  const [onboardingCompleted, setOnboardingCompleted] = useState(() => {
-    return localStorage.getItem("onboardingSeen") === "true";
-  });
 
-  // Each fresh browser session starts at splash → mode picker (clears cached mode)
+  // Each fresh browser session starts at splash → trade picker → mode picker
   useEffect(() => {
     const started = sessionStorage.getItem("appSessionStarted");
     if (!started) {
       sessionStorage.setItem("appSessionStarted", "true");
       clearMode();
+      clearTrade();
     }
-  }, [clearMode]);
+  }, [clearMode, clearTrade]);
 
   if (!splashDismissed) {
     return <SplashPage onStart={() => setSplashDismissed(true)} />;
   }
 
-  if (!onboardingCompleted) {
-    return (
-      <OnboardingCarousel 
-        onComplete={() => {
-          localStorage.setItem("onboardingSeen", "true");
-          setOnboardingCompleted(true);
-        }} 
-      />
-    );
+  if (!trade) {
+    return <TradePicker />;
   }
 
   if (!mode) {
