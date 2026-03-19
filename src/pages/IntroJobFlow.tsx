@@ -124,9 +124,16 @@ function StepDots({ current }: { current: number }) {
 
 /* ─── Main Component ─── */
 export default function IntroJobFlow() {
-  const navigate = useNavigate();
   const { clearMode } = useAppMode();
   const { position } = useToolbarPosition();
+  const [formKey, setFormKey] = useState(0);
+
+  // Reset key forces full remount of inner form
+  return <IntroJobFlowInner key={formKey} onReset={() => setFormKey(k => k + 1)} clearMode={clearMode} position={position} />;
+}
+
+function IntroJobFlowInner({ onReset, clearMode, position }: { onReset: () => void; clearMode: () => void; position: string }) {
+  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [guidedMode, setGuidedMode] = useState(() => {
     try { return localStorage.getItem("introGuided") !== "false"; } catch { return true; }
