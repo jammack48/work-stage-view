@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
-import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
+import { getJobDetail, getNewJobDetail, getJobDetailFromDemoJob } from "@/data/dummyJobDetails";
 import { STAGE_LABELS } from "@/data/dummyJobs";
 
 import { PageToolbar } from "@/components/PageToolbar";
@@ -52,6 +52,7 @@ export default function JobCard() {
     ? getNewJobDetail(searchParams.get("stage") || "Lead")
     : (() => {
         const detail = getJobDetail(id || "", scheduleState ? { client: scheduleState.client, address: scheduleState.address, description: scheduleState.jobName } : undefined);
+        if (!detail && liveJob) return getJobDetailFromDemoJob(liveJob);
         if (!detail) return null;
         if (!liveJob) return detail;
         return {
