@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 const SchedulePage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { trade } = useAppMode();
   const isMobile = useIsMobile();
   const returnJobId = searchParams.get("returnJob");
 
