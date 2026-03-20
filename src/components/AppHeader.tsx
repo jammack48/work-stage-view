@@ -78,7 +78,7 @@ export function AppHeader() {
             <DropdownMenuItem onClick={() => { setTutorialOn(true); setMode("intro"); navigate("/"); }}>
               Introduction Mode
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => { clearTrade(); navigate("/"); }}>
+            <DropdownMenuItem onClick={() => { clearTrade(); clearMode(); navigate("/"); }}>
               Change Trade
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => { clearMode(); navigate("/"); }}>
