@@ -3,7 +3,6 @@ import type { DemoCustomer, DemoJob, DemoMaterial, DemoScheduleItem } from "@/ty
 import type { Stage } from "@/data/dummyJobs";
 import { fetchCustomers, dbAddCustomer, fetchDemoJobs } from "@/services/dbDemoService";
 import { useAppMode } from "@/contexts/AppModeContext";
-import jobsSeed from "@/demo-data/jobs.json";
 import materialsSeed from "@/demo-data/materials.json";
 import scheduleSeed from "@/demo-data/schedule.json";
 
@@ -22,29 +21,31 @@ interface DemoDataContextType {
 
 const DemoDataContext = createContext<DemoDataContextType | undefined>(undefined);
 
-function loadSeedJobs(): DemoJob[] {
-  return jobsSeed as unknown as DemoJob[];
-}
-
 export function DemoDataProvider({ children }: { children: ReactNode }) {
   const { trade } = useAppMode();
-  const [jobs, setJobs] = useState<DemoJob[]>(loadSeedJobs);
+  const [jobs, setJobs] = useState<DemoJob[]>([]);
   const [customers, setCustomers] = useState<DemoCustomer[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load jobs from Supabase filtered by trade, fallback to local seed
+  // Load jobs from Supabase filtered by trade — no local fallback
   useEffect(() => {
-    if (!trade) return;
+    if (!trade) {
+      setJobs([]);
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
+    setJobs([]);
+    setLoading(true);
     (async () => {
       try {
         const tradeJobs = await fetchDemoJobs(trade);
-        if (!cancelled) {
-          setJobs(tradeJobs.length > 0 ? tradeJobs : loadSeedJobs());
-        }
+        if (!cancelled) setJobs(tradeJobs);
       } catch (err) {
         console.error("Failed to load demo jobs:", err);
-        if (!cancelled) setJobs(loadSeedJobs());
+        if (!cancelled) setJobs([]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };
@@ -99,11 +100,13 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
 
   const resetDemo = useCallback(() => {
     if (trade) {
+      setJobs([]);
+      setLoading(true);
       fetchDemoJobs(trade).then((tradeJobs) => {
-        setJobs(tradeJobs.length > 0 ? tradeJobs : loadSeedJobs());
-      }).catch(() => setJobs(loadSeedJobs()));
+        setJobs(tradeJobs);
+      }).catch(() => setJobs([])).finally(() => setLoading(false));
     } else {
-      setJobs(loadSeedJobs());
+      setJobs([]);
     }
   }, [trade]);
 

@@ -42,7 +42,7 @@ const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const managerState = location.state as { fromManager?: boolean; stage?: string; priority?: string; slideIndex?: number; fromStage?: string } | null;
-  const { jobs, jobsByStage } = useDemoData();
+  const { jobs, jobsByStage, loading: jobsLoading } = useDemoData();
 
   const [expandedStage, setExpandedStage] = useState<Stage | null>(null);
   const [layout, setLayout] = useState<Layout>("horizontal");
@@ -269,6 +269,8 @@ const Index = () => {
             initialPriority={managerState?.priority as any}
             initialIndex={managerState?.slideIndex}
           />
+        ) : jobsLoading ? (
+          <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">Loading jobs…</div>
         ) : isMobile ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between px-1">
