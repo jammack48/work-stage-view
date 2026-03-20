@@ -35,7 +35,9 @@ export function PageToolbar({ tabs, activeTab, onTabChange, children, pageHeadin
   const { position: rawPosition } = useToolbarPosition();
   const { isWorkMode } = useAppMode();
   // Force top position on mobile to prevent sidebar from compressing content
-  const position = isMobile ? "top" : (isWorkMode && rawPosition === "bottom" ? "top" : rawPosition);
+  const position = isMobile
+    ? (rawPosition === "left" || rawPosition === "right" ? "top" : rawPosition)
+    : (isWorkMode && rawPosition === "bottom" ? "top" : rawPosition);
   const { tutorialOn } = useTutorial();
 
   const tutorialBanner = tutorialOn ? <TutorialBanner overrideKey={tutorialKey} tabKey={activeTab} /> : null;
