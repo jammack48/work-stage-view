@@ -42,7 +42,7 @@ export default function WorkHome() {
   }, [selectedDate, viewDays]);
 
   // Filter to only current staff's jobs
-  const weekJobs = useMemo(() => generateWeekJobs(weekStart), [weekStart]);
+  const weekJobs = useMemo(() => generateWeekJobs(weekStart, trade), [weekStart, trade]);
   const myJobs = useMemo(
     () => weekJobs.filter((j) => j.assignedTo === CURRENT_STAFF),
     [weekJobs]

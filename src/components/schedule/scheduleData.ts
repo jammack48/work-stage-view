@@ -50,6 +50,7 @@ const TRADE_JOB_NAMES: Record<string, string[]> = {
   building: ["Deck Build", "Bathroom Reno", "Kitchen Reno", "Fence Build", "Framing", "Cladding Repair", "Roofing", "Concrete Pour", "Pergola Build", "Wall Lining"],
   mechanic: ["Brake Pad Replace", "WOF Inspection", "Cam Belt Replace", "Oil Change", "Clutch Repair", "Suspension Check", "AC Regas", "Timing Chain", "Wheel Alignment", "Diagnostic Scan"],
   landscaping: ["Lawn Install", "Retaining Wall", "Garden Design", "Irrigation Install", "Tree Removal", "Paving", "Hedge Trim", "Drainage", "Mulch & Bark", "Raised Bed Build"],
+  roofer: ["Re-Roof Iron", "Tile Replace", "Gutter Install", "Fascia Repair", "Flashing Repair", "Skylight Install", "Leak Investigation", "Valley Gutter Replace", "Soffit Repair", "Roof Wash & Treat"],
 };
 
 const DEFAULT_JOB_NAMES = [

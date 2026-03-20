@@ -32,7 +32,7 @@ const STORAGE_KEY = "tradie-app-mode";
 const PREFS_KEY = "tradie-sole-trader-prefs";
 const TRADE_KEY = "tradie-app-trade";
 
-const VALID_TRADES: Trade[] = ["electrical", "hvac", "plumbing", "glazing", "building", "mechanic", "painting", "landscaping"];
+const VALID_TRADES: Trade[] = ["electrical", "hvac", "plumbing", "glazing", "building", "mechanic", "painting", "landscaping", "roofer"];
 
 export function AppModeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<AppMode>(() => {
