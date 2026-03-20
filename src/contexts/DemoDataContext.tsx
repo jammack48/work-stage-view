@@ -1,7 +1,14 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
 import type { DemoCustomer, DemoJob, DemoMaterial, DemoScheduleItem } from "@/types/demoData";
 import type { Stage } from "@/data/dummyJobs";
-import { fetchCustomers, dbAddCustomer, fetchDemoJobs } from "@/services/dbDemoService";
+import {
+  getOrCreateSession,
+  fetchSessionJobs,
+  updateSessionJobStage,
+  resetSession,
+  fetchCustomers,
+  dbAddCustomer,
+} from "@/services/dbDemoService";
 import { useAppMode } from "@/contexts/AppModeContext";
 import materialsSeed from "@/demo-data/materials.json";
 import scheduleSeed from "@/demo-data/schedule.json";
@@ -26,32 +33,41 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   const [jobs, setJobs] = useState<DemoJob[]>([]);
   const [customers, setCustomers] = useState<DemoCustomer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
-  // Load jobs from Supabase filtered by trade — no local fallback
+  // Initialize or switch session when trade changes
   useEffect(() => {
     if (!trade) {
       setJobs([]);
+      setSessionId(null);
       setLoading(false);
       return;
     }
+
     let cancelled = false;
     setJobs([]);
     setLoading(true);
+
     (async () => {
       try {
-        const tradeJobs = await fetchDemoJobs(trade);
-        if (!cancelled) setJobs(tradeJobs);
+        const sid = await getOrCreateSession(trade);
+        if (cancelled) return;
+        setSessionId(sid);
+
+        const sessionJobs = await fetchSessionJobs(sid);
+        if (!cancelled) setJobs(sessionJobs);
       } catch (err) {
-        console.error("Failed to load demo jobs:", err);
+        console.error("Failed to load demo session:", err);
         if (!cancelled) setJobs([]);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
+
     return () => { cancelled = true; };
   }, [trade]);
 
-  // Load customers from Supabase on mount
+  // Load customers on mount
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -59,7 +75,7 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
         const custs = await fetchCustomers();
         if (!cancelled) setCustomers(custs);
       } catch (err) {
-        console.error("Failed to load customers from DB:", err);
+        console.error("Failed to load customers:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -67,11 +83,20 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, []);
 
+  // Update job stage — persists to DB
   const updateJobStage = useCallback((jobId: string, stage: Stage) => {
+    // Optimistic local update
     setJobs((prev) =>
       prev.map((j) => (j.id === jobId ? { ...j, stage, ageDays: 0 } : j))
     );
-  }, []);
+
+    // Persist to DB
+    if (sessionId) {
+      updateSessionJobStage(sessionId, jobId, stage).catch((err) => {
+        console.error("Failed to persist stage change:", err);
+      });
+    }
+  }, [sessionId]);
 
   const addCustomer = useCallback(async (customer: Omit<DemoCustomer, "id">): Promise<number | undefined> => {
     try {
@@ -99,16 +124,34 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetDemo = useCallback(() => {
-    if (trade) {
+    if (!trade) {
       setJobs([]);
-      setLoading(true);
-      fetchDemoJobs(trade).then((tradeJobs) => {
-        setJobs(tradeJobs);
-      }).catch(() => setJobs([])).finally(() => setLoading(false));
-    } else {
-      setJobs([]);
+      return;
     }
-  }, [trade]);
+
+    setLoading(true);
+
+    (async () => {
+      try {
+        // Reset existing session
+        if (sessionId) {
+          await resetSession(sessionId, trade);
+        }
+
+        // Create fresh session
+        const newSid = await getOrCreateSession(trade);
+        setSessionId(newSid);
+
+        const freshJobs = await fetchSessionJobs(newSid);
+        setJobs(freshJobs);
+      } catch (err) {
+        console.error("Failed to reset demo:", err);
+        setJobs([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [trade, sessionId]);
 
   const value = useMemo<DemoDataContextType>(() => ({
     jobs,
