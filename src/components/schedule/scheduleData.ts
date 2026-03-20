@@ -41,7 +41,18 @@ export const DEMO_JOBS: ScheduleJob[] = [
   { id: "TB-0513", jobName: "Leak Detection", client: "Emma Clarke", assignedTo: "Mike", dayOffset: 4, startHour: 8, durationHours: 4, address: "15 Broadway, Newmarket", status: "Scheduled" },
 ];
 
-const JOB_NAMES = [
+const TRADE_JOB_NAMES: Record<string, string[]> = {
+  painting: ["Interior Repaint", "Exterior Spray", "Cabinet Respray", "Fence Stain", "Ceiling Touch-Up", "Feature Wall", "Deck Oil", "Render & Paint", "Wallpaper Strip", "Colour Consult"],
+  plumbing: ["Hot Water Replace", "Leak Repair", "Drain Unblock", "Tap Replace", "Toilet Install", "Gas Fitting", "Shower Install", "Spouting Repair", "Backflow Test", "Pipe Reline"],
+  electrical: ["Switchboard Upgrade", "LED Downlights", "EV Charger Install", "Rewire", "Heat Pump Wiring", "Smoke Alarms", "Power Points", "Solar Panel Install", "Security Lights", "Fan Install"],
+  hvac: ["Heat Pump Install", "Ducted System Service", "Split System Install", "Ventilation Upgrade", "Filter Replace", "Refrigerant Recharge", "Thermostat Install", "Duct Clean"],
+  glazing: ["Double Glazing Retrofit", "Shower Screen Install", "Splashback Measure", "Window Replace", "Balustrade Install", "Mirror Install", "Skylight Install", "Pet Door Cut-In"],
+  building: ["Deck Build", "Bathroom Reno", "Kitchen Reno", "Fence Build", "Framing", "Cladding Repair", "Roofing", "Concrete Pour", "Pergola Build", "Wall Lining"],
+  mechanic: ["Brake Pad Replace", "WOF Inspection", "Cam Belt Replace", "Oil Change", "Clutch Repair", "Suspension Check", "AC Regas", "Timing Chain", "Wheel Alignment", "Diagnostic Scan"],
+  landscaping: ["Lawn Install", "Retaining Wall", "Garden Design", "Irrigation Install", "Tree Removal", "Paving", "Hedge Trim", "Drainage", "Mulch & Bark", "Raised Bed Build"],
+};
+
+const DEFAULT_JOB_NAMES = [
   "Kitchen Plumbing", "Roof Repair", "Bathroom Reno", "Deck Lighting", "Tiling",
   "Fence Repair", "Exterior Paint", "EV Charger Install", "Heat Pump Install",
   "Gas Fitting", "Leak Detection", "Solar Panel Install", "Rewire", "Gutter Replace",
