@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
-import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
+import { getJobDetail, getNewJobDetail, getJobDetailFromDemoJob } from "@/data/dummyJobDetails";
 import { STAGE_LABELS } from "@/data/dummyJobs";
 
 import { PageToolbar } from "@/components/PageToolbar";
