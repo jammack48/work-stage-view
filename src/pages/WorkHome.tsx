@@ -20,6 +20,7 @@ const CURRENT_STAFF = "Dave";
 export default function WorkHome() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { trade } = useAppMode();
   const [materialsOpen, setMaterialsOpen] = useState(false);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [viewDays, setViewDays] = useState<1 | 3 | 5>(3);
