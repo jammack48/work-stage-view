@@ -1,23 +1,36 @@
 
 
-## Fix: Mobile Job Card Width + Trade-Specific Jobs
+## Fix: Trade-Specific Schedule Jobs + Data Clarification
 
-### Two Issues
+### What's Happening
 
-**Issue 1 — Mobile job card content compressed**: On mobile (390px), the left sidebar nav takes 64px (`w-16`), leaving only ~326px for the job card content. The screenshot shows this clearly — buttons and cards are squeezed.
+Two separate issues:
 
-**Fix**: Force the toolbar position to `"top"` on mobile for all modes (not just Work mode). The `PageToolbar` already has a mobile horizontal layout that works well. Currently only Work mode forces top when position is "bottom" — we need to force top for ALL positions on mobile.
+1. **Schedule shows generic jobs**: The schedule calendar (`scheduleData.ts`) uses a hardcoded `JOB_NAMES` array with generic names like "Kitchen Plumbing", "Roof Repair" regardless of trade. This is why your painting trade shows "Leak Detection" and "Deck Lighting" on the calendar.
 
-**File**: `src/components/PageToolbar.tsx`
-- At the top of the component, if `isMobile` is true, override position to `"top"` regardless of stored preference. This prevents the left/right sidebar from ever appearing on mobile.
+2. **Data IS in the connected database**: The `demo_jobs` table exists in the database connected to your app and the API returns 10 correct painting jobs (verified via network logs). The pipeline view should already show painting-specific jobs. Your external Supabase dashboard (qrkojbfayjrtrlrmgzry) is a *different* project — the app connects to a separate database instance via environment variables where the `demo_jobs` table lives.
 
-**Issue 2 — Trade-specific jobs ARE loading correctly**: Network logs confirm the queries return 200 with correct trade-filtered data (verified electrical and glazing both return 10 jobs each). The 80 seed jobs across 8 trades are all in the database. If you're not seeing different jobs, it may be that you need to go through the full flow again (Splash → pick a different trade → pick mode) since each session clears and re-selects.
+### Fix: Trade-Specific Job Names in Schedule
 
-No code changes needed for issue 2 — the data is there and loading.
-
-### Summary of Changes
+Update `src/components/schedule/scheduleData.ts` to accept a trade parameter and use trade-specific job name pools.
 
 | File | Change |
 |------|--------|
-| `src/components/PageToolbar.tsx` | Force `position = "top"` when `isMobile` is true, preventing sidebar from compressing content on narrow screens |
+| `src/components/schedule/scheduleData.ts` | Add a `TRADE_JOB_NAMES` map with realistic job names per trade. Update `generateWeekJobs` to accept an optional `trade` parameter and pick from the correct pool. |
+| `src/pages/SchedulePage.tsx` | Pass the current `trade` from `useAppMode()` into `generateWeekJobs(weekStart, trade)`. |
+
+**Trade-specific job name pools** (examples):
+
+- **Painting**: Interior Repaint, Exterior Spray, Cabinet Respray, Fence Stain, Ceiling Touch-Up, Feature Wall, Deck Oil, Render & Paint
+- **Plumbing**: Hot Water Replace, Leak Repair, Drain Unblock, Tap Replace, Toilet Install, Gas Fitting, Shower Install, Spouting Repair
+- **Electrical**: Switchboard Upgrade, LED Downlights, EV Charger Install, Rewire, Heat Pump Wiring, Smoke Alarms, Power Points, Solar Panel Install
+- **HVAC**: Heat Pump Install, Ducted System Service, Split System Install, Ventilation Upgrade, Filter Replace, Refrigerant Recharge
+- **Glazing**: Double Glazing Retrofit, Shower Screen Install, Splashback Measure, Window Replace, Balustrade Install, Mirror Install
+- **Building**: Deck Build, Bathroom Reno, Kitchen Reno, Fence Build, Framing, Cladding Repair, Roofing, Concrete Pour
+- **Mechanic**: Brake Pad Replace, WOF Inspection, Cam Belt Replace, Oil Change, Clutch Repair, Suspension Check, AC Regas, Timing Chain
+- **Landscaping**: Lawn Install, Retaining Wall, Garden Design, Irrigation Install, Tree Removal, Paving, Hedge Trim, Drainage
+
+### No Other Changes Needed
+
+The pipeline dashboard already fetches trade-specific jobs from the database correctly. Only the schedule/calendar view needs updating to use trade-aware job names.
 
