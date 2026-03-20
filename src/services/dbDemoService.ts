@@ -1,6 +1,43 @@
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import type { DemoCustomer, DemoJob } from "@/types/demoData";
+import type { Stage } from "@/data/dummyJobs";
 import customersSeed from "@/demo-data/customers.json";
+
+const SESSION_KEY = "demo_session_id";
+const SESSION_TRADE_KEY = "demo_session_trade";
+
+/** Get or create a session UUID in sessionStorage */
+function getSessionId(): string | null {
+  return sessionStorage.getItem(SESSION_KEY);
+}
+
+function getSessionTrade(): string | null {
+  return sessionStorage.getItem(SESSION_TRADE_KEY);
+}
+
+function storeSession(id: string, trade: string) {
+  sessionStorage.setItem(SESSION_KEY, id);
+  sessionStorage.setItem(SESSION_TRADE_KEY, trade);
+}
+
+function clearSession() {
+  sessionStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(SESSION_TRADE_KEY);
+}
+
+/** Map DB row → DemoJob */
+function rowToJob(r: any): DemoJob {
+  return {
+    id: r.job_id,
+    client: r.client,
+    jobName: r.job_name,
+    value: Number(r.value ?? 0),
+    ageDays: Number(r.age_days ?? 0),
+    urgent: r.urgent ?? false,
+    stage: r.stage as Stage,
+    hasUnread: r.has_unread ?? false,
+  };
+}
 
 /** Map DB row → DemoCustomer */
 function rowToCustomer(r: any): DemoCustomer {
@@ -19,21 +56,83 @@ function rowToCustomer(r: any): DemoCustomer {
   };
 }
 
-/** Map DB row → DemoJob */
-function rowToJob(r: any): DemoJob {
-  return {
-    id: r.job_id,
-    client: r.client,
-    jobName: r.job_name,
-    value: Number(r.value ?? 0),
-    ageDays: Number(r.age_days ?? 0),
-    urgent: r.urgent ?? false,
-    stage: r.stage,
-    hasUnread: r.has_unread ?? false,
-  };
+/**
+ * Get or create a demo session for the given trade.
+ * If the session already exists for the same trade, returns existing session_id.
+ * If trade changed or no session exists, creates a new one.
+ */
+export async function getOrCreateSession(trade: string): Promise<string> {
+  const existingId = getSessionId();
+  const existingTrade = getSessionTrade();
+
+  // If we have a session for the same trade, verify it still exists in DB
+  if (existingId && existingTrade === trade) {
+    const { count } = await supabase
+      .from("demo_session_jobs")
+      .select("id", { count: "exact", head: true })
+      .eq("session_id", existingId);
+
+    if ((count ?? 0) > 0) return existingId;
+  }
+
+  // Create a new session
+  const newId = crypto.randomUUID();
+
+  // Call the init function to copy template jobs
+  const { error } = await supabase.rpc("init_demo_session", {
+    p_session_id: newId,
+    p_trade: trade,
+  });
+
+  if (error) {
+    console.error("Failed to init demo session:", error);
+    throw new Error("Failed to initialize demo session");
+  }
+
+  storeSession(newId, trade);
+  return newId;
 }
 
-/** Seed customers from JSON if table is empty */
+/** Fetch session jobs (the user's isolated copy) */
+export async function fetchSessionJobs(sessionId: string): Promise<DemoJob[]> {
+  const { data, error } = await supabase
+    .from("demo_session_jobs")
+    .select("*")
+    .eq("session_id", sessionId)
+    .order("job_id", { ascending: true });
+
+  if (error) throw new Error("Failed to fetch session jobs: " + error.message);
+  return (data ?? []).map(rowToJob);
+}
+
+/** Update a job's stage in the session (persists to DB) */
+export async function updateSessionJobStage(
+  sessionId: string,
+  jobId: string,
+  newStage: Stage
+): Promise<void> {
+  const { error } = await supabase
+    .from("demo_session_jobs")
+    .update({ stage: newStage })
+    .eq("session_id", sessionId)
+    .eq("job_id", jobId);
+
+  if (error) throw new Error("Failed to update job stage: " + error.message);
+}
+
+/** Reset session — delete all session jobs and re-copy from template */
+export async function resetSession(sessionId: string, trade: string): Promise<void> {
+  // Delete existing session jobs
+  await supabase.from("demo_session_jobs").delete().eq("session_id", sessionId);
+  // Delete the session record
+  await supabase.from("demo_sessions").delete().eq("id", sessionId);
+
+  // Clear stored session so getOrCreateSession makes a fresh one
+  clearSession();
+}
+
+// ---- Customers (unchanged, shared for now) ----
+
 async function seedCustomersIfEmpty(): Promise<void> {
   const { count, error } = await supabase
     .from("customers")
@@ -62,10 +161,8 @@ async function seedCustomersIfEmpty(): Promise<void> {
   }
 }
 
-/** Fetch all customers from the external Supabase, auto-seeding if empty */
 export async function fetchCustomers(): Promise<DemoCustomer[]> {
   await seedCustomersIfEmpty();
-
   const { data, error } = await supabase
     .from("customers")
     .select("*")
@@ -75,18 +172,6 @@ export async function fetchCustomers(): Promise<DemoCustomer[]> {
   return (data ?? []).map(rowToCustomer);
 }
 
-/** Fetch demo jobs for a specific trade */
-export async function fetchDemoJobs(trade: string): Promise<DemoJob[]> {
-  const { data, error } = await supabase
-    .from("demo_jobs")
-    .select("*")
-    .eq("trade", trade);
-
-  if (error) throw new Error("Failed to fetch demo jobs: " + error.message);
-  return (data ?? []).map(rowToJob);
-}
-
-/** Add a new customer */
 export async function dbAddCustomer(customer: Omit<DemoCustomer, "id">): Promise<DemoCustomer> {
   const { data, error } = await supabase
     .from("customers")
@@ -109,7 +194,6 @@ export async function dbAddCustomer(customer: Omit<DemoCustomer, "id">): Promise
   return rowToCustomer(data);
 }
 
-/** Update a customer */
 export async function dbUpdateCustomer(id: number, updates: Partial<DemoCustomer>): Promise<void> {
   const dbUpdates: Record<string, any> = {};
   if (updates.name !== undefined) dbUpdates.name = updates.name;
@@ -123,10 +207,6 @@ export async function dbUpdateCustomer(id: number, updates: Partial<DemoCustomer
   if (updates.contacts !== undefined) dbUpdates.contacts = updates.contacts;
   if (updates.jobHistory !== undefined) dbUpdates.job_history = updates.jobHistory;
 
-  const { error } = await supabase
-    .from("customers")
-    .update(dbUpdates)
-    .eq("id", id);
-
+  const { error } = await supabase.from("customers").update(dbUpdates).eq("id", id);
   if (error) throw new Error("Failed to update customer: " + error.message);
 }
