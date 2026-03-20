@@ -2,7 +2,7 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 
 type AppMode = "manage" | "work" | "sole-trader" | "timesheet" | "intro" | null;
 
-export type Trade = "electrical" | "hvac" | "plumbing" | "glazing" | "building" | "mechanic" | "painting" | "landscaping";
+export type Trade = "electrical" | "hvac" | "plumbing" | "glazing" | "building" | "mechanic" | "painting" | "landscaping" | "roofer";
 
 export interface SoleTraderPrefs {
   vanStock: boolean;
