@@ -1,4 +1,5 @@
 import { jobs } from "./dummyJobs";
+import type { DemoJob } from "@/types/demoData";
 
 export interface StaffMember {
   name: string;
