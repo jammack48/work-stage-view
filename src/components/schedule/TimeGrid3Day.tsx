@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { ScheduleJob, WORK_START, WORK_END, HOUR_HEIGHT_DESKTOP, formatTime, generateWeekJobs } from "./scheduleData";
 import { ScheduleJobCard } from "./ScheduleJobCard";
 import { fetchVariationCounts } from "@/services/variationsService";
+import { useAppMode } from "@/contexts/AppModeContext";
 
 interface TimeGrid3DayProps {
   dates: Date[];
