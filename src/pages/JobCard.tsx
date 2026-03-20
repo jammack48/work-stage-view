@@ -52,6 +52,7 @@ export default function JobCard() {
     ? getNewJobDetail(searchParams.get("stage") || "Lead")
     : (() => {
         const detail = getJobDetail(id || "", scheduleState ? { client: scheduleState.client, address: scheduleState.address, description: scheduleState.jobName } : undefined);
+        if (!detail && liveJob) return getJobDetailFromDemoJob(liveJob);
         if (!detail) return null;
         if (!liveJob) return detail;
         return {

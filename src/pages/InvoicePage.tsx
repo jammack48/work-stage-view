@@ -138,6 +138,7 @@ export default function InvoicePage() {
       }
     : (() => {
         const detail = getJobDetail(id || "");
+        if (!detail && liveJob) return getJobDetailFromDemoJob(liveJob);
         if (!detail) return null;
         if (!liveJob) return detail;
         return {

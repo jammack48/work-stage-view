@@ -178,6 +178,7 @@ export default function QuotePage() {
       }
     : (() => {
         const detail = getJobDetail(id || "");
+        if (!detail && liveJob) return getJobDetailFromDemoJob(liveJob);
         if (!detail) return null;
         if (!liveJob) return detail;
         return {
