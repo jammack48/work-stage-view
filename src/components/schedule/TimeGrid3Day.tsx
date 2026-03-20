@@ -82,7 +82,7 @@ export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe, jobs: 
       const ws = startOfWeek(date, { weekStartsOn: 1 });
       const key = ws.toISOString();
       if (!weekCache.has(key)) {
-        let jobs = generateWeekJobs(ws);
+        let jobs = generateWeekJobs(ws, trade);
         if (staffFilter) jobs = jobs.filter(j => j.assignedTo === staffFilter);
         weekCache.set(key, jobs);
       }
