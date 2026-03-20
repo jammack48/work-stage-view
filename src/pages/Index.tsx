@@ -42,7 +42,7 @@ const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const managerState = location.state as { fromManager?: boolean; stage?: string; priority?: string; slideIndex?: number; fromStage?: string } | null;
-  const { jobs, jobsByStage } = useDemoData();
+  const { jobs, jobsByStage, loading: jobsLoading } = useDemoData();
 
   const [expandedStage, setExpandedStage] = useState<Stage | null>(null);
   const [layout, setLayout] = useState<Layout>("horizontal");
