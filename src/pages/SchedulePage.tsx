@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAppMode } from "@/contexts/AppModeContext";
 import { startOfWeek, addWeeks, subWeeks, format, addDays } from "date-fns";
 import { CalendarDays, X, Check } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";

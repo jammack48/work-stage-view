@@ -84,7 +84,8 @@ function seededRandom(seed: number, index: number): number {
   return x - Math.floor(x);
 }
 
-export function generateWeekJobs(weekStart: Date): ScheduleJob[] {
+export function generateWeekJobs(weekStart: Date, trade?: string | null): ScheduleJob[] {
+  const JOB_NAMES = (trade && TRADE_JOB_NAMES[trade]) ? TRADE_JOB_NAMES[trade] : DEFAULT_JOB_NAMES;
   const key = `${weekStart.getFullYear()}-${weekStart.getMonth()}-${weekStart.getDate()}`;
   const baseSeed = seedHash(key);
   const jobs: ScheduleJob[] = [];
