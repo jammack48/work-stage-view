@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      customers: {
+        Row: {
+          address: string
+          contacts: Json
+          email: string
+          id: number
+          job_history: Json
+          jobs: number
+          name: string
+          notes: Json
+          phone: string
+          status: string
+          total_spend: number
+        }
+        Insert: {
+          address?: string
+          contacts?: Json
+          email?: string
+          id?: number
+          job_history?: Json
+          jobs?: number
+          name: string
+          notes?: Json
+          phone?: string
+          status?: string
+          total_spend?: number
+        }
+        Update: {
+          address?: string
+          contacts?: Json
+          email?: string
+          id?: number
+          job_history?: Json
+          jobs?: number
+          name?: string
+          notes?: Json
+          phone?: string
+          status?: string
+          total_spend?: number
+        }
+        Relationships: []
+      }
       demo_jobs: {
         Row: {
           age_days: number

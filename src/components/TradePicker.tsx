@@ -1,4 +1,4 @@
-import { Zap, Wind, Droplets, Square, Building2, Wrench, Paintbrush, TreePine } from "lucide-react";
+import { Zap, Wind, Droplets, Square, Building2, Wrench, Paintbrush, TreePine, Home } from "lucide-react";
 import { useAppMode, type Trade } from "@/contexts/AppModeContext";
 
 const trades: { id: Trade; label: string; icon: React.ElementType }[] = [
@@ -10,6 +10,7 @@ const trades: { id: Trade; label: string; icon: React.ElementType }[] = [
   { id: "mechanic", label: "Mechanic", icon: Wrench },
   { id: "painting", label: "Painting", icon: Paintbrush },
   { id: "landscaping", label: "Landscaping", icon: TreePine },
+  { id: "roofer", label: "Roofer", icon: Home },
 ];
 
 export function TradePicker() {

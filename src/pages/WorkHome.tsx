@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAppMode } from "@/contexts/AppModeContext";
 import { startOfWeek, addWeeks, subWeeks, addDays, format, isToday } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DayStrip } from "@/components/schedule/DayStrip";
@@ -19,6 +20,7 @@ const CURRENT_STAFF = "Dave";
 export default function WorkHome() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { trade } = useAppMode();
   const [materialsOpen, setMaterialsOpen] = useState(false);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [viewDays, setViewDays] = useState<1 | 3 | 5>(3);
@@ -40,7 +42,7 @@ export default function WorkHome() {
   }, [selectedDate, viewDays]);
 
   // Filter to only current staff's jobs
-  const weekJobs = useMemo(() => generateWeekJobs(weekStart), [weekStart]);
+  const weekJobs = useMemo(() => generateWeekJobs(weekStart, trade), [weekStart, trade]);
   const myJobs = useMemo(
     () => weekJobs.filter((j) => j.assignedTo === CURRENT_STAFF),
     [weekJobs]
