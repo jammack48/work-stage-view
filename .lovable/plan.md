@@ -1,110 +1,52 @@
 
 
-## Summary of Progress
+## Fix: Job Detail Pages Can't Find Database Jobs
 
-### What We've Built
+### Problem
 
-**Core App Structure**
-- Trade picker (9 industries: electrical, HVAC, plumbing, glazing, building, mechanic, painting, landscaping, roofer)
-- Mode picker (Manager, Tools/Work, Sole Trader, Timesheet, Intro)
-- 4-position movable toolbar (top/left/bottom/right) — works across all modes
-- Pipeline dashboard with 8 stages: Lead → To Quote → Quote Sent → Quote Accepted → In Progress → To Invoice → Invoiced → Invoice Paid
+The pipeline loads jobs correctly from the database (40 per trade, session-isolated). But when you click a job card (e.g. `E-001`, `P-001`, `R-001`), it navigates to `/quote/E-001` or `/job/E-001` and calls `getJobDetail("E-001")` — which only knows about the old hardcoded job IDs from `dummyJobs.ts`. Result: "Quote not found" / "Job not found".
 
-**Data Layer**
-- Migrated from hardcoded JSON to database-backed `demo_jobs` table with trade-specific filtering
-- `customers` table with auto-seeding
-- Schedule view with trade-specific job name pools
-- Trade change clears all state — fresh flow every time
+### Your Questions Answered
 
-**UI/UX**
-- Intro mode walkthrough with invoice-sent return to home
-- Mobile-responsive pipeline with carousel
-- Manager mode, Work mode schedules, job cards, customer cards
-- Notification styles, threshold settings, tutorial system
+1. **Where are the jobs?** They're in Lovable Cloud. The `demo_jobs` table has 360 template rows (40 per trade). The `demo_session_jobs` table has your current session's copy. The pipeline loads them correctly — the problem is only when you click into a job detail page.
 
----
+2. **Which database?** Lovable Cloud (the one connected to this project). Not the standalone Supabase project you checked separately — that's a different instance.
 
-### Current Problem
+3. **Should we use the FastAPI backend?** Not yet. The Render backend is just a health-check endpoint right now. For demo mode, Lovable Cloud handles everything. The FastAPI backend will matter later for real business logic, webhooks, integrations, etc.
 
-Right now, `demo_jobs` is a shared template table. When someone moves a job from "Lead" to "Quote Sent", it either:
-- Only changes in-memory (lost on refresh), or
-- Would modify the shared row (corrupting it for everyone else)
+### Fix: Generate Job Details from Session Data
 
-Neither works for beta testing. We need **isolated, persistent, resettable demo sessions**.
+Instead of looking up job IDs in hardcoded arrays, `getJobDetail` should generate a valid `JobDetail` from the live `DemoJob` data that's already loaded in `DemoDataContext`.
 
----
+**Approach**: Pass the `DemoJob` object (from context) into the detail pages, and use it to construct a `JobDetail` with generated staff/materials/notes/photos. No DB lookup needed — the pipeline already has all the data.
 
-## Plan: Session-Scoped Demo Architecture
-
-### How It Works
-
-```text
-┌─────────────┐     on first visit      ┌──────────────────┐
-│  Browser     │ ──────────────────────► │  demo_sessions   │
-│  (sessionStorage │  create session UUID  │  id, created_at  │
-│   = session_id)  │                      └────────┬─────────┘
-└─────────────┘                                    │
-       │            copy template jobs             │
-       │         ┌─────────────────────────────────┘
-       ▼         ▼
-┌──────────────────────┐         ┌──────────────────┐
-│  demo_session_jobs   │ ◄────── │  demo_jobs       │
-│  session_id, job_id  │  COPY   │  (template only) │
-│  stage, trade, ...   │         │  30-50 per trade  │
-└──────────────────────┘         └──────────────────┘
-       │
-       │  UPDATE stage on drag
-       ▼
-  Persists across page refreshes
-  Resets when browser closes (new sessionStorage = new session)
-```
-
-Each visitor gets their own copy of the 30-50 trade jobs. Stage moves write to `demo_session_jobs`. Closing the browser = new session = fresh data.
-
-### Implementation Steps
-
-**1. Database: Create session tables + expand seed data**
-- Create `demo_sessions` table (id UUID, trade text, created_at timestamp)
-- Create `demo_session_jobs` table (id UUID, session_id FK, job_id text, client text, job_name text, value numeric, age_days int, urgent bool, stage text, has_unread bool, trade text)
-- Expand `demo_jobs` from 10 to ~40 jobs per trade (realistic mix across all 8 stages with varied values, ages, and urgency)
-- Add RLS policies for public access (no auth yet)
-
-**2. Database: Auto-cleanup old sessions**
-- Create a database function + pg_cron job that deletes sessions older than 24 hours (catches any abandoned sessions even if browser didn't close cleanly)
-
-**3. Backend service: Session-aware data layer**
-- Update `dbDemoService.ts`:
-  - `getOrCreateSession(trade)`: checks sessionStorage for session UUID → if none or different trade, creates new session + copies template jobs → returns session_id
-  - `fetchSessionJobs(sessionId)`: reads from `demo_session_jobs` where session_id matches
-  - `updateSessionJobStage(sessionId, jobId, newStage)`: writes stage change to DB
-  - `resetSession(sessionId)`: deletes session jobs and re-copies from template
-
-**4. Context: Wire up DemoDataContext**
-- On trade selection, call `getOrCreateSession(trade)` to get/create isolated session
-- `fetchDemoJobs` now reads from `demo_session_jobs` filtered by session
-- `updateJobStage` now writes to DB (not just local state)
-- `resetDemo` deletes and re-copies session jobs
-- Session UUID stored in `sessionStorage` (auto-clears on browser close)
-
-**5. Seed 30-40 realistic jobs per trade**
-- Each trade gets jobs spread across all 8 stages with realistic names, varied dollar values ($500–$25,000), age days (0–30), mix of urgent/normal, some with unread flags
-- Total: ~320 template rows across 8+ trades
-
-### Files to Change
+### Changes
 
 | File | Change |
 |------|--------|
-| Database migration | Create `demo_sessions` + `demo_session_jobs` tables with RLS |
-| Database insert | Seed 30-40 jobs per trade into `demo_jobs` template |
-| Database migration | pg_cron cleanup function for sessions > 24h |
-| `src/services/dbDemoService.ts` | Add session management (create/fetch/update/reset) |
-| `src/contexts/DemoDataContext.tsx` | Wire session lifecycle, persist stage moves to DB |
+| `src/data/dummyJobDetails.ts` | Add `getJobDetailFromDemoJob(demoJob: DemoJob): JobDetail` — takes a `DemoJob` and generates a full `JobDetail` with deterministic staff, materials, notes, photos based on the job ID hash. This replaces the hardcoded lookup for DB-sourced jobs. |
+| `src/pages/JobCard.tsx` | When `getJobDetail(id)` returns null but `liveJob` exists (from `useDemoData`), use `getJobDetailFromDemoJob(liveJob)` instead of showing "Job not found". |
+| `src/pages/QuotePage.tsx` | Same pattern — when `getJobDetail(id)` returns null but `liveJob` exists, use `getJobDetailFromDemoJob(liveJob)` instead of showing "Quote not found". |
+| `src/pages/InvoicePage.tsx` | Same pattern for invoice detail pages. |
 
-### What Beta Testers Get
+### How `getJobDetailFromDemoJob` Works
 
-- Pick a trade → get 30-40 realistic jobs across the full pipeline
-- Drag jobs between stages → persists across page refreshes
-- Close browser → next visit starts fresh
-- Multiple testers at same time → completely isolated, no conflicts
-- Stale sessions auto-cleaned after 24 hours
+```text
+Input: DemoJob { id: "P-001", client: "Sarah Mitchell", jobName: "Interior Repaint", value: 3200, stage: "Lead", ageDays: 5, urgent: false }
+
+→ Hash the job ID to get a stable seed number
+→ Pick staff from staffPool based on seed
+→ Pick materials from materialsPool based on seed
+→ Generate address, phone, email from seed
+→ Output: full JobDetail with all tabs populated
+```
+
+This means every job from the database will have a valid detail page with realistic-looking data, and clicking through the full pipeline flow works end to end.
+
+### Result
+
+- Click any pipeline job → opens its detail page with populated data
+- Works for all 9 trades, all 40 jobs per trade
+- No hardcoded job list dependency
+- Full flow: Lead → Quote → Job → Invoice all navigable
 
