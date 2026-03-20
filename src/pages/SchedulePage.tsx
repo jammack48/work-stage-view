@@ -57,7 +57,7 @@ const SchedulePage = () => {
     return Array.from({ length: viewDays }, (_, i) => addDays(selectedDate, i - offset));
   }, [selectedDate, viewDays]);
 
-  const weekJobs = useMemo(() => generateWeekJobs(weekStart), [weekStart]);
+  const weekJobs = useMemo(() => generateWeekJobs(weekStart, trade), [weekStart, trade]);
 
   const allJobs = useMemo(() => {
     const base = [...weekJobs];
