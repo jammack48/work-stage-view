@@ -45,6 +45,7 @@ function computeOverlapLayout(jobs: ScheduleJob[]) {
 }
 
 export function TimeGrid3Day({ dates, staffFilter, selectedDate, onSwipe, jobs: externalJobs, onSlotClick, activeSlot, activeDuration }: TimeGrid3DayProps) {
+  const { trade } = useAppMode();
   const [variationCounts, setVariationCounts] = useState<Record<string, number>>({});
   const hours = Array.from({ length: WORK_END - WORK_START }, (_, i) => WORK_START + i);
   const totalHeight = hours.length * HOUR_HEIGHT_DESKTOP;
