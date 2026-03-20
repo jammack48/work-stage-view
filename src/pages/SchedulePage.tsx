@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAppMode } from "@/contexts/AppModeContext";
 import { startOfWeek, addWeeks, subWeeks, format, addDays } from "date-fns";
 import { CalendarDays, X, Check } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 const SchedulePage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { trade } = useAppMode();
   const isMobile = useIsMobile();
   const returnJobId = searchParams.get("returnJob");
 
@@ -55,7 +57,7 @@ const SchedulePage = () => {
     return Array.from({ length: viewDays }, (_, i) => addDays(selectedDate, i - offset));
   }, [selectedDate, viewDays]);
 
-  const weekJobs = useMemo(() => generateWeekJobs(weekStart), [weekStart]);
+  const weekJobs = useMemo(() => generateWeekJobs(weekStart, trade), [weekStart, trade]);
 
   const allJobs = useMemo(() => {
     const base = [...weekJobs];
