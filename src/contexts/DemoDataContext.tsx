@@ -100,11 +100,13 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
 
   const resetDemo = useCallback(() => {
     if (trade) {
+      setJobs([]);
+      setLoading(true);
       fetchDemoJobs(trade).then((tradeJobs) => {
-        setJobs(tradeJobs.length > 0 ? tradeJobs : loadSeedJobs());
-      }).catch(() => setJobs(loadSeedJobs()));
+        setJobs(tradeJobs);
+      }).catch(() => setJobs([])).finally(() => setLoading(false));
     } else {
-      setJobs(loadSeedJobs());
+      setJobs([]);
     }
   }, [trade]);
 
