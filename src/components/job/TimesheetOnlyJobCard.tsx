@@ -12,6 +12,7 @@ import { useJobPrefix } from "@/contexts/JobPrefixContext";
 import { formatJobNumber } from "@/lib/jobNumber";
 import { startOfWeek } from "date-fns";
 import { toast } from "@/hooks/use-toast";
+import { useAppMode } from "@/contexts/AppModeContext";
 
 const OPTIONAL_FORMS = ["Site induction", "Take 5", "Compliance checklist"];
 
