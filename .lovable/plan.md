@@ -1,31 +1,40 @@
 
 
-## Update README: Add Infrastructure & Accounts Reference
+## Connect Standalone Supabase DB to Backend
 
-### What
-Add a persistent "Infrastructure & Accounts" section to the README as a single source of truth for all services, logins, and integrations the app uses. The user will maintain this over time.
+### What This Does
+Your FastAPI backend on Render will connect to your standalone Supabase DB (`sbthgkcmbxjgaqvntjja.supabase.co`). The `/health` endpoint will ping the DB and report connection status. The frontend status panel will show both "Server online" and "DB connected" states.
 
-### Content to Add
+### How DB Check Works
+No need to write data — the backend uses `supabase-py` to run a lightweight read query (e.g., list a table or call a simple RPC). If it responds, DB is connected. No writes needed.
 
-**File**: `README.md` — add a new section after the intro:
+### Steps
 
-```markdown
-## Infrastructure & Accounts
+**1. Update backend to connect to Supabase**
+- `backend/main.py` — import `supabase`, init client from env vars (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`), update `/health` to ping DB and return `{"status": "ok", "db": "connected"}` or `{"status": "ok", "db": "offline"}`
+- `backend/requirements.txt` — add `supabase` package
 
-| Service | Purpose | Login / Account |
-|---------|---------|-----------------|
-| **Lovable** | Frontend hosting, IDE, deployment | macieinvestments |
-| **Lovable Cloud (Supabase)** | Demo database — session jobs, customers, pipeline data | Managed by Lovable (no separate login) |
-| **Supabase Standalone** | Production database (future) | jamie@thermalvolt.co.nz |
-| **Render** | Backend server (FastAPI) | jamie@ostelelectrical.co.nz |
+**2. Update frontend to show DB status**
+- `src/contexts/BackendContext.tsx` — parse `db` field from health response, expose `dbConnected` state
+- `src/components/BackendLogPanel.tsx` — show DB connection status (green/red dot) alongside server status
+- `src/components/BackendStatus.tsx` — tooltip shows both server and DB status
 
-### Notes
-- Lovable Cloud project ID: `ttpndqaghjuoqnngdwlh`
-- Render backend URL: `https://tradie-toolbelt-server.onrender.com`
-- Backend currently only serves a health-check endpoint — no business logic yet
-- Add new services to this table as they are introduced
-```
+**3. Update README**
+- Add standalone Supabase project URL (`sbthgkcmbxjgaqvntjja.supabase.co`) to the infrastructure table
 
-### One file change
-- `README.md` — insert the infrastructure table after the project description, before the "How can I edit this code?" section.
+**4. User action required: Set env vars on Render**
+- You'll need to add two environment variables in your Render dashboard for the backend service:
+  - `SUPABASE_URL` = `https://sbthgkcmbxjgaqvntjja.supabase.co`
+  - `SUPABASE_SERVICE_KEY` = your service role key from the Supabase dashboard
+
+### Files to Change
+
+| File | Change |
+|------|--------|
+| `backend/main.py` | Add supabase client init + DB ping in `/health` |
+| `backend/requirements.txt` | Add `supabase` |
+| `src/contexts/BackendContext.tsx` | Parse and expose `dbConnected` from health response |
+| `src/components/BackendLogPanel.tsx` | Show DB status row |
+| `src/components/BackendStatus.tsx` | Update tooltip to include DB status |
+| `README.md` | Add standalone Supabase URL to infrastructure table |
 
