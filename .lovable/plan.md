@@ -1,25 +1,61 @@
 
 
-## Plan: Add AI Suggest to Job Sheet Steps
+## Dual Pipeline View: Simple + Advanced
 
-The "AI Suggest" button and edge function already exist in the Scope tab but are missing from the two close-out flows where you actually write job notes. The screenshot shows the "Job Sheet" step in the sole trader close-out flow — that's where you need it.
+### What This Does
+Adds a Simple/Advanced toggle to the pipeline dashboard. Simple mode shows 4 clean columns (New, Quoted, Won, Done) mapped from the existing 8 stages. Advanced mode is the current pipeline, untouched. Same data, different lens.
 
-### What changes
+### Stage Mapping
 
-**1. `src/components/job/SoleTraderCloseOutFlow.tsx`** — Job Notes step (line ~362)
-- Add an "AI Suggest" button next to the "What was done on this job?" label (or alongside Dictate)
-- On press, call `supabase.functions.invoke("ai-suggest-description", { body: { jobTitle: job.jobName, client: job.client, address: job.address } })`
-- Replace/append the jobSheet textarea content with the AI response
-- Show a loading spinner while generating
+```text
+Simple Column  →  Existing Stages
+─────────────────────────────────────
+New            →  Lead, To Quote
+Quoted         →  Quote Sent
+Won            →  Quote Accepted, In Progress
+Done           →  To Invoice, Invoiced, Invoice Paid
+```
 
-**2. `src/components/job/JobCompletionFlow.tsx`** — Same change on its jobsheet step (~line 394)
-- Add the same AI Suggest button and logic
+### Drag-and-Drop Defaults
+When a job is dropped into a simple column, it gets assigned a default stage:
+- **New** → `Lead`
+- **Quoted** → `Quote Sent`
+- **Won** → `Quote Accepted`
+- **Done** → `Invoice Paid`
 
-**3. `supabase/functions/ai-suggest-description/index.ts`** — Update prompt
-- Change from a "scope of works" writer to a "job completion notes" writer
-- Given a job title like "Solar Install", generate practical completion notes like: "Arrived on site. Spoke with customer regarding installation location. Installed solar panel system as per requirements. Tested and commissioned system, confirmed operational. Cleaned up site."
-- Keep it trade-focused, plain text, Australian language
+### Files to Create
 
-### No new files needed
-The edge function already exists and handles the API call. Just need to update the prompt and add the button to the two close-out flows.
+| File | Purpose |
+|------|---------|
+| `src/components/SimplePipeline.tsx` | 4-column board with drag-and-drop, mobile swipe via Embla, job cards showing client/job/value + small status badge of real stage |
+| `src/components/AdvancedPipeline.tsx` | Thin wrapper extracting all current Index.tsx pipeline rendering (horizontal/vertical/mobile) |
+| `src/lib/simplePipelineMapping.ts` | Stage-to-bucket mapping, drop-target-to-stage defaults, types |
+
+### Files to Modify
+
+| File | Change |
+|------|---------|
+| `src/pages/Index.tsx` | Add Simple/Advanced toggle (persisted in localStorage), render `<SimplePipeline />` or `<AdvancedPipeline />` based on mode |
+| `src/contexts/DemoDataContext.tsx` | No changes needed — `updateJobStage` already exists |
+
+### SimplePipeline Component Design
+- 4 columns, each with a header showing bucket name + job count
+- Uses HTML5 drag-and-drop (lightweight, no library needed)
+- Each card: client name, job name, value, small badge showing real stage (e.g. "In Progress" inside the Won column)
+- Clicking a card navigates to job/quote/invoice based on stage (reuses existing routing logic)
+- Mobile: horizontal swipe with Embla (same pattern as current mobile pipeline)
+- Drop handler calls `updateJobStage(jobId, defaultStageForBucket)`
+
+### Toggle UI
+- Placed in the pipeline heading area (where layout toggle currently lives)
+- Two-button segmented control: "Simple" | "Advanced"
+- Mode saved to `localStorage` key `pipeline-mode`
+- Default: `simple`
+
+### What Does NOT Change
+- All job detail views (notes, photos, materials, timesheets, variations)
+- Database schema
+- Advanced pipeline logic
+- Backend endpoints
+- Existing stage definitions
 
