@@ -7,9 +7,20 @@ export interface LogEntry {
   ok: boolean;
 }
 
+export interface DebugInfo {
+  url_set: boolean;
+  key_set: boolean;
+  key_type: string;
+  key_preview: string;
+  init_error: string | null;
+  query_error: string | null;
+}
+
 interface BackendContextValue {
   connected: boolean | null;
   dbConnected: boolean | null;
+  dbStatus: string | null;
+  debug: DebugInfo | null;
   enabled: boolean;
   logs: LogEntry[];
   panelOpen: boolean;
@@ -23,6 +34,8 @@ const Ctx = createContext<BackendContextValue | null>(null);
 export function BackendProvider({ children }: { children: React.ReactNode }) {
   const [connected, setConnected] = useState<boolean | null>(null);
   const [dbConnected, setDbConnected] = useState<boolean | null>(null);
+  const [dbStatus, setDbStatus] = useState<string | null>(null);
+  const [debug, setDebug] = useState<DebugInfo | null>(null);
   const [enabled, setEnabled] = useState(true);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -38,17 +51,24 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
       if (res.ok) {
         const data = await res.json();
         setConnected(true);
-        const dbStatus = data.db ?? "unknown";
-        setDbConnected(dbStatus === "connected");
-        addLog(`Health OK • DB: ${dbStatus}`, true);
+        const db = data.db ?? "unknown";
+        setDbStatus(db);
+        setDbConnected(db === "connected");
+        if (data.debug) setDebug(data.debug);
+
+        const debugMsg = data.debug?.init_error || data.debug?.query_error;
+        const suffix = debugMsg ? ` — ${debugMsg}` : "";
+        addLog(`Health OK • DB: ${db}${suffix}`, db === "connected");
       } else {
         setConnected(false);
         setDbConnected(null);
+        setDbStatus(null);
         addLog(`Health check failed (${res.status})`, false);
       }
     } catch {
       setConnected(false);
       setDbConnected(null);
+      setDbStatus(null);
       addLog("Server unreachable", false);
     }
   }, [addLog]);
@@ -57,6 +77,7 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
     if (!enabled) {
       setConnected(false);
       setDbConnected(null);
+      setDbStatus(null);
       addLog("Disconnected by user", false);
       if (intervalRef.current) clearInterval(intervalRef.current);
       return;
@@ -74,7 +95,7 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
   const clearLogs = useCallback(() => setLogs([]), []);
 
   return (
-    <Ctx.Provider value={{ connected, dbConnected, enabled, logs, panelOpen, setPanelOpen, toggleEnabled, clearLogs }}>
+    <Ctx.Provider value={{ connected, dbConnected, dbStatus, debug, enabled, logs, panelOpen, setPanelOpen, toggleEnabled, clearLogs }}>
       {children}
     </Ctx.Provider>
   );

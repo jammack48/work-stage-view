@@ -3,9 +3,8 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { useBackend } from "@/contexts/BackendContext";
 
 export function BackendStatus() {
-  const { connected, dbConnected, setPanelOpen } = useBackend();
+  const { connected, dbConnected, dbStatus, setPanelOpen } = useBackend();
 
-  // Icon color: green only if both server + db connected
   const allGood = connected === true && dbConnected === true;
   const color =
     connected === null
@@ -18,8 +17,7 @@ export function BackendStatus() {
 
   const serverLabel =
     connected === null ? "Checking…" : connected ? "Server ✓" : "Server ✗";
-  const dbLabel =
-    dbConnected === null ? "" : dbConnected ? " • DB ✓" : " • DB ✗";
+  const dbLabel = dbStatus ? ` • DB: ${dbStatus}` : "";
 
   return (
     <Tooltip>
