@@ -4,6 +4,21 @@
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
 
+## Infrastructure & Accounts
+
+| Service | Purpose | Login / Account |
+|---------|---------|-----------------|
+| **Lovable** | Frontend hosting, IDE, deployment | macieinvestments |
+| **Lovable Cloud (Supabase)** | Demo database — session jobs, customers, pipeline data | Managed by Lovable (no separate login) |
+| **Supabase Standalone** | Production database (future) | jamie@thermalvolt.co.nz |
+| **Render** | Backend server (FastAPI) | jamie@ostelelectrical.co.nz |
+
+### Notes
+- Lovable Cloud project ID: `ttpndqaghjuoqnngdwlh`
+- Render backend URL: `https://tradie-toolbelt-server.onrender.com`
+- Backend currently only serves a health-check endpoint — no business logic yet
+- Add new services to this table as they are introduced
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
