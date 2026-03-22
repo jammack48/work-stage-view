@@ -19,8 +19,17 @@ function StatusDot({ state }: { state: boolean | null }) {
   );
 }
 
+function DebugRow({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
+  return (
+    <div className="flex items-center justify-between text-[11px] py-0.5">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={cn("font-mono", warn ? "text-destructive" : "text-foreground")}>{value}</span>
+    </div>
+  );
+}
+
 export function BackendLogPanel() {
-  const { panelOpen, setPanelOpen, logs, enabled, connected, dbConnected, toggleEnabled, clearLogs } = useBackend();
+  const { panelOpen, setPanelOpen, logs, enabled, connected, dbConnected, dbStatus, debug, toggleEnabled, clearLogs } = useBackend();
 
   return (
     <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
@@ -57,14 +66,40 @@ export function BackendLogPanel() {
           <div className="flex items-center gap-2">
             <StatusDot state={dbConnected} />
             <span className="text-xs text-foreground font-medium">
-              {dbConnected === null
-                ? "DB not checked"
-                : dbConnected
-                  ? "Database connected"
+              {dbStatus
+                ? `Database: ${dbStatus}`
+                : dbConnected === null
+                  ? "DB not checked"
                   : "Database offline"}
             </span>
           </div>
         </div>
+
+        {/* Connection Debug */}
+        {debug && (
+          <div className="px-4 py-2 border-b border-border space-y-0.5">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Connection Debug</p>
+            <DebugRow label="SUPABASE_URL" value={debug.url_set ? "✓ set" : "✗ missing"} warn={!debug.url_set} />
+            <DebugRow label="SUPABASE_SERVICE_KEY" value={debug.key_set ? "✓ set" : "✗ missing"} warn={!debug.key_set} />
+            <DebugRow
+              label="Key type"
+              value={debug.key_type}
+              warn={debug.key_type !== "legacy_jwt" && debug.key_set}
+            />
+            <DebugRow label="Key preview" value={debug.key_preview} />
+            {debug.init_error && (
+              <DebugRow label="Init error" value={debug.init_error} warn />
+            )}
+            {debug.query_error && (
+              <DebugRow label="Query error" value={debug.query_error} warn />
+            )}
+            {debug.key_set && debug.key_type !== "legacy_jwt" && (
+              <p className="text-[10px] text-destructive mt-1">
+                ⚠ Expected legacy service_role JWT (starts with eyJ…). Check Supabase → API Keys → Legacy.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Info */}
         <div className="px-4 py-2 text-[11px] text-muted-foreground border-b border-border">

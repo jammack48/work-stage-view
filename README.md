@@ -20,6 +20,16 @@
 - Backend currently only serves a health-check endpoint — no business logic yet
 - Add new services to this table as they are introduced
 
+### Render Environment Variables
+The FastAPI backend on Render requires these env vars:
+
+| Variable | Value | Where to find |
+|----------|-------|---------------|
+| `SUPABASE_URL` | `https://sbthgkcmbxjgaqvntjja.supabase.co` | Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | Legacy `service_role` JWT (starts with `eyJ...`) | Supabase Dashboard → Settings → API Keys → Legacy anon, service_role |
+
+**Important**: Do NOT use the publishable/anon key. Do NOT use new-format keys starting with `sb_secret_...` — the current Python SDK requires the legacy JWT.
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
