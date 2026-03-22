@@ -1,40 +1,106 @@
 
+## Goal
+Make the backend connection issue diagnosable in one place and remove the guesswork around which key Render should use.
 
-## Connect Standalone Supabase DB to Backend
+## What’s happening now
+- The FastAPI backend reads:
+  - `SUPABASE_URL`
+  - `SUPABASE_SERVICE_KEY`
+- It then calls `create_client(url, key)` in `backend/main.py`.
+- The frontend only sees `connected / offline`, so there’s not enough detail to tell whether the failure is:
+  - missing env vars
+  - wrong URL
+  - wrong key type
+  - malformed key / whitespace
+  - SDK incompatibility
 
-### What This Does
-Your FastAPI backend on Render will connect to your standalone Supabase DB (`sbthgkcmbxjgaqvntjja.supabase.co`). The `/health` endpoint will ping the DB and report connection status. The frontend status panel will show both "Server online" and "DB connected" states.
+## Important answer: which key?
+For the current backend code, the safest key to use is:
 
-### How DB Check Works
-No need to write data — the backend uses `supabase-py` to run a lightweight read query (e.g., list a table or call a simple RPC). If it responds, DB is connected. No writes needed.
+- **Supabase Dashboard → API Keys → “Legacy anon, service_role API keys” → `service_role`**
+- It should be the **long JWT-style key** starting with `eyJ...`
 
-### Steps
+Do **not** use:
+- the **publishable** key
+- the new `sb_secret_...` key for this current Python health-check path unless we explicitly refactor/test support for it
 
-**1. Update backend to connect to Supabase**
-- `backend/main.py` — import `supabase`, init client from env vars (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`), update `/health` to ping DB and return `{"status": "ok", "db": "connected"}` or `{"status": "ok", "db": "offline"}`
-- `backend/requirements.txt` — add `supabase` package
+## Plan
 
-**2. Update frontend to show DB status**
-- `src/contexts/BackendContext.tsx` — parse `db` field from health response, expose `dbConnected` state
-- `src/components/BackendLogPanel.tsx` — show DB connection status (green/red dot) alongside server status
-- `src/components/BackendStatus.tsx` — tooltip shows both server and DB status
+### 1. Add structured backend diagnostics
+Update `backend/main.py` so `/health` returns a safe debug object like:
+- whether `SUPABASE_URL` exists
+- whether `SUPABASE_SERVICE_KEY` exists
+- detected key type:
+  - `legacy_jwt`
+  - `new_secret`
+  - `unknown`
+- masked key preview only (example: `eyJ...abcd`, never full secret)
+- exact exception class/message when connection fails
+- whether the client was created successfully
+- whether the DB ping succeeded
 
-**3. Update README**
-- Add standalone Supabase project URL (`sbthgkcmbxjgaqvntjja.supabase.co`) to the infrastructure table
+This will let the frontend show the real failure reason instead of just “DB offline”.
 
-**4. User action required: Set env vars on Render**
-- You'll need to add two environment variables in your Render dashboard for the backend service:
-  - `SUPABASE_URL` = `https://sbthgkcmbxjgaqvntjja.supabase.co`
-  - `SUPABASE_SERVICE_KEY` = your service role key from the Supabase dashboard
+### 2. Make the health check more explicit
+Refine the check so the backend distinguishes:
+- `not_configured`
+- `invalid_key`
+- `client_init_failed`
+- `connected`
+- `offline`
+- `query_failed`
 
-### Files to Change
+That way you’ll know if the problem is the key itself vs a later query failure.
 
-| File | Change |
-|------|--------|
-| `backend/main.py` | Add supabase client init + DB ping in `/health` |
-| `backend/requirements.txt` | Add `supabase` |
-| `src/contexts/BackendContext.tsx` | Parse and expose `dbConnected` from health response |
-| `src/components/BackendLogPanel.tsx` | Show DB status row |
-| `src/components/BackendStatus.tsx` | Update tooltip to include DB status |
-| `README.md` | Add standalone Supabase URL to infrastructure table |
+### 3. Surface the detailed diagnostics in the UI
+Update the backend status/log UI so it shows:
+- server status
+- DB status
+- detected key type
+- last error message
+- env var presence summary
 
+Example log lines:
+- `SUPABASE_URL found`
+- `SUPABASE_SERVICE_KEY found (type: new_secret)`
+- `Supabase client init failed: Invalid API key`
+- `Expected key type: legacy service_role JWT`
+
+### 4. Add a dedicated debug section in the panel
+Extend `BackendLogPanel` with a compact “Connection Debug” block showing:
+- URL configured: yes/no
+- key configured: yes/no
+- key type: legacy_jwt / new_secret / unknown
+- last backend error
+- last successful ping time
+
+This gives you a single on-screen source of truth.
+
+### 5. Document the exact Render setup in README
+Add a short “Standalone DB connection” note to `README.md`:
+- `SUPABASE_URL = https://sbthgkcmbxjgaqvntjja.supabase.co`
+- `SUPABASE_SERVICE_KEY = legacy service_role JWT key from API Keys page`
+- note that the current backend health check does **not** use the publishable key
+- note that the new `sb_secret_...` key may not work with the current Python setup
+
+## Files to change
+- `backend/main.py`
+  - add safe env/key diagnostics
+  - return structured health response
+- `src/contexts/BackendContext.tsx`
+  - parse new debug fields from `/health`
+  - store last error / key type / env presence
+- `src/components/BackendLogPanel.tsx`
+  - display detailed diagnostics
+- `src/components/BackendStatus.tsx`
+  - optionally improve tooltip text with DB reason
+- `README.md`
+  - document the correct key source and current expectation
+
+## Expected result
+After this change, the app will no longer just say “DB offline”. It will tell you something like:
+- `Key type detected: new_secret`
+- `Client init failed: Invalid API key`
+- `Expected: legacy service_role JWT from API Keys > Legacy anon, service_role`
+
+That will make the fix immediate and remove the key confusion.
