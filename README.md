@@ -16,6 +16,7 @@
 ### Notes
 - Lovable Cloud project ID: `ttpndqaghjuoqnngdwlh`
 - Render backend URL: `https://tradie-toolbelt-server.onrender.com`
+- Standalone Supabase URL: `https://sbthgkcmbxjgaqvntjja.supabase.co`
 - Backend currently only serves a health-check endpoint — no business logic yet
 - Add new services to this table as they are introduced
 

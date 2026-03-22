@@ -9,6 +9,7 @@ export interface LogEntry {
 
 interface BackendContextValue {
   connected: boolean | null;
+  dbConnected: boolean | null;
   enabled: boolean;
   logs: LogEntry[];
   panelOpen: boolean;
@@ -21,6 +22,7 @@ const Ctx = createContext<BackendContextValue | null>(null);
 
 export function BackendProvider({ children }: { children: React.ReactNode }) {
   const [connected, setConnected] = useState<boolean | null>(null);
+  const [dbConnected, setDbConnected] = useState<boolean | null>(null);
   const [enabled, setEnabled] = useState(true);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -34,14 +36,19 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await fetch(`${BACKEND_URL}/health`, { signal: AbortSignal.timeout(8000) });
       if (res.ok) {
+        const data = await res.json();
         setConnected(true);
-        addLog("Health check OK", true);
+        const dbStatus = data.db ?? "unknown";
+        setDbConnected(dbStatus === "connected");
+        addLog(`Health OK • DB: ${dbStatus}`, true);
       } else {
         setConnected(false);
+        setDbConnected(null);
         addLog(`Health check failed (${res.status})`, false);
       }
     } catch {
       setConnected(false);
+      setDbConnected(null);
       addLog("Server unreachable", false);
     }
   }, [addLog]);
@@ -49,6 +56,7 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!enabled) {
       setConnected(false);
+      setDbConnected(null);
       addLog("Disconnected by user", false);
       if (intervalRef.current) clearInterval(intervalRef.current);
       return;
@@ -56,7 +64,6 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
 
     addLog("Connecting…", true);
     ping();
-    // Ping every 25s to keep free Render alive (sleeps after 15 min idle)
     intervalRef.current = setInterval(ping, 25000);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -67,7 +74,7 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
   const clearLogs = useCallback(() => setLogs([]), []);
 
   return (
-    <Ctx.Provider value={{ connected, enabled, logs, panelOpen, setPanelOpen, toggleEnabled, clearLogs }}>
+    <Ctx.Provider value={{ connected, dbConnected, enabled, logs, panelOpen, setPanelOpen, toggleEnabled, clearLogs }}>
       {children}
     </Ctx.Provider>
   );
