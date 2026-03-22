@@ -14,13 +14,165 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      customers: {
+        Row: {
+          address: string
+          contacts: Json
+          email: string
+          id: number
+          job_history: Json
+          jobs: number
+          name: string
+          notes: Json
+          phone: string
+          status: string
+          total_spend: number
+        }
+        Insert: {
+          address?: string
+          contacts?: Json
+          email?: string
+          id?: number
+          job_history?: Json
+          jobs?: number
+          name: string
+          notes?: Json
+          phone?: string
+          status?: string
+          total_spend?: number
+        }
+        Update: {
+          address?: string
+          contacts?: Json
+          email?: string
+          id?: number
+          job_history?: Json
+          jobs?: number
+          name?: string
+          notes?: Json
+          phone?: string
+          status?: string
+          total_spend?: number
+        }
+        Relationships: []
+      }
+      demo_jobs: {
+        Row: {
+          age_days: number
+          client: string
+          has_unread: boolean
+          id: string
+          job_id: string
+          job_name: string
+          stage: string
+          trade: string
+          urgent: boolean
+          value: number
+        }
+        Insert: {
+          age_days?: number
+          client: string
+          has_unread?: boolean
+          id?: string
+          job_id: string
+          job_name: string
+          stage?: string
+          trade: string
+          urgent?: boolean
+          value?: number
+        }
+        Update: {
+          age_days?: number
+          client?: string
+          has_unread?: boolean
+          id?: string
+          job_id?: string
+          job_name?: string
+          stage?: string
+          trade?: string
+          urgent?: boolean
+          value?: number
+        }
+        Relationships: []
+      }
+      demo_session_jobs: {
+        Row: {
+          age_days: number
+          client: string
+          has_unread: boolean
+          id: string
+          job_id: string
+          job_name: string
+          session_id: string
+          stage: string
+          trade: string
+          urgent: boolean
+          value: number
+        }
+        Insert: {
+          age_days?: number
+          client: string
+          has_unread?: boolean
+          id?: string
+          job_id: string
+          job_name: string
+          session_id: string
+          stage?: string
+          trade: string
+          urgent?: boolean
+          value?: number
+        }
+        Update: {
+          age_days?: number
+          client?: string
+          has_unread?: boolean
+          id?: string
+          job_id?: string
+          job_name?: string
+          session_id?: string
+          stage?: string
+          trade?: string
+          urgent?: boolean
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_session_jobs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "demo_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          trade: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          trade: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          trade?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_old_demo_sessions: { Args: never; Returns: undefined }
+      init_demo_session: {
+        Args: { p_session_id: string; p_trade: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
