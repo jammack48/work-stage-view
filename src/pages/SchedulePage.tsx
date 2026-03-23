@@ -150,7 +150,7 @@ const SchedulePage = () => {
             <CalendarDays className="w-5 h-5 text-primary shrink-0 mt-0.5" />
             <div className="min-w-0">
               <p className="text-sm font-semibold text-card-foreground">
-                Booking return visit for {activeBookingJob?.jobName || activeJobId}
+                {bookJobId ? "Schedule job" : "Booking return visit"} for {activeBookingJob?.jobName || activeJobId}
               </p>
               <p className="text-xs text-muted-foreground">
                 {bookedSlot
