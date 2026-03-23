@@ -335,15 +335,6 @@ export default function QuotePage() {
       >
         {tabContent[activeTab]}
       </PageToolbar>
-      {job && (
-        <ScheduleJobDialog
-          open={scheduleOpen}
-          onOpenChange={setScheduleOpen}
-          jobName={job.jobName}
-          client={job.client}
-          jobId={job.id}
-        />
-      )}
     </>
   );
 }
