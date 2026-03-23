@@ -24,20 +24,6 @@ export function QuoteOverviewTab({ job, scope, onScopeChange }: QuoteOverviewTab
               <p className="text-sm mt-1">{job.address}</p>
             </div>
           )}
-          <div className="grid grid-cols-2 gap-4">
-            {job.startDate && (
-              <div>
-                <Label className="text-xs text-muted-foreground">Start Date</Label>
-                <p className="text-sm mt-1">{job.startDate}</p>
-              </div>
-            )}
-            {job.dueDate && (
-              <div>
-                <Label className="text-xs text-muted-foreground">Due Date</Label>
-                <p className="text-sm mt-1">{job.dueDate}</p>
-              </div>
-            )}
-          </div>
         </CardContent>
       </Card>
 
