@@ -37,8 +37,8 @@ const SchedulePage = () => {
 
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [viewDays, setViewDays] = useState<1 | 3 | 5>(5);
-  const isBookingMode = !!returnJobId;
-  const [selectedStaff, setSelectedStaff] = useState<string[]>(isBookingMode ? ["Dave"] : []);
+  const isBookingMode = !!activeJobId;
+  const [selectedStaff, setSelectedStaff] = useState<string[]>([]);
   const [selectedDay, setSelectedDay] = useState(() => {
     const today = new Date();
     const start = startOfWeek(today, { weekStartsOn: 1 });
