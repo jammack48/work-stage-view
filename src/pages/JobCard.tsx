@@ -158,6 +158,15 @@ export default function JobCard() {
         {tabContent[activeTab]}
       </PageToolbar>
       <JobCloseOutFlow open={closeOutOpen} onOpenChange={setCloseOutOpen} job={job} />
+      {job && (
+        <ScheduleJobDialog
+          open={scheduleOpen}
+          onOpenChange={setScheduleOpen}
+          jobName={job.jobName}
+          client={job.client}
+          jobId={job.id}
+        />
+      )}
     </>
   );
 }

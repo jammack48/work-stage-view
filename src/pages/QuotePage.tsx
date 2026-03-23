@@ -77,6 +77,7 @@ export default function QuotePage() {
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
   const [variationCount, setVariationCount] = useState(0);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const stageThresholds = getThresholds(liveJob?.stage || "To Quote");
   const ageTone: AgeTone = liveJob
     ? liveJob.urgent || liveJob.ageDays > stageThresholds.orangeMax
