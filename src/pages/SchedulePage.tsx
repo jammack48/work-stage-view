@@ -66,7 +66,7 @@ const SchedulePage = () => {
         id: `${activeJobId}-return`,
         jobName: `↩ ${activeBookingJob.jobName}`,
         client: activeBookingJob.client,
-        assignedTo: "Dave",
+        assignedTo: selectedStaff[0] || "Unassigned",
         dayOffset: bookedSlot.dayOffset,
         startHour: bookedSlot.startHour,
         durationHours: returnDuration,
