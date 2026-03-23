@@ -25,7 +25,7 @@ import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { ScheduleJobDialog } from "@/components/job/ScheduleJobDialog";
+
 
 type QuotePageTab = "overview" | "messages" | "line-items" | "variations" | "sequences" | "notes" | "history";
 
