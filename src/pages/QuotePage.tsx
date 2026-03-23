@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Clock3, CircleCheck, Check, X } from "lucide-react";
+import { AlertTriangle, Clock3, CircleCheck, Check, X, CalendarIcon } from "lucide-react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
 import { toast } from "@/hooks/use-toast";
@@ -25,6 +25,7 @@ import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { ScheduleJobDialog } from "@/components/job/ScheduleJobDialog";
 
 type QuotePageTab = "overview" | "messages" | "line-items" | "variations" | "sequences" | "notes" | "history";
 
@@ -76,6 +77,7 @@ export default function QuotePage() {
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
   const [variationCount, setVariationCount] = useState(0);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const stageThresholds = getThresholds(liveJob?.stage || "To Quote");
   const ageTone: AgeTone = liveJob
     ? liveJob.urgent || liveJob.ageDays > stageThresholds.orangeMax
@@ -311,6 +313,14 @@ export default function QuotePage() {
           {ageMeta[ageTone].label}
         </span>
       )}
+      {status === "Approved" && (
+        <button
+          onClick={() => setScheduleOpen(true)}
+          className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-[hsl(var(--status-green))] text-white hover:opacity-90 transition-opacity"
+        >
+          <CalendarIcon className="w-3 h-3" /> Schedule Job
+        </button>
+      )}
     </div>
   );
 
@@ -325,6 +335,15 @@ export default function QuotePage() {
       >
         {tabContent[activeTab]}
       </PageToolbar>
+      {job && (
+        <ScheduleJobDialog
+          open={scheduleOpen}
+          onOpenChange={setScheduleOpen}
+          jobName={job.jobName}
+          client={job.client}
+          jobId={job.id}
+        />
+      )}
     </>
   );
 }

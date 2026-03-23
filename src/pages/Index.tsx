@@ -80,29 +80,29 @@ const Index = () => {
             </TutorialTip>
           </div>
           {/* Simple / Advanced toggle */}
-          <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5">
-            <Button
-              variant="ghost"
-              size="sm"
+          <div className="flex items-center gap-1">
+            <button
               onClick={() => setPipelineMode("simple")}
               className={cn(
-                "h-7 px-2.5 text-xs",
-                pipelineMode === "simple" && "bg-primary text-primary-foreground hover:bg-primary/90"
+                "h-7 px-3 text-xs font-bold rounded-full transition-all",
+                pipelineMode === "simple"
+                  ? "bg-[hsl(var(--status-green))] text-white shadow-md"
+                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
               )}
             >
               Simple
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
+            </button>
+            <button
               onClick={() => setPipelineMode("advanced")}
               className={cn(
-                "h-7 px-2.5 text-xs",
-                pipelineMode === "advanced" && "bg-primary text-primary-foreground hover:bg-primary/90"
+                "h-7 px-3 text-xs font-bold rounded-full transition-all",
+                pipelineMode === "advanced"
+                  ? "bg-[hsl(var(--status-green))] text-white shadow-md"
+                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
               )}
             >
               Advanced
-            </Button>
+            </button>
           </div>
         </div>
       )}
