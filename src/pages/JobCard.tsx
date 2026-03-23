@@ -44,7 +44,8 @@ export default function JobCard() {
   const [activeTab, setActiveTab] = useState<JobTab>(initialTab);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
   const [variationCount, setVariationCount] = useState(0);
-  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [scheduledStaff, setScheduledStaff] = useState<string[]>([]);
+  const [scheduledDate, setScheduledDate] = useState<string>("");
   const actionParam = searchParams.get("action");
   const { jobs } = useDemoData();
 
