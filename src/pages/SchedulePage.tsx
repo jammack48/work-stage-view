@@ -18,9 +18,9 @@ const SchedulePage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isMobile = useIsMobile();
-  const returnJobId = searchParams.get("returnJob");
+  const activeJobId = searchParams.get("returnJob");
   const bookJobId = searchParams.get("bookJob");
-  const activeJobId = returnJobId || bookJobId;
+  const activeJobId = activeJobId || bookJobId;
 
   const activeBookingJob = useMemo(() => {
     if (!activeJobId) return null;
@@ -61,21 +61,21 @@ const SchedulePage = () => {
 
   const allJobs = useMemo(() => {
     const base = [...weekJobs];
-    if (bookedSlot && returnBookingJob) {
+    if (bookedSlot && activeBookingJob) {
       base.push({
-        id: `${returnJobId}-return`,
-        jobName: `↩ ${returnBookingJob.jobName}`,
-        client: returnBookingJob.client,
+        id: `${activeJobId}-return`,
+        jobName: `↩ ${activeBookingJob.jobName}`,
+        client: activeBookingJob.client,
         assignedTo: "Dave",
         dayOffset: bookedSlot.dayOffset,
         startHour: bookedSlot.startHour,
         durationHours: returnDuration,
-        address: returnBookingJob.address,
+        address: activeBookingJob.address,
         status: "Scheduled",
       });
     }
     return base;
-  }, [bookedSlot, returnBookingJob, returnJobId, weekJobs]);
+  }, [bookedSlot, activeBookingJob, activeJobId, weekJobs]);
 
   const filteredJobs = useMemo(() => {
     if (selectedStaff.length === 0) return allJobs;
@@ -85,16 +85,16 @@ const SchedulePage = () => {
   const weekEnd = addDays(weekStart, 6);
 
   const handleSlotClick = useCallback((dayOffset: number, hour: number) => {
-    if (!returnJobId) return;
+    if (!activeJobId) return;
     setBookedSlot({ dayOffset, startHour: hour });
-  }, [returnJobId]);
+  }, [activeJobId]);
 
   const handleConfirmBooking = () => {
-    if (!bookedSlot || !returnBookingJob || !returnJobId) return;
+    if (!bookedSlot || !activeBookingJob || !activeJobId) return;
     const dayDate = addDays(weekStart, bookedSlot.dayOffset);
     const dateStr = format(dayDate, "EEE d MMM");
     const timeStr = formatTime(bookedSlot.startHour);
-    navigate(`/job/${returnJobId}?returnBooked=true&returnDate=${encodeURIComponent(dateStr)}&returnTime=${encodeURIComponent(timeStr)}&resumeCompletion=true`, { replace: true });
+    navigate(`/job/${activeJobId}?returnBooked=true&returnDate=${encodeURIComponent(dateStr)}&returnTime=${encodeURIComponent(timeStr)}&resumeCompletion=true`, { replace: true });
   };
 
   const handleCancelReturn = () => {
@@ -129,8 +129,8 @@ const SchedulePage = () => {
       pageHeading={
         <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="text-card-foreground font-bold text-base">
-            {returnBookingJob
-              ? `Book Return · ${returnBookingJob.jobName}`
+            {activeBookingJob
+              ? `Book Return · ${activeBookingJob.jobName}`
               : `Schedule · ${format(weekStart, "d MMM")} – ${format(weekEnd, "d MMM")}`
             }
           </span>
@@ -138,13 +138,13 @@ const SchedulePage = () => {
       }
     >
       {/* Return job banner */}
-      {returnJobId && (
+      {activeJobId && (
         <div className="rounded-lg border-2 border-primary/50 bg-primary/10 p-3 mb-3 space-y-2">
           <div className="flex items-start gap-2">
             <CalendarDays className="w-5 h-5 text-primary shrink-0 mt-0.5" />
             <div className="min-w-0">
               <p className="text-sm font-semibold text-card-foreground">
-                Booking return visit for {returnBookingJob?.jobName || returnJobId}
+                Booking return visit for {activeBookingJob?.jobName || activeJobId}
               </p>
               <p className="text-xs text-muted-foreground">
                 {bookedSlot
@@ -186,7 +186,7 @@ const SchedulePage = () => {
       <div className={cn(
         "flex flex-col",
         isMobile && "overflow-x-hidden",
-        isMobile && (returnJobId
+        isMobile && (activeJobId
           ? "h-[calc(100dvh-48px-44px-52px-80px)]"
           : "h-[calc(100dvh-48px-44px-52px)]")
       )}>
@@ -218,7 +218,7 @@ const SchedulePage = () => {
             jobs={filteredJobs}
             selectedDate={selectedDate}
             onSwipe={handleSwipe}
-            onSlotClick={returnJobId ? handleSlotClick : undefined}
+            onSlotClick={activeJobId ? handleSlotClick : undefined}
             activeSlot={bookedSlot}
             activeDuration={returnDuration}
           />
