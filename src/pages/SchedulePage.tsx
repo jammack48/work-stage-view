@@ -136,7 +136,7 @@ const SchedulePage = () => {
         <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="text-card-foreground font-bold text-base">
             {activeBookingJob
-              ? `Book Return · ${activeBookingJob.jobName}`
+              ? (bookJobId ? `Schedule · ${activeBookingJob.jobName}` : `Book Return · ${activeBookingJob.jobName}`)
               : `Schedule · ${format(weekStart, "d MMM")} – ${format(weekEnd, "d MMM")}`
             }
           </span>
