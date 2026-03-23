@@ -94,7 +94,13 @@ const SchedulePage = () => {
     const dayDate = addDays(weekStart, bookedSlot.dayOffset);
     const dateStr = format(dayDate, "EEE d MMM");
     const timeStr = formatTime(bookedSlot.startHour);
-    navigate(`/job/${activeJobId}?returnBooked=true&returnDate=${encodeURIComponent(dateStr)}&returnTime=${encodeURIComponent(timeStr)}&resumeCompletion=true`, { replace: true });
+    const staffStr = selectedStaff.join(",");
+    const isBookJob = searchParams.has("bookJob");
+    if (isBookJob) {
+      navigate(`/job/${activeJobId}?bookedStaff=${encodeURIComponent(staffStr)}&bookedDate=${encodeURIComponent(dateStr)}&bookedTime=${encodeURIComponent(timeStr)}`, { replace: true });
+    } else {
+      navigate(`/job/${activeJobId}?returnBooked=true&returnDate=${encodeURIComponent(dateStr)}&returnTime=${encodeURIComponent(timeStr)}&resumeCompletion=true`, { replace: true });
+    }
   };
 
   const handleCancelReturn = () => {
