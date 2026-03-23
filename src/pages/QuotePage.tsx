@@ -51,9 +51,19 @@ export default function QuotePage() {
   const managerState = (location.state as QuotePageLocationState | null) ?? null;
   const initialCustomer = managerState?.customer ?? null;
   const [searchParams] = useSearchParams();
-  const initialTab = (searchParams.get("tab") as QuotePageTab) || "line-items";
+
+  // Derive initial status from the job's current pipeline stage
+  const derivedStatus: QuoteStatus = useMemo(() => {
+    if (!liveJob) return "Draft";
+    if (liveJob.stage === "Quote Sent") return "Sent";
+    if (liveJob.stage === "Quote Accepted") return "Approved";
+    return "Draft";
+  }, [liveJob]);
+
+  // Default tab: show overview for sent/approved quotes, line-items for drafts
+  const initialTab = (searchParams.get("tab") as QuotePageTab) || (derivedStatus !== "Draft" ? "overview" : "line-items");
   const [activeTab, setActiveTab] = useState<QuotePageTab>(initialTab);
-  const [status, setStatus] = useState<QuoteStatus>("Draft");
+  const [status, setStatus] = useState<QuoteStatus>(derivedStatus);
   const [funnelComplete, setFunnelComplete] = useState(false);
   const [funnelData, setFunnelData] = useState<FunnelResult | null>(null);
   const [funnelStep, setFunnelStep] = useState(initialCustomer ? 2 : 1);
