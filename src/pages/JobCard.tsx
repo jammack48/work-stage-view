@@ -79,6 +79,17 @@ export default function JobCard() {
     }
   }, [actionParam, isToInvoice]);
 
+  // Read booking params from schedule page return
+  useEffect(() => {
+    const bookedStaff = searchParams.get("bookedStaff");
+    const bookedDate = searchParams.get("bookedDate");
+    const bookedTime = searchParams.get("bookedTime");
+    if (bookedStaff) {
+      setScheduledStaff(bookedStaff.split(","));
+      setScheduledDate(bookedDate && bookedTime ? `${bookedDate} at ${bookedTime}` : bookedDate || "");
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (!job) return;
     fetchVariationCounts([job.id]).then((counts) => setVariationCount(counts[job.id] ?? 0)).catch(() => setVariationCount(0));
