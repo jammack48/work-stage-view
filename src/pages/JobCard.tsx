@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
+import { CalendarIcon } from "lucide-react";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
 import { STAGE_LABELS } from "@/data/dummyJobs";
 
