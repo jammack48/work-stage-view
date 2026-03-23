@@ -179,7 +179,7 @@ export function StageColumn({ stage, jobs, isExpanded, onToggle, onNext, layout 
           }}
         >
           <div className="leading-snug min-w-0">
-            <span className="inline-block bg-[hsl(var(--status-green))] text-white font-bold rounded-full px-2.5 py-0.5 text-[11px] shadow-sm break-words">
+            <span className="break-words">
               {(STAGE_LABELS[stage as keyof typeof STAGE_LABELS] ?? [stage])[0]}
             </span>
             <div className="text-xs font-medium opacity-70 break-words mt-0.5">
