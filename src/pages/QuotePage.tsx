@@ -315,7 +315,7 @@ export default function QuotePage() {
       )}
       {status === "Approved" && (
         <button
-          onClick={() => setScheduleOpen(true)}
+          onClick={() => navigate(`/schedule?bookJob=${job.id}&jobName=${encodeURIComponent(job.jobName)}&client=${encodeURIComponent(job.client)}&address=${encodeURIComponent(job.address)}`)}
           className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-[hsl(var(--status-green))] text-white hover:opacity-90 transition-opacity"
         >
           <CalendarIcon className="w-3 h-3" /> Schedule Job
