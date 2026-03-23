@@ -51,6 +51,11 @@ export default function QuotePage() {
   const managerState = (location.state as QuotePageLocationState | null) ?? null;
   const initialCustomer = managerState?.customer ?? null;
   const [searchParams] = useSearchParams();
+  const { jobs, updateJobStage } = useDemoData();
+  const { getThresholds, getLabel } = useThresholds();
+
+  const isNew = id === "new";
+  const liveJob = useMemo(() => jobs.find((item) => item.id === id), [jobs, id]);
 
   // Derive initial status from the job's current pipeline stage
   const derivedStatus: QuoteStatus = useMemo(() => {
@@ -71,11 +76,6 @@ export default function QuotePage() {
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
   const [variationCount, setVariationCount] = useState(0);
-  const { jobs, updateJobStage } = useDemoData();
-  const { getThresholds, getLabel } = useThresholds();
-
-  const isNew = id === "new";
-  const liveJob = useMemo(() => jobs.find((item) => item.id === id), [jobs, id]);
   const stageThresholds = getThresholds(liveJob?.stage || "To Quote");
   const ageTone: AgeTone = liveJob
     ? liveJob.urgent || liveJob.ageDays > stageThresholds.orangeMax
