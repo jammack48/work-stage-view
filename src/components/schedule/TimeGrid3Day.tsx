@@ -12,7 +12,7 @@ interface TimeGrid3DayProps {
   onSwipe?: (direction: "left" | "right") => void;
   /** Optional external jobs list — if provided, skips internal generateWeekJobs */
   jobs?: ScheduleJob[];
-  onSlotClick?: (dayOffset: number, hour: number) => void;
+  onSlotClick?: (dayOffset: number, hour: number, staffName?: string) => void;
   activeSlot?: { dayOffset: number; startHour: number } | null;
   activeDuration?: number;
 }
