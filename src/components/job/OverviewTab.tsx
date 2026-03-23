@@ -11,6 +11,8 @@ import { formatJobNumber } from "@/lib/jobNumber";
 interface OverviewTabProps {
   job: JobDetail;
   onSchedule?: () => void;
+  scheduledStaff?: string[];
+  scheduledDate?: string;
 }
 
 const PRE_SCHEDULE_STAGES = ["Lead", "To Quote", "Quote Sent", "Quote Accepted"];
