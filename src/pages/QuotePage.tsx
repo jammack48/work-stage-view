@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Clock3, CircleCheck } from "lucide-react";
+import { AlertTriangle, Clock3, CircleCheck, Check, X } from "lucide-react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { getJobDetail, getNewJobDetail } from "@/data/dummyJobDetails";
 import { toast } from "@/hooks/use-toast";
@@ -51,9 +51,24 @@ export default function QuotePage() {
   const managerState = (location.state as QuotePageLocationState | null) ?? null;
   const initialCustomer = managerState?.customer ?? null;
   const [searchParams] = useSearchParams();
-  const initialTab = (searchParams.get("tab") as QuotePageTab) || "line-items";
+  const { jobs, updateJobStage } = useDemoData();
+  const { getThresholds, getLabel } = useThresholds();
+
+  const isNew = id === "new";
+  const liveJob = useMemo(() => jobs.find((item) => item.id === id), [jobs, id]);
+
+  // Derive initial status from the job's current pipeline stage
+  const derivedStatus: QuoteStatus = useMemo(() => {
+    if (!liveJob) return "Draft";
+    if (liveJob.stage === "Quote Sent") return "Sent";
+    if (liveJob.stage === "Quote Accepted") return "Approved";
+    return "Draft";
+  }, [liveJob]);
+
+  // Default tab: show overview for sent/approved quotes, line-items for drafts
+  const initialTab = (searchParams.get("tab") as QuotePageTab) || (derivedStatus !== "Draft" ? "overview" : "line-items");
   const [activeTab, setActiveTab] = useState<QuotePageTab>(initialTab);
-  const [status, setStatus] = useState<QuoteStatus>("Draft");
+  const [status, setStatus] = useState<QuoteStatus>(derivedStatus);
   const [funnelComplete, setFunnelComplete] = useState(false);
   const [funnelData, setFunnelData] = useState<FunnelResult | null>(null);
   const [funnelStep, setFunnelStep] = useState(initialCustomer ? 2 : 1);
@@ -61,11 +76,6 @@ export default function QuotePage() {
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
   const [variationCount, setVariationCount] = useState(0);
-  const { jobs, updateJobStage } = useDemoData();
-  const { getThresholds, getLabel } = useThresholds();
-
-  const isNew = id === "new";
-  const liveJob = useMemo(() => jobs.find((item) => item.id === id), [jobs, id]);
   const stageThresholds = getThresholds(liveJob?.stage || "To Quote");
   const ageTone: AgeTone = liveJob
     ? liveJob.urgent || liveJob.ageDays > stageThresholds.orangeMax
@@ -220,8 +230,45 @@ export default function QuotePage() {
     }
   };
 
+  const handleAcceptQuote = () => {
+    if (job && !isNew) {
+      updateJobStage(job.id, "Quote Accepted");
+      setStatus("Approved");
+      toast({ title: "Quote accepted", description: `${job.jobName} moved to Quote Accepted.` });
+    }
+  };
+
+  const handleDeclineQuote = () => {
+    if (job && !isNew) {
+      toast({ title: "Quote declined", description: `${job.jobName} has been declined.` });
+      const returnState = managerState?.fromManager ? managerState : managerState?.fromStage ? { fromStage: managerState.fromStage } : undefined;
+      navigate("/", { state: returnState });
+    }
+  };
+
   const tabContent: Record<QuotePageTab, React.ReactNode> = {
-    overview: <QuoteOverviewTab job={job} scope={job.description || ""} onScopeChange={() => {}} />,
+    overview: (
+      <div className="space-y-4">
+        {status === "Sent" && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-accent/50 border border-border">
+            <span className="text-sm font-medium text-foreground flex-1">This quote has been sent — awaiting customer response.</span>
+            <button
+              onClick={handleAcceptQuote}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-semibold bg-[hsl(var(--status-green))] text-white hover:opacity-90 transition-opacity"
+            >
+              <Check className="w-4 h-4" /> Accept
+            </button>
+            <button
+              onClick={handleDeclineQuote}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-semibold bg-[hsl(var(--status-red))] text-white hover:opacity-90 transition-opacity"
+            >
+              <X className="w-4 h-4" /> Decline
+            </button>
+          </div>
+        )}
+        <QuoteOverviewTab job={job} scope={job.description || ""} onScopeChange={() => {}} />
+      </div>
+    ),
     messages: <MessagesTab recordType="quote" recordId={job.id} showPipelineLink pipelinePath="/" />,
     "line-items": (
       <div className="space-y-4">
