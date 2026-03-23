@@ -313,6 +313,14 @@ export default function QuotePage() {
           {ageMeta[ageTone].label}
         </span>
       )}
+      {status === "Approved" && (
+        <button
+          onClick={() => setScheduleOpen(true)}
+          className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-[hsl(var(--status-green))] text-white hover:opacity-90 transition-opacity"
+        >
+          <CalendarIcon className="w-3 h-3" /> Schedule Job
+        </button>
+      )}
     </div>
   );
 
