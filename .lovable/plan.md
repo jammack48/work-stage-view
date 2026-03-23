@@ -1,34 +1,52 @@
 
 
-## Fix Stage Header Truncation + Quote Sent Navigation
+## Two Changes: Green Bubble Toggle + Schedule Job Dialog
 
-### Two Issues
+### 1. Simple/Advanced Pipeline Toggle — Green Bubble Buttons
 
-**1. Stage column headers truncate with "..." when screen is compressed**
-Currently the header text uses `truncate` (line 182 in StageColumn.tsx), causing labels like "Pricing/Quoting" to show as "Pricing/Q...". Headers should wrap to a second line instead.
+Currently the toggle uses a segmented control with `bg-primary` highlight. The user wants the selected mode to look like the Tutorial icon — a bold rounded green bubble with strong contrast.
 
-**2. Clicking into "Quote Sent" (Awaiting Acceptance) stage opens the quote builder/send flow instead of showing the sent quote with Accept/Decline buttons**
-The QuotePage always starts with `status: "Draft"` (line 56). For jobs in "Quote Sent" stage, the status should initialize as "Sent" so the page shows the sent quote preview with Accept/Decline buttons — like Fergus does — instead of the quote editor.
+**File: `src/pages/Index.tsx`** (lines 83-106)
+- Replace the current muted segmented control with bold rounded-full buttons
+- Active state: `bg-green-500 text-white font-bold shadow-md` (like the Tutorial bubble)
+- Inactive state: `bg-secondary/50 text-muted-foreground`
+- Slightly larger padding and rounded-full shape for a "pill bubble" look
 
-### Changes
+### 2. Schedule Job — Staff & Date Picker Dialog (Fergus-style)
+
+Currently, clicking a "Quote Accepted" job navigates to `/job/:id` which shows the overview. The "Schedule Job" label appears in the stage badge but there's no scheduling flow from here — it just goes to the existing schedule page with preloaded data.
+
+The user wants: when you click "Schedule Job" (from the Quote Accepted stage in the pipeline), open a **dialog/popup** where you:
+1. Select one or more staff members (checkboxes from STAFF list)
+2. Pick a date (calendar date picker)
+3. Confirm → job gets assigned and navigates to schedule or shows confirmation
+
+**New File: `src/components/job/ScheduleJobDialog.tsx`**
+- Dialog with two sections:
+  - **Staff selection**: Multi-select checkboxes using the STAFF list from `scheduleData.ts` with color indicators
+  - **Date picker**: Calendar component (already in UI library) to pick the scheduled day
+  - **Time slot** (optional): Start time dropdown (7am-5pm)
+- Confirm button creates the assignment and shows a toast
+- This mirrors the Fergus workflow (images 97-98): select staff → select day → confirm
 
 **File: `src/components/StageColumn.tsx`**
-- Line 182: Remove `truncate` class from the stage label `<div>`, replace with `break-words` or allow natural text wrapping
-- Line 175: Remove the fixed `h-[52px]` height constraint on the header so it can grow when text wraps
-- Use `min-h-[52px]` instead to maintain minimum size but allow expansion
+- For "Quote Accepted" stage, clicking a job card opens the ScheduleJobDialog instead of navigating directly to `/job/:id`
 
 **File: `src/pages/QuotePage.tsx`**
-- Line 56: Instead of always defaulting to `"Draft"`, derive the initial status from the job's current stage:
-  - If job stage is `"Quote Sent"` → initial status = `"Sent"`
-  - If job stage is `"Quote Accepted"` → initial status = `"Approved"`
-  - Otherwise → `"Draft"`
-- Line 54: When status is "Sent", default the initial tab to `"overview"` or a new preview-focused view instead of `"line-items"` — so the user sees what was sent (the quote preview) with Accept/Decline buttons, not the editable quote builder
-- Add Accept and Decline action buttons visible when status is "Sent":
-  - **Accept**: updates job stage to "Quote Accepted", sets status to "Approved", shows toast
-  - **Decline**: navigates back or shows confirmation, could set a "Declined" local state
-- These buttons appear prominently at the top of the quote content area (similar to Fergus's green "Accept" / red "Decline" bar)
+- When status is "Approved" (Quote Accepted), add a "Schedule Job" button in the heading area
+- Clicking it opens the ScheduleJobDialog
 
-### Result
-- Column headers wrap cleanly on compressed screens — full text always visible
-- Clicking a "Quote Sent" job opens a read-only view showing the sent quote with Accept/Decline actions, matching the Fergus workflow
+**File: `src/pages/JobCard.tsx`**
+- For jobs in "Quote Accepted" stage, show a "Schedule Job" button in the heading
+- Clicking it opens the ScheduleJobDialog
+
+### Files Summary
+
+| File | Change |
+|------|--------|
+| `src/pages/Index.tsx` | Restyle Simple/Advanced toggle to bold green bubble buttons |
+| `src/components/job/ScheduleJobDialog.tsx` | **New** — staff multi-select + calendar date picker dialog |
+| `src/components/StageColumn.tsx` | Open ScheduleJobDialog for Quote Accepted stage clicks |
+| `src/pages/QuotePage.tsx` | Add Schedule Job button for approved quotes |
+| `src/pages/JobCard.tsx` | Add Schedule Job button for Quote Accepted jobs |
 
