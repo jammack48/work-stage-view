@@ -105,7 +105,9 @@ export default function JobCard() {
   }
 
   const tabContent: Record<JobTab, React.ReactNode> = {
-    overview: <OverviewTab job={job} onSchedule={() => setScheduleOpen(true)} />,
+    overview: <OverviewTab job={job} onSchedule={() => {
+      navigate(`/schedule?bookJob=${job.id}&jobName=${encodeURIComponent(job.jobName)}&client=${encodeURIComponent(job.client)}&address=${encodeURIComponent(job.address)}`);
+    }} scheduledStaff={scheduledStaff} scheduledDate={scheduledDate} />,
     messages: <MessagesTab recordType="job" recordId={job.id} showPipelineLink pipelinePath="/" />,
     history: <HistoryTab job={job} />,
     quote: <QuoteTab job={job} />,
