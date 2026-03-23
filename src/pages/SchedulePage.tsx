@@ -18,9 +18,9 @@ const SchedulePage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isMobile = useIsMobile();
-  const activeJobId = searchParams.get("returnJob");
+  const returnJobId = searchParams.get("returnJob");
   const bookJobId = searchParams.get("bookJob");
-  const activeJobId = activeJobId || bookJobId;
+  const activeJobId = returnJobId || bookJobId;
 
   const activeBookingJob = useMemo(() => {
     if (!activeJobId) return null;
