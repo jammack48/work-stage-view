@@ -1,44 +1,54 @@
 
 
-## Three Fixes: Schedule via Calendar, Revert Stage Labels, Populate Staff Card
+## Two Fixes: Hide Staff on Quotes + Redesign Schedule Booking Mode
 
-### 1. Schedule Job → Navigate to Schedule Calendar (not dialog popup)
+### 1. Quotes Should Not Show Staff
 
-Instead of opening the `ScheduleJobDialog` popup, clicking "Schedule Job" should navigate to the full Schedule page in booking mode (similar to the existing return-booking flow). The user selects duration first, then gets placed on the calendar to drag/position the job block onto staff timelines.
+The `QuoteOverviewTab` (line 57-71) displays an "Assigned Staff" card. Quotes are pre-scheduling — staff should never appear here. The underlying dummy data has staff populated, but the quote view should simply not render it.
 
-**Flow:**
-- User clicks "Schedule Job" on a Quote Accepted job
-- Navigate to `/schedule?bookJob={jobId}&jobName=...&client=...&duration=4`
-- Schedule page enters **booking mode** (reuses existing `returnJob` pattern)
-- User sees the calendar, selects staff, taps a time slot to place the block
-- Confirm → navigates back to job with staff/date populated
+**File: `src/components/quote/QuoteOverviewTab.tsx`**
+- Remove the entire "Assigned Staff" card (lines 57-71). Quotes never have staff. Staff assignment only happens after acceptance, during the scheduling phase.
+- Also hide Start Date / Due Date (lines 27-40) — quotes don't have scheduled dates either. These only apply to jobs.
 
-**Files:**
-- `src/pages/JobCard.tsx` — Replace `ScheduleJobDialog` open with `navigate()` to schedule page with booking params
-- `src/components/job/OverviewTab.tsx` — Same: Schedule button navigates instead of opening dialog
-- `src/pages/QuotePage.tsx` — Same change
-- `src/pages/SchedulePage.tsx` — Extend booking mode to support `bookJob` param (in addition to existing `returnJob`), allow staff selection + slot click to place the job block
+### 2. Redesign Schedule Booking Mode (Fergus-style)
 
-### 2. Revert Stage Column Labels, Move Green Badges to PipelineFlowBanner
+Current problems:
+- Duration is pre-selected via 1-8 hour buttons in the banner — messy and takes up space
+- Staff filter is hidden during booking mode (line 216: `!isBookingMode`)
+- Clicking a slot immediately places the block — no confirmation of duration
 
-The green bubble badges on stage column headers (StageColumn.tsx line 182) are wrong. Revert to plain text labels. Instead, the horizontal arrow bar (`PipelineFlowBanner.tsx`) should highlight the active stage with a green pill badge.
+**New flow (matches Fergus):**
 
-**Files:**
-- `src/components/StageColumn.tsx` (line 182) — Remove `bg-[hsl(var(--status-green))] text-white font-bold rounded-full` wrapper, return to plain text with `break-words`
-- `src/components/PipelineFlowBanner.tsx` (line 17-23) — When `activeStage === stage`, render the stage name inside a green rounded-full pill badge instead of just changing text color to `text-primary`
-
-### 3. Populate Staff & Schedule Card After Scheduling
-
-When the user confirms scheduling (selects staff + date on the calendar and returns), the Staff & Schedule card in the Overview should populate with the selected data instead of staying empty.
+1. User arrives at `/schedule?bookJob={id}&jobName=...&client=...`
+2. **Staff filter bar is VISIBLE** (not hidden) — user selects which staff calendars to view (e.g. just "Dave" or "Dave + Mike")
+3. User taps an empty time slot on a staff member's column
+4. A **small popover/prompt appears** asking "How long?" with quick-pick buttons (1h, 2h, 3h, 4h, 6h, 8h) + custom input
+5. After selecting duration, the job block is created at that slot with that duration
+6. User can then **Confirm** (navigates back to job with staff/date) or **tap another slot** to move it
+7. Remove the banner duration picker (1-8 hour row)
 
 **Files:**
-- `src/pages/JobCard.tsx` — Read `searchParams` for `bookedStaff`, `bookedDate` etc. on return from schedule page, update job detail state with the assigned staff and dates
-- `src/components/job/OverviewTab.tsx` — Accept optional `scheduledStaff` and `scheduledDate` props to override the empty state when scheduling has been completed
-- `src/pages/SchedulePage.tsx` — On confirm, navigate back with staff/date params in the URL
 
-### Summary of Visual Changes
-- Stage column headers: back to plain text (as they were before)
-- Pipeline flow banner: active stage gets green pill badge
-- Schedule Job: opens the full calendar page, not a dialog
-- After scheduling: Staff & Schedule card fills in with assigned staff and date
+**`src/pages/SchedulePage.tsx`**
+- Show `StaffFilterBar` in booking mode too (remove `!isBookingMode &&` guard on line 216)
+- Remove the duration picker row from the booking banner (lines 163-177)
+- When `onSlotClick` fires, instead of immediately placing the block, show a duration prompt (small dialog or popover)
+- After duration is selected, place the block
+- Simplify the banner to just show: job name, selected slot info, Confirm + Cancel buttons
+- The `selectedStaff` state feeds into which staff member column was clicked — store this as the assigned staff
+
+**`src/components/schedule/TimeGrid3Day.tsx`**
+- Pass back which staff member's column was clicked (not just dayOffset + hour, but also the staff name)
+- Update `onSlotClick` signature: `(dayOffset: number, hour: number, staffName?: string) => void`
+
+**`src/components/job/ScheduleJobDialog.tsx`**
+- Repurpose as a small "Duration Picker" dialog that appears after tapping a slot
+- Shows: "Schedule [jobName] on [day] at [time] for [staff]"
+- Duration quick-picks: 1h, 2h, 3h, 4h, 6h, 8h
+- Confirm button creates the block and returns to the schedule view with it placed
+
+**Result:**
+- Quotes never show staff or dates
+- Schedule booking: select staff to view → tap slot → pick duration → confirm
+- Clean, intentional, matches Fergus workflow
 
