@@ -1,33 +1,44 @@
 
 
-## Three Changes: Green Bubble Stage Labels + Empty Staff/Schedule + Schedule Button in Overview
+## Three Fixes: Schedule via Calendar, Revert Stage Labels, Populate Staff Card
 
-### Issues from Screenshots
+### 1. Schedule Job → Navigate to Schedule Calendar (not dialog popup)
 
-1. **Stage labels in the arrow bar** (e.g. "QUOTE SENT", "QUOTE ACCEPTED") just change text color to green when they match the selected Simple bucket — hard to read. Should use the same bold green bubble style as the Simple/Advanced toggle.
+Instead of opening the `ScheduleJobDialog` popup, clicking "Schedule Job" should navigate to the full Schedule page in booking mode (similar to the existing return-booking flow). The user selects duration first, then gets placed on the calendar to drag/position the job block onto staff timelines.
 
-2. **Staff & Schedule card on the Job Overview** comes pre-populated with dummy staff (Jake Turner, Ben Kowalski, Maia Johnson) and dates. For a "Quote Accepted" job that hasn't been scheduled yet, this should be **empty** — showing "No staff assigned" and no dates — until the user explicitly schedules via the dialog.
+**Flow:**
+- User clicks "Schedule Job" on a Quote Accepted job
+- Navigate to `/schedule?bookJob={jobId}&jobName=...&client=...&duration=4`
+- Schedule page enters **booking mode** (reuses existing `returnJob` pattern)
+- User sees the calendar, selects staff, taps a time slot to place the block
+- Confirm → navigates back to job with staff/date populated
 
-3. **Schedule Job button** should also appear **inside the Overview tab** (in the Staff & Schedule card), not just in the top heading bar. This makes it obvious where to assign staff.
+**Files:**
+- `src/pages/JobCard.tsx` — Replace `ScheduleJobDialog` open with `navigate()` to schedule page with booking params
+- `src/components/job/OverviewTab.tsx` — Same: Schedule button navigates instead of opening dialog
+- `src/pages/QuotePage.tsx` — Same change
+- `src/pages/SchedulePage.tsx` — Extend booking mode to support `bookJob` param (in addition to existing `returnJob`), allow staff selection + slot click to place the job block
 
-### Files to Change
+### 2. Revert Stage Column Labels, Move Green Badges to PipelineFlowBanner
 
-**`src/components/StageColumn.tsx`**
-- The stage label in the header currently uses plain text. When the stage matches the active Simple bucket (or always in Advanced mode), render the stage name inside a green rounded-full pill badge (`bg-[hsl(var(--status-green))] text-white font-bold rounded-full px-2 py-0.5 text-[10px]`) — same style as the Simple/Advanced toggle buttons. This replaces the current plain text + green color approach.
+The green bubble badges on stage column headers (StageColumn.tsx line 182) are wrong. Revert to plain text labels. Instead, the horizontal arrow bar (`PipelineFlowBanner.tsx`) should highlight the active stage with a green pill badge.
 
-**`src/components/job/OverviewTab.tsx`**
-- Make the Staff & Schedule card **stage-aware**: if `job.stage` is "Quote Accepted" or "Lead" or any pre-scheduling stage, show empty state for staff (already handled by `job.staff.length === 0` check) and hide/blank the dates.
-- The issue is the dummy data always pre-fills staff. Fix: when stage is "Quote Accepted", override to show empty staff and "Not scheduled" for dates.
-- Add a **"Schedule Job"** button inside the Staff & Schedule card (only when stage is "Quote Accepted"). Clicking it opens the `ScheduleJobDialog`. Pass an `onSchedule` callback prop from `JobCard.tsx`.
+**Files:**
+- `src/components/StageColumn.tsx` (line 182) — Remove `bg-[hsl(var(--status-green))] text-white font-bold rounded-full` wrapper, return to plain text with `break-words`
+- `src/components/PipelineFlowBanner.tsx` (line 17-23) — When `activeStage === stage`, render the stage name inside a green rounded-full pill badge instead of just changing text color to `text-primary`
 
-**`src/pages/JobCard.tsx`**
-- Pass `onSchedule={() => setScheduleOpen(true)}` and `job.stage` to `OverviewTab` so the overview can trigger the schedule dialog.
+### 3. Populate Staff & Schedule Card After Scheduling
 
-**`src/data/dummyJobDetails.ts`**
-- For jobs with stage "Quote Accepted", set `staff: []`, `startDate: ""`, `dueDate: ""` so the overview naturally shows empty state.
+When the user confirms scheduling (selects staff + date on the calendar and returns), the Staff & Schedule card in the Overview should populate with the selected data instead of staying empty.
 
-### Result
-- Stage labels in the pipeline arrow bar use bold green pill badges — matching the toggle style, much easier to read
-- Quote Accepted jobs show empty Staff & Schedule with a prominent "Schedule Job" button
-- Scheduling is always manual — no pre-populated data until the user assigns it
+**Files:**
+- `src/pages/JobCard.tsx` — Read `searchParams` for `bookedStaff`, `bookedDate` etc. on return from schedule page, update job detail state with the assigned staff and dates
+- `src/components/job/OverviewTab.tsx` — Accept optional `scheduledStaff` and `scheduledDate` props to override the empty state when scheduling has been completed
+- `src/pages/SchedulePage.tsx` — On confirm, navigate back with staff/date params in the URL
+
+### Summary of Visual Changes
+- Stage column headers: back to plain text (as they were before)
+- Pipeline flow banner: active stage gets green pill badge
+- Schedule Job: opens the full calendar page, not a dialog
+- After scheduling: Staff & Schedule card fills in with assigned staff and date
 
