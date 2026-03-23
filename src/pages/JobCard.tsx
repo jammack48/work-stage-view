@@ -69,6 +69,7 @@ export default function JobCard() {
       })();
 
   const isToInvoice = job?.stage === "To Invoice";
+  const isQuoteAccepted = job?.stage === "Quote Accepted";
 
   // Auto-open close-out flow when navigating from pipeline with ?action=closeout
   useEffect(() => {
