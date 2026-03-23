@@ -230,8 +230,45 @@ export default function QuotePage() {
     }
   };
 
+  const handleAcceptQuote = () => {
+    if (job && !isNew) {
+      updateJobStage(job.id, "Quote Accepted");
+      setStatus("Approved");
+      toast({ title: "Quote accepted", description: `${job.jobName} moved to Quote Accepted.` });
+    }
+  };
+
+  const handleDeclineQuote = () => {
+    if (job && !isNew) {
+      toast({ title: "Quote declined", description: `${job.jobName} has been declined.` });
+      const returnState = managerState?.fromManager ? managerState : managerState?.fromStage ? { fromStage: managerState.fromStage } : undefined;
+      navigate("/", { state: returnState });
+    }
+  };
+
   const tabContent: Record<QuotePageTab, React.ReactNode> = {
-    overview: <QuoteOverviewTab job={job} scope={job.description || ""} onScopeChange={() => {}} />,
+    overview: (
+      <div className="space-y-4">
+        {status === "Sent" && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-accent/50 border border-border">
+            <span className="text-sm font-medium text-foreground flex-1">This quote has been sent — awaiting customer response.</span>
+            <button
+              onClick={handleAcceptQuote}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-semibold bg-[hsl(var(--status-green))] text-white hover:opacity-90 transition-opacity"
+            >
+              <Check className="w-4 h-4" /> Accept
+            </button>
+            <button
+              onClick={handleDeclineQuote}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-semibold bg-[hsl(var(--status-red))] text-white hover:opacity-90 transition-opacity"
+            >
+              <X className="w-4 h-4" /> Decline
+            </button>
+          </div>
+        )}
+        <QuoteOverviewTab job={job} scope={job.description || ""} onScopeChange={() => {}} />
+      </div>
+    ),
     messages: <MessagesTab recordType="quote" recordId={job.id} showPipelineLink pipelinePath="/" />,
     "line-items": (
       <div className="space-y-4">
