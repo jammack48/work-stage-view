@@ -11,6 +11,8 @@ import { formatJobNumber } from "@/lib/jobNumber";
 interface OverviewTabProps {
   job: JobDetail;
   onSchedule?: () => void;
+  scheduledStaff?: string[];
+  scheduledDate?: string;
 }
 
 const PRE_SCHEDULE_STAGES = ["Lead", "To Quote", "Quote Sent", "Quote Accepted"];
@@ -25,16 +27,18 @@ function getStageSummary(stage: string): string {
   return stage;
 }
 
-export function OverviewTab({ job, onSchedule }: OverviewTabProps) {
+export function OverviewTab({ job, onSchedule, scheduledStaff = [], scheduledDate = "" }: OverviewTabProps) {
   const navigate = useNavigate();
   const { prefix } = useJobPrefix();
   const displayId = formatJobNumber(job.id, prefix);
-  const isPreSchedule = PRE_SCHEDULE_STAGES.includes(job.stage);
+  const isPreSchedule = PRE_SCHEDULE_STAGES.includes(job.stage) && scheduledStaff.length === 0;
   const isQuoteAccepted = job.stage === "Quote Accepted";
 
-  // Override staff/dates for pre-schedule stages
-  const displayStaff = isPreSchedule ? [] : job.staff;
-  const displayStartDate = isPreSchedule ? "" : job.startDate;
+  // Override staff/dates for pre-schedule stages (unless we have scheduled data)
+  const displayStaff = scheduledStaff.length > 0
+    ? scheduledStaff.map(name => ({ name, avatar: name.split(" ").map(w => w[0]).join("") }))
+    : isPreSchedule ? [] : job.staff;
+  const displayStartDate = scheduledDate || (isPreSchedule ? "" : job.startDate);
   const displayDueDate = isPreSchedule ? "" : job.dueDate;
 
   return (

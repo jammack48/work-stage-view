@@ -25,7 +25,7 @@ import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { ScheduleJobDialog } from "@/components/job/ScheduleJobDialog";
+
 
 type QuotePageTab = "overview" | "messages" | "line-items" | "variations" | "sequences" | "notes" | "history";
 
@@ -77,7 +77,6 @@ export default function QuotePage() {
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
   const [variationCount, setVariationCount] = useState(0);
-  const [scheduleOpen, setScheduleOpen] = useState(false);
   const stageThresholds = getThresholds(liveJob?.stage || "To Quote");
   const ageTone: AgeTone = liveJob
     ? liveJob.urgent || liveJob.ageDays > stageThresholds.orangeMax
@@ -315,7 +314,7 @@ export default function QuotePage() {
       )}
       {status === "Approved" && (
         <button
-          onClick={() => setScheduleOpen(true)}
+          onClick={() => navigate(`/schedule?bookJob=${job.id}&jobName=${encodeURIComponent(job.jobName)}&client=${encodeURIComponent(job.client)}&address=${encodeURIComponent(job.address)}`)}
           className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-[hsl(var(--status-green))] text-white hover:opacity-90 transition-opacity"
         >
           <CalendarIcon className="w-3 h-3" /> Schedule Job
@@ -335,15 +334,6 @@ export default function QuotePage() {
       >
         {tabContent[activeTab]}
       </PageToolbar>
-      {job && (
-        <ScheduleJobDialog
-          open={scheduleOpen}
-          onOpenChange={setScheduleOpen}
-          jobName={job.jobName}
-          client={job.client}
-          jobId={job.id}
-        />
-      )}
     </>
   );
 }

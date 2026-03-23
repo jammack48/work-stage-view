@@ -18,7 +18,7 @@ import { SequencesTab } from "@/components/SequencesTab";
 import { MessagesTab } from "@/components/job/MessagesTab";
 import { VariationsTab } from "@/components/job/VariationsTab";
 import { JobCloseOutFlow } from "@/components/job/JobCloseOutFlow";
-import { ScheduleJobDialog } from "@/components/job/ScheduleJobDialog";
+
 import { cn } from "@/lib/utils";
 import { JOB_EXTRAS } from "@/config/toolbarTabs";
 import { useDemoData } from "@/contexts/DemoDataContext";
@@ -44,7 +44,8 @@ export default function JobCard() {
   const [activeTab, setActiveTab] = useState<JobTab>(initialTab);
   const [closeOutOpen, setCloseOutOpen] = useState(false);
   const [variationCount, setVariationCount] = useState(0);
-  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [scheduledStaff, setScheduledStaff] = useState<string[]>([]);
+  const [scheduledDate, setScheduledDate] = useState<string>("");
   const actionParam = searchParams.get("action");
   const { jobs } = useDemoData();
 
@@ -78,6 +79,17 @@ export default function JobCard() {
     }
   }, [actionParam, isToInvoice]);
 
+  // Read booking params from schedule page return
+  useEffect(() => {
+    const bookedStaff = searchParams.get("bookedStaff");
+    const bookedDate = searchParams.get("bookedDate");
+    const bookedTime = searchParams.get("bookedTime");
+    if (bookedStaff) {
+      setScheduledStaff(bookedStaff.split(","));
+      setScheduledDate(bookedDate && bookedTime ? `${bookedDate} at ${bookedTime}` : bookedDate || "");
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (!job) return;
     fetchVariationCounts([job.id]).then((counts) => setVariationCount(counts[job.id] ?? 0)).catch(() => setVariationCount(0));
@@ -93,7 +105,9 @@ export default function JobCard() {
   }
 
   const tabContent: Record<JobTab, React.ReactNode> = {
-    overview: <OverviewTab job={job} onSchedule={() => setScheduleOpen(true)} />,
+    overview: <OverviewTab job={job} onSchedule={() => {
+      navigate(`/schedule?bookJob=${job.id}&jobName=${encodeURIComponent(job.jobName)}&client=${encodeURIComponent(job.client)}&address=${encodeURIComponent(job.address)}`);
+    }} scheduledStaff={scheduledStaff} scheduledDate={scheduledDate} />,
     messages: <MessagesTab recordType="job" recordId={job.id} showPipelineLink pipelinePath="/" />,
     history: <HistoryTab job={job} />,
     quote: <QuoteTab job={job} />,
@@ -126,7 +140,7 @@ export default function JobCard() {
       )}
       {isQuoteAccepted && (
         <button
-          onClick={() => setScheduleOpen(true)}
+          onClick={() => navigate(`/schedule?bookJob=${job.id}&jobName=${encodeURIComponent(job.jobName)}&client=${encodeURIComponent(job.client)}&address=${encodeURIComponent(job.address)}`)}
           className="ml-auto inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-[hsl(var(--status-green))] text-white hover:opacity-90 transition-opacity"
         >
           <CalendarIcon className="w-3 h-3" /> Schedule Job
@@ -158,15 +172,6 @@ export default function JobCard() {
         {tabContent[activeTab]}
       </PageToolbar>
       <JobCloseOutFlow open={closeOutOpen} onOpenChange={setCloseOutOpen} job={job} />
-      {job && (
-        <ScheduleJobDialog
-          open={scheduleOpen}
-          onOpenChange={setScheduleOpen}
-          jobName={job.jobName}
-          client={job.client}
-          jobId={job.id}
-        />
-      )}
     </>
   );
 }
