@@ -19,19 +19,21 @@ const SchedulePage = () => {
   const [searchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const returnJobId = searchParams.get("returnJob");
+  const bookJobId = searchParams.get("bookJob");
+  const activeJobId = returnJobId || bookJobId;
 
-  const returnBookingJob = useMemo(() => {
-    if (!returnJobId) return null;
-    const qpName = searchParams.get("returnJobName");
-    const qpClient = searchParams.get("returnClient");
-    const qpAddress = searchParams.get("returnAddress");
+  const activeBookingJob = useMemo(() => {
+    if (!activeJobId) return null;
+    const qpName = searchParams.get("returnJobName") || searchParams.get("jobName");
+    const qpClient = searchParams.get("returnClient") || searchParams.get("client");
+    const qpAddress = searchParams.get("returnAddress") || searchParams.get("address");
     if (qpName) {
       return { jobName: qpName, client: qpClient || "Customer", address: qpAddress || "" };
     }
-    const detail = getJobDetail(returnJobId);
+    const detail = getJobDetail(activeJobId);
     if (detail) return { jobName: detail.jobName, client: detail.client, address: detail.address };
-    return { jobName: returnJobId, client: "Customer", address: "" };
-  }, [returnJobId, searchParams]);
+    return { jobName: activeJobId, client: "Customer", address: "" };
+  }, [activeJobId, searchParams]);
 
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [viewDays, setViewDays] = useState<1 | 3 | 5>(5);
