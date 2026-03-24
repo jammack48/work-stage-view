@@ -15,11 +15,13 @@ export default function ResetPasswordPage() {
   const [hasRecovery, setHasRecovery] = useState(false);
 
   useEffect(() => {
-    // Check for recovery token in the URL hash
-    const hash = window.location.hash;
-    if (hash.includes("type=recovery") || hash.includes("type=signup")) {
-      setHasRecovery(true);
-    }
+    if (!authSupabase) return;
+    // Let Supabase handle the recovery session from URL hash automatically
+    authSupabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setHasRecovery(true);
+      }
+    });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
