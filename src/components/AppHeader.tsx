@@ -18,6 +18,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+function LogoutButton() {
+  const { user, logout, isDemo } = useAuth();
+  if (!user && !isDemo) return null;
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={async () => { await logout(); window.location.href = "/"; }}
+      className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent"
+      title="Sign out"
+    >
+      <LogOut className="w-5 h-5" />
+    </Button>
+  );
+}
+
 export function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();
