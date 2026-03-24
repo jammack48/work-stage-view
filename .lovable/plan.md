@@ -1,54 +1,79 @@
 
 
-## Two Fixes: Hide Staff on Quotes + Redesign Schedule Booking Mode
+## Authentication + New Splash Page
 
-### 1. Quotes Should Not Show Staff
+### What This Does
+1. Removes the onboarding carousel slides
+2. Replaces the splash page with a clean Login / Demo Mode entry point
+3. Adds Supabase Auth (login, password reset) using your **external Supabase instance** (sbthgkcmbxjgaqvntjja)
+4. Demo mode remains available without login — uses existing demo data flow unchanged
 
-The `QuoteOverviewTab` (line 57-71) displays an "Assigned Staff" card. Quotes are pre-scheduling — staff should never appear here. The underlying dummy data has staff populated, but the quote view should simply not render it.
+### Important: Which Supabase?
+- **Auth** will use your external Supabase instance (sbthgkcmbxjgaqvntjja) — the one your Render backend connects to
+- **Demo session data** stays on Lovable Cloud as-is (no disruption)
+- You'll need to add two new env vars to the Lovable project:
+  - `VITE_EXT_SUPABASE_URL` = `https://sbthgkcmbxjgaqvntjja.supabase.co`
+  - `VITE_EXT_SUPABASE_ANON_KEY` = the legacy anon key from that project
+- Auth client will be a separate Supabase client (`src/lib/authSupabase.ts`) so it doesn't conflict with the demo data client
 
-**File: `src/components/quote/QuoteOverviewTab.tsx`**
-- Remove the entire "Assigned Staff" card (lines 57-71). Quotes never have staff. Staff assignment only happens after acceptance, during the scheduling phase.
-- Also hide Start Date / Due Date (lines 27-40) — quotes don't have scheduled dates either. These only apply to jobs.
+### New Entry Flow
 
-### 2. Redesign Schedule Booking Mode (Fergus-style)
+```text
+App loads
+  → New SplashPage
+     ├── "Sign In" button → Login form (email + password)
+     └── "Try Demo" button → existing ModePicker → demo flow (no auth needed)
+```
 
-Current problems:
-- Duration is pre-selected via 1-8 hour buttons in the banner — messy and takes up space
-- Staff filter is hidden during booking mode (line 216: `!isBookingMode`)
-- Clicking a slot immediately places the block — no confirmation of duration
+No onboarding carousel. No Jamie intro card. Clean, mobile-friendly splash with the Tradie Toolbelt branding.
 
-**New flow (matches Fergus):**
+### Files to Create
 
-1. User arrives at `/schedule?bookJob={id}&jobName=...&client=...`
-2. **Staff filter bar is VISIBLE** (not hidden) — user selects which staff calendars to view (e.g. just "Dave" or "Dave + Mike")
-3. User taps an empty time slot on a staff member's column
-4. A **small popover/prompt appears** asking "How long?" with quick-pick buttons (1h, 2h, 3h, 4h, 6h, 8h) + custom input
-5. After selecting duration, the job block is created at that slot with that duration
-6. User can then **Confirm** (navigates back to job with staff/date) or **tap another slot** to move it
-7. Remove the banner duration picker (1-8 hour row)
+| File | Purpose |
+|------|---------|
+| `src/lib/authSupabase.ts` | Separate Supabase client for external instance (auth only) |
+| `src/contexts/AuthContext.tsx` | Auth state provider — session, user, loading, login, logout |
+| `src/pages/LoginPage.tsx` | Email + password login form |
+| `src/pages/ResetPasswordPage.tsx` | `/reset-password` route — accepts recovery link, lets user set password |
 
-**Files:**
+### Files to Modify
 
-**`src/pages/SchedulePage.tsx`**
-- Show `StaffFilterBar` in booking mode too (remove `!isBookingMode &&` guard on line 216)
-- Remove the duration picker row from the booking banner (lines 163-177)
-- When `onSlotClick` fires, instead of immediately placing the block, show a duration prompt (small dialog or popover)
-- After duration is selected, place the block
-- Simplify the banner to just show: job name, selected slot info, Confirm + Cancel buttons
-- The `selectedStaff` state feeds into which staff member column was clicked — store this as the assigned staff
+| File | Change |
+|------|---------|
+| `src/pages/SplashPage.tsx` | Replace Jamie intro with clean branding + "Sign In" / "Try Demo" buttons |
+| `src/App.tsx` | Remove `OnboardingCarousel`, wrap in `AuthProvider`, add `/reset-password` route, gate authenticated routes behind auth check, allow demo mode without auth |
+| `src/components/OnboardingCarousel.tsx` | **Delete** — no longer used |
 
-**`src/components/schedule/TimeGrid3Day.tsx`**
-- Pass back which staff member's column was clicked (not just dayOffset + hour, but also the staff name)
-- Update `onSlotClick` signature: `(dayOffset: number, hour: number, staffName?: string) => void`
+### SplashPage Redesign
+- Tradie Toolbelt logo + name (centered)
+- "Sign In" button (primary) → navigates to LoginPage
+- "Try Demo" button (outline) → enters demo flow (ModePicker, no auth)
+- Mobile-friendly, centered layout, clean
 
-**`src/components/job/ScheduleJobDialog.tsx`**
-- Repurpose as a small "Duration Picker" dialog that appears after tapping a slot
-- Shows: "Schedule [jobName] on [day] at [time] for [staff]"
-- Duration quick-picks: 1h, 2h, 3h, 4h, 6h, 8h
-- Confirm button creates the block and returns to the schedule view with it placed
+### Auth Flow Details
+- **Login**: email + password via `signInWithPassword()`
+- **Password setup**: Admin creates user in Supabase dashboard (Auth → Users → Add User), then calls `resetPasswordForEmail()` which sends a setup link
+- **Reset password page**: `/reset-password` — reads recovery token from URL hash, shows new password form, calls `updateUser({ password })`
+- **Auth state**: `onAuthStateChange` listener set up before `getSession()` in AuthContext
+- **Logout**: button in AppHeader when authenticated
+- **Public signups disabled**: documented in README (done in Supabase dashboard: Auth → Settings → disable signups)
 
-**Result:**
-- Quotes never show staff or dates
-- Schedule booking: select staff to view → tap slot → pick duration → confirm
-- Clean, intentional, matches Fergus workflow
+### Auth vs Demo Mode
+- If user signs in → authenticated flow, future-ready for real data
+- If user clicks "Try Demo" → skips auth entirely, uses existing demo data path
+- Both paths converge at the ModePicker
+
+### RLS Changes (for future, not this phase)
+The user's prompt includes RLS SQL for `customers` table (adding `user_id`). This is a **schema change on the external Supabase** — not something we run via Lovable Cloud migrations. The SQL will be documented in `README.md` for manual execution. This phase focuses on getting auth working; RLS enforcement comes next once the auth flow is proven.
+
+### What Does NOT Change
+- Demo data flow (sessions, jobs, customers in Lovable Cloud)
+- ModePicker component
+- All existing pages and features
+- Backend/Render connection
+
+### Env Vars Needed
+You'll need to add these as Lovable project secrets (Settings → Environment):
+- `VITE_EXT_SUPABASE_URL`
+- `VITE_EXT_SUPABASE_ANON_KEY`
 
