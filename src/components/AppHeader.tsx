@@ -19,13 +19,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 function LogoutButton() {
-  const { user, logout, isDemo } = useAuth();
+  const { user, logout, isDemo, setIsDemo } = useAuth();
   if (!user && !isDemo) return null;
   return (
     <Button
       variant="ghost"
       size="sm"
-      onClick={async () => { await logout(); window.location.href = "/"; }}
+      onClick={async () => {
+        await logout();
+        setIsDemo(false);
+      }}
       className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent"
       title="Sign out"
     >
