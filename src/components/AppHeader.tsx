@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Wrench, Settings as SettingsIcon, GraduationCap, Shield, LayoutGrid, ChevronDown } from "lucide-react";
+import { Wrench, Settings as SettingsIcon, GraduationCap, Shield, LayoutGrid, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ThemePicker } from "@/components/ThemePicker";
@@ -8,6 +8,7 @@ import { BackendStatus } from "@/components/BackendStatus";
 import { useTutorial } from "@/contexts/TutorialContext";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToolbarPosition } from "@/contexts/ToolbarPositionContext";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
@@ -16,6 +17,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+function LogoutButton() {
+  const { user, logout, isDemo } = useAuth();
+  if (!user && !isDemo) return null;
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={async () => { await logout(); window.location.href = "/"; }}
+      className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent"
+      title="Sign out"
+    >
+      <LogOut className="w-5 h-5" />
+    </Button>
+  );
+}
 
 export function AppHeader() {
   const navigate = useNavigate();
@@ -131,6 +148,7 @@ export function AppHeader() {
         </Button>
         <BackendStatus />
         <ThemePicker />
+        <LogoutButton />
       </div>
     </header>
   );
