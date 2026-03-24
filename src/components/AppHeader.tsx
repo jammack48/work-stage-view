@@ -132,27 +132,7 @@ export function AppHeader() {
         </Button>
         <BackendStatus />
         <ThemePicker />
-        {(() => {
-          try {
-            // Dynamic import check — only show logout if auth context exists and user is logged in
-            const { useAuth } = require("@/contexts/AuthContext");
-            const { user, logout, isDemo } = useAuth();
-            if (user || isDemo) {
-              return (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={async () => { await logout(); window.location.href = "/"; }}
-                  className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:bg-accent"
-                  title="Sign out"
-                >
-                  <LogOut className="w-5 h-5" />
-                </Button>
-              );
-            }
-          } catch { return null; }
-          return null;
-        })()}
+        <LogoutButton />
       </div>
     </header>
   );
