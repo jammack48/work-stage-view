@@ -87,6 +87,7 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
   }, [user]);
 
   const saveSettings = async (updates: Partial<UserSettings>) => {
+    const previous = settings;
     const next = { ...settings, ...updates };
     setSettings(next);
     if (!user) return;
@@ -105,6 +106,7 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
     });
 
     if (error) {
+      setSettings(previous);
       console.error("Failed to save user settings", error);
       throw error;
     }
