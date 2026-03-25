@@ -19,32 +19,27 @@ import type { UserSettings } from "@/contexts/UserSettingsContext";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations" | "documents";
 
+const EMPTY_BUSINESS_PROFILE: BusinessProfile = {
+  businessName: "",
+  abnNzbn: "",
+  gst: "",
+  phone: "",
+  email: "",
+  address: "",
+  website: "",
+};
 
 
 function SettingsContent({ tab }: { tab: SettingsTab }) {
   const { prefix, nextNumber, setPrefix, setNextNumber, formatJobId } = useJobPrefix();
   const { resetDemo } = useDemoData();
-  const { user } = useAuth();
+  const { user, isDemo } = useAuth();
   const { settings, saveSettings } = useUserSettings();
   const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [businessProfile, setBusinessProfile] = useState<BusinessProfile>({
-    businessName: "",
-    abnNzbn: "",
-    phone: "",
-    email: "",
-    address: "",
-    website: "",
-  });
+  const [businessProfile, setBusinessProfile] = useState<BusinessProfile>(EMPTY_BUSINESS_PROFILE);
 
   useEffect(() => {
-    setBusinessProfile(settings.businessProfile ?? {
-      businessName: "",
-      abnNzbn: "",
-      phone: "",
-      email: "",
-      address: "",
-      website: "",
-    });
+    setBusinessProfile({ ...EMPTY_BUSINESS_PROFILE, ...settings.businessProfile });
   }, [settings.businessProfile]);
 
   const saveSettingWithFeedback = async (
@@ -79,6 +74,7 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
           {[
             ["Business Name", "businessName"],
             ["ABN / NZBN", "abnNzbn"],
+            ["GST", "gst"],
             ["Phone", "phone"],
             ["Email", "email"],
             ["Address", "address"],
@@ -136,15 +132,17 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
             />
           </div>
         </div>
-        <div className="p-3 rounded-lg bg-card border border-border space-y-2">
-          <div className="text-xs text-muted-foreground">Demo Session Data</div>
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-card-foreground">Reset demo jobs/customers for this session</p>
-            <Button size="sm" variant="outline" onClick={() => { resetDemo(); toast({ title: "Demo reset", description: "Demo data was reset for this session." }); }}>
-              Reset Demo
-            </Button>
+        {isDemo && (
+          <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+            <div className="text-xs text-muted-foreground">Demo Session Data</div>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-card-foreground">Reset demo jobs/customers for this session</p>
+              <Button size="sm" variant="outline" onClick={() => { resetDemo(); toast({ title: "Demo reset", description: "Demo data was reset for this session." }); }}>
+                Reset Demo
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
         <div className="p-3 rounded-lg bg-card border border-border space-y-3">
           <div className="text-xs text-muted-foreground">Startup Preferences</div>
           <div className="flex items-center justify-between gap-3">
