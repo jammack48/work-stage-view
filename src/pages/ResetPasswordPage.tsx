@@ -12,15 +12,18 @@ export default function ResetPasswordPage() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
-  const [hasRecovery, setHasRecovery] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    if (!authSupabase) return;
-    // Let Supabase handle the recovery session from URL hash automatically
-    authSupabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setHasRecovery(true);
-      }
+    if (!authSupabase) {
+      setChecking(false);
+      return;
+    }
+    // Check if user has an active session (set by recovery link)
+    authSupabase.auth.getSession().then(({ data: { session } }) => {
+      setHasSession(!!session);
+      setChecking(false);
     });
   }, []);
 
@@ -50,6 +53,14 @@ export default function ResetPasswordPage() {
     }
   };
 
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   if (done) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
@@ -73,7 +84,7 @@ export default function ResetPasswordPage() {
           <h1 className="text-2xl font-bold text-foreground">Set Password</h1>
         </div>
 
-        {!hasRecovery && (
+        {!hasSession && (
           <p className="text-sm text-muted-foreground text-center">
             This page requires a valid recovery link. Check your email for the link.
           </p>
@@ -88,7 +99,7 @@ export default function ResetPasswordPage() {
             <Label htmlFor="confirm-pw">Confirm Password</Label>
             <Input id="confirm-pw" type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="••••••••" required />
           </div>
-          <Button type="submit" className="w-full h-11" disabled={loading}>
+          <Button type="submit" className="w-full h-11" disabled={loading || !hasSession}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Set Password"}
           </Button>
         </form>

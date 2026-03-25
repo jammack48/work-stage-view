@@ -27,10 +27,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const { data: { subscription } } = authSupabase.auth.onAuthStateChange(
-      (_event, sess) => {
+      (event, sess) => {
         setSession(sess);
         setUser(sess?.user ?? null);
         setLoading(false);
+
+        // Redirect to reset-password page on recovery event
+        if (event === "PASSWORD_RECOVERY") {
+          window.location.href = "/reset-password";
+        }
       }
     );
 
