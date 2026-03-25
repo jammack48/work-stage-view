@@ -22,7 +22,7 @@ function rowToCustomer(r: any): DemoCustomer {
 /** Seed customers from JSON if table is empty */
 async function seedCustomersIfEmpty(): Promise<void> {
   const { count, error } = await supabase
-    .from("customers")
+    .from("customers_demo")
     .select("id", { count: "exact", head: true });
 
   if (error) throw error;
