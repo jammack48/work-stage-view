@@ -35,7 +35,7 @@ const EMPTY_BUSINESS_PROFILE: BusinessProfile = {
 
 function SettingsContent({ tab }: { tab: SettingsTab }) {
   const { prefix, nextNumber, setPrefix, setNextNumber, formatJobId } = useJobPrefix();
-  const { resetDemo } = useDemoData();
+  const { resetDemo, refreshCustomers } = useDemoData();
   const { user, isDemo } = useAuth();
   const { settings, saveSettings } = useUserSettings();
   const [csvFile, setCsvFile] = useState<File | null>(null);
@@ -107,11 +107,12 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
 
     try {
       setUploadingCsv(true);
-      const { imported } = await importCustomersCsv(file, columnMapping);
+      const { imported } = await importCustomersCsv(file, columnMapping, isDemo);
       if (imported === 0) {
         toast({ title: "No customers imported", description: "No valid customer rows were found in the CSV.", variant: "destructive" });
         return;
       }
+      await refreshCustomers();
       toast({ title: "Upload complete", description: `Imported ${imported} customer${imported === 1 ? "" : "s"}.` });
       setCsvFile(null);
       setCsvHeaders([]);

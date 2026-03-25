@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { getTable } from "@/lib/modeTable";
 
 type ContactType = "email" | "phone";
 type AddressType = "site" | "postal" | "other";
@@ -356,7 +357,7 @@ export async function parseCustomerCsvFile(file: File): Promise<{ headers: strin
   };
 }
 
-export async function importCustomersCsv(file: File, mapping?: CsvMapping): Promise<{ imported: number }> {
+export async function importCustomersCsv(file: File, mapping?: CsvMapping, isDemo = false): Promise<{ imported: number }> {
   const text = await file.text();
   const { headers, rows } = parseCsv(text);
 
@@ -393,14 +394,14 @@ export async function importCustomersCsv(file: File, mapping?: CsvMapping): Prom
       : "";
 
     const { error: customerError } = await (supabase as any)
-      .from("customers_prod")
+      .from(getTable("customers", isDemo))
       .insert({
         name,
         email: primaryEmail ?? "",
         phone: primaryPhone ?? "",
         address: flatAddress,
         status: "active",
-        contacts: JSON.stringify(contacts),
+        contacts,
       });
 
     if (customerError) {

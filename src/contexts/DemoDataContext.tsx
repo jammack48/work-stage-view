@@ -17,6 +17,7 @@ interface DemoDataContextType {
   addCustomer: (customer: Omit<DemoCustomer, "id">) => Promise<number | undefined>;
   addJob: (job: { client: string; jobName: string; value: number; stage: Stage }) => void;
   resetDemo: () => void;
+  refreshCustomers: () => Promise<void>;
   loading: boolean;
 }
 
@@ -37,6 +38,11 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   const [jobs, setJobs] = useState<DemoJob[]>(() => (isDemo ? loadSeedJobs() : []));
   const [customers, setCustomers] = useState<DemoCustomer[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const refreshCustomers = useCallback(async () => {
+    const custs = await fetchCustomers(isDemo);
+    setCustomers(custs);
+  }, [isDemo]);
 
   useEffect(() => {
     setJobs(isDemo ? loadSeedJobs() : []);
@@ -100,8 +106,9 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
     addCustomer,
     addJob,
     resetDemo,
+    refreshCustomers,
     loading,
-  }), [jobs, customers, updateJobStage, addCustomer, addJob, resetDemo, loading]);
+  }), [jobs, customers, updateJobStage, addCustomer, addJob, resetDemo, refreshCustomers, loading]);
 
   return <DemoDataContext.Provider value={value}>{children}</DemoDataContext.Provider>;
 }

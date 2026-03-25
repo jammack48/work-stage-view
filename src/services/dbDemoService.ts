@@ -3,6 +3,19 @@ import { getTable } from "@/lib/modeTable";
 import type { DemoCustomer } from "@/types/demoData";
 import customersSeed from "@/demo-data/customers.json";
 
+function parseMaybeJsonArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? (parsed as T[]) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 function rowToCustomer(r: any): DemoCustomer {
   return {
     id: r.id,
@@ -14,7 +27,7 @@ function rowToCustomer(r: any): DemoCustomer {
     status: (r.status ?? "leads") as DemoCustomer["status"],
     totalSpend: Number(r.total_spend ?? 0),
     notes: (r.notes ?? []) as string[],
-    contacts: (r.contacts ?? []) as DemoCustomer["contacts"],
+    contacts: parseMaybeJsonArray<DemoCustomer["contacts"][number]>(r.contacts),
     jobHistory: (r.job_history ?? []) as DemoCustomer["jobHistory"],
   };
 }
