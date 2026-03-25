@@ -28,6 +28,7 @@ function LogoutButton() {
       variant="ghost"
       size="sm"
       onClick={async () => {
+        sessionStorage.clear();
         await logout();
         setIsDemo(false);
       }}
@@ -48,6 +49,10 @@ export function AppHeader() {
   const { position, cyclePosition } = useToolbarPosition();
   const { isDemo } = useAuth();
   const { settings } = useUserSettings();
+  const showAllModesForDev = import.meta.env.DEV;
+  const canShowToolsMode = settings.showToolsMode || showAllModesForDev;
+  const canShowEmployeeMode = settings.showEmployeeMode || showAllModesForDev;
+  const canShowTimesheetMode = settings.showTimesheetMode || showAllModesForDev;
   const [showModeHint, setShowModeHint] = useState(true);
 
   useEffect(() => {
@@ -99,13 +104,15 @@ export function AppHeader() {
             <DropdownMenuItem onClick={() => { setMode("manage"); navigate("/"); }}>
               Manager
             </DropdownMenuItem>
-            {settings.showToolsMode && (<DropdownMenuItem onClick={() => { setMode("sole-trader"); navigate("/"); }}>
+            {canShowToolsMode && (<DropdownMenuItem onClick={() => { setMode("sole-trader"); navigate("/"); }}>
               On the Tools
             </DropdownMenuItem>)}
-            <DropdownMenuItem onClick={() => { setTutorialOn(true); setMode("work"); navigate("/"); }}>
-              Employee
-            </DropdownMenuItem>
-            {settings.showTimesheetMode && (<DropdownMenuItem onClick={() => { setTutorialOn(false); setMode("timesheet"); navigate("/"); }}>
+            {canShowEmployeeMode && (
+              <DropdownMenuItem onClick={() => { setTutorialOn(true); setMode("work"); navigate("/"); }}>
+                Employee
+              </DropdownMenuItem>
+            )}
+            {canShowTimesheetMode && (<DropdownMenuItem onClick={() => { setTutorialOn(false); setMode("timesheet"); navigate("/"); }}>
               Timesheet Only
             </DropdownMenuItem>)}
             <DropdownMenuItem onClick={() => { clearMode(); navigate("/"); }}>

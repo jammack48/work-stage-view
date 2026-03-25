@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUserSettings } from "@/contexts/UserSettingsContext";
 
 const THEMES: { id: Theme; label: string; color: string; darkColor: string }[] = [
   { id: "earthy",  label: "Earthy",  color: "#6b8f71",  darkColor: "#5a7a5f" },
@@ -36,6 +37,7 @@ function RiserIcon({ className }: { className?: string }) {
 
 export function ThemePicker() {
   const { theme, setTheme, isDark, setIsDark } = useTheme();
+  const { saveSettings } = useUserSettings();
 
   return (
     <Popover>
@@ -56,7 +58,10 @@ export function ThemePicker() {
             <button
               key={t.id}
               title={t.label}
-              onClick={() => setTheme(t.id)}
+              onClick={() => {
+                setTheme(t.id);
+                void saveSettings({ theme: t.id });
+              }}
               className={cn(
                 "group flex flex-col items-center gap-1.5 focus:outline-none"
               )}
@@ -84,7 +89,13 @@ export function ThemePicker() {
             {isDark ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
             {isDark ? "Dark" : "Light"}
           </div>
-          <Switch checked={isDark} onCheckedChange={setIsDark} />
+          <Switch
+            checked={isDark}
+            onCheckedChange={(value) => {
+              setIsDark(value);
+              void saveSettings({ isDark: value });
+            }}
+          />
         </div>
       </PopoverContent>
     </Popover>
