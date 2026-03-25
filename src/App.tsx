@@ -12,6 +12,7 @@ import { TutorialProvider } from "@/contexts/TutorialContext";
 import { AppModeProvider, useAppMode } from "@/contexts/AppModeContext";
 import { DemoDataProvider } from "@/contexts/DemoDataContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { UserSettingsProvider } from "@/contexts/UserSettingsContext";
 import { useState, useEffect } from "react";
 import { JobPrefixProvider } from "@/contexts/JobPrefixContext";
 import { BackendProvider } from "@/contexts/BackendContext";
@@ -80,7 +81,7 @@ function AppLayout() {
     }
     return (
       <SplashPage
-        onSignIn={() => setShowLogin(true)}
+        onSignIn={() => { setIsDemo(false); setShowLogin(true); }}
         onDemo={() => setIsDemo(true)}
       />
     );
@@ -155,6 +156,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <AuthProvider>
+      <UserSettingsProvider>
       <BackendProvider>
       <JobPrefixProvider>
       <AppModeProvider>
@@ -182,6 +184,7 @@ const App = () => (
       </AppModeProvider>
       </JobPrefixProvider>
       </BackendProvider>
+      </UserSettingsProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>

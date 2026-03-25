@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, type Context, type ReactNode } from "react";
-import type { DemoCustomer, DemoDataset, DemoJob, DemoMaterial, DemoScheduleItem } from "@/types/demoData";
+import type { DemoCustomer, DemoJob, DemoMaterial, DemoScheduleItem } from "@/types/demoData";
 import type { Stage } from "@/data/dummyJobs";
 import { fetchCustomers, dbAddCustomer } from "@/services/dbDemoService";
+import { useAuth } from "@/contexts/AuthContext";
 import jobsSeed from "@/demo-data/jobs.json";
 import materialsSeed from "@/demo-data/materials.json";
 import scheduleSeed from "@/demo-data/schedule.json";
@@ -27,49 +28,48 @@ const DemoDataContext = globalThis.__demoDataContextSingleton ?? createContext<D
 globalThis.__demoDataContextSingleton = DemoDataContext;
 DemoDataContext.displayName = "DemoDataContext";
 
-/** Jobs always start fresh from seed data (wiped on refresh) */
 function loadSeedJobs(): DemoJob[] {
   return jobsSeed as unknown as DemoJob[];
 }
 
 export function DemoDataProvider({ children }: { children: ReactNode }) {
-  const [jobs, setJobs] = useState<DemoJob[]>(loadSeedJobs);
+  const { isDemo } = useAuth();
+  const [jobs, setJobs] = useState<DemoJob[]>(() => (isDemo ? loadSeedJobs() : []));
   const [customers, setCustomers] = useState<DemoCustomer[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load customers from Supabase on mount
   useEffect(() => {
+    setJobs(isDemo ? loadSeedJobs() : []);
     let cancelled = false;
+    setLoading(true);
     (async () => {
       try {
-        const custs = await fetchCustomers();
+        const custs = await fetchCustomers(isDemo);
         if (!cancelled) setCustomers(custs);
       } catch (err) {
         console.error("Failed to load customers from DB:", err);
-        // Fall back to empty — seed data can be used as fallback if needed
+        if (!cancelled) setCustomers([]);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [isDemo]);
 
   const updateJobStage = useCallback((jobId: string, stage: Stage) => {
-    setJobs((prev) =>
-      prev.map((j) => (j.id === jobId ? { ...j, stage, ageDays: 0 } : j))
-    );
+    setJobs((prev) => prev.map((j) => (j.id === jobId ? { ...j, stage, ageDays: 0 } : j)));
   }, []);
 
   const addCustomer = useCallback(async (customer: Omit<DemoCustomer, "id">): Promise<number | undefined> => {
     try {
-      const newCust = await dbAddCustomer(customer);
+      const newCust = await dbAddCustomer(customer, isDemo);
       setCustomers((prev) => [...prev, newCust]);
       return newCust.id;
     } catch (err) {
       console.error("Failed to add customer:", err);
       return undefined;
     }
-  }, []);
+  }, [isDemo]);
 
   const addJob = useCallback((job: { client: string; jobName: string; value: number; stage: Stage }) => {
     const tempId = `JOB-${Date.now()}`;
@@ -86,8 +86,9 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetDemo = useCallback(() => {
+    if (!isDemo) return;
     setJobs(loadSeedJobs());
-  }, []);
+  }, [isDemo]);
 
   const value = useMemo<DemoDataContextType>(() => ({
     jobs,
@@ -105,7 +106,6 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   return <DemoDataContext.Provider value={value}>{children}</DemoDataContext.Provider>;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useDemoData() {
   const ctx = useContext(DemoDataContext);
   if (!ctx) throw new Error("useDemoData must be used within DemoDataProvider");
