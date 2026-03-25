@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 type ContactType = "email" | "phone";
 type AddressType = "site" | "postal" | "other";
@@ -388,60 +388,23 @@ export async function importCustomersCsv(file: File, mapping?: CsvMapping): Prom
       ?? null;
     const primaryAddress = addresses.find((address) => address.isPrimary) ?? addresses[0];
 
-    const { data: insertedCustomer, error: customerError } = await (supabase as any)
-      .from("customers")
+    const flatAddress = primaryAddress
+      ? [primaryAddress.line1, primaryAddress.suburb, primaryAddress.city, primaryAddress.postcode, primaryAddress.country].filter(Boolean).join(", ")
+      : "";
+
+    const { error: customerError } = await (supabase as any)
+      .from("customers_prod")
       .insert({
         name,
-        source: "fergus_csv",
-        primary_email: primaryEmail,
-        primary_phone: primaryPhone,
-        primary_address_line_1: primaryAddress?.line1 ?? null,
-        primary_suburb: primaryAddress?.suburb ?? null,
-        primary_city: primaryAddress?.city ?? null,
-        primary_postcode: primaryAddress?.postcode ?? null,
-        primary_country: primaryAddress?.country ?? null,
-      })
-      .select("id")
-      .single();
+        email: primaryEmail ?? "",
+        phone: primaryPhone ?? "",
+        address: flatAddress,
+        status: "active",
+        contacts: JSON.stringify(contacts),
+      });
 
-    if (customerError || !insertedCustomer?.id) {
-      throw customerError ?? new Error("Failed to create customer during CSV import.");
-    }
-
-    const customerId = insertedCustomer.id as string;
-
-    if (contacts.length > 0) {
-      const { error: contactsError } = await (supabase as any)
-        .from("customer_contacts")
-        .insert(
-          contacts.map((contact) => ({
-            customer_id: customerId,
-            type: contact.type,
-            value: contact.value,
-            label: contact.label,
-            is_primary: contact.isPrimary,
-          }))
-        );
-      if (contactsError) throw contactsError;
-    }
-
-    if (addresses.length > 0) {
-      const { error: addressError } = await (supabase as any)
-        .from("customer_addresses")
-        .insert(
-          addresses.map((address) => ({
-            customer_id: customerId,
-            type: address.type,
-            line1: address.line1,
-            line2: address.line2 ?? null,
-            suburb: address.suburb ?? null,
-            city: address.city ?? null,
-            postcode: address.postcode ?? null,
-            country: address.country ?? null,
-            is_primary: address.isPrimary,
-          }))
-        );
-      if (addressError) throw addressError;
+    if (customerError) {
+      throw customerError;
     }
 
     imported += 1;
