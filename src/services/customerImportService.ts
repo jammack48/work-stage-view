@@ -427,7 +427,6 @@ export async function importCustomersCsv(file: File, mapping?: CsvMapping): Prom
 
     if (addresses.length > 0) {
       const { error: addressError } = await (supabase as any)
-        .from(getTable("customer_addresses", false))
         .from("customer_addresses")
         .insert(
           addresses.map((address) => ({
