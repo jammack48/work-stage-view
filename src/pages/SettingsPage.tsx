@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { PageToolbar } from "@/components/PageToolbar";
@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus, Upload } from "lucide-react";
 import { SETTINGS_EXTRAS } from "@/config/toolbarTabs";
 import { dummyTemplates } from "@/data/dummyTemplates";
 import { NotificationStyleSettings } from "@/components/NotificationStyleSettings";
@@ -16,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import type { BusinessProfile } from "@/contexts/UserSettingsContext";
 import type { UserSettings } from "@/contexts/UserSettingsContext";
-import { importCustomersCsv } from "@/services/customerImportService";
+import { IMPORT_FIELD_OPTIONS, importCustomersCsv, parseCustomerCsvFile, type CsvMapping, type ImportFieldKey } from "@/services/customerImportService";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations" | "documents";
 
@@ -37,6 +39,14 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
   const { user, isDemo } = useAuth();
   const { settings, saveSettings } = useUserSettings();
   const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [csvSampleRows, setCsvSampleRows] = useState<Array<Record<string, string>>>([]);
+  const [csvTotalRows, setCsvTotalRows] = useState(0);
+  const [columnMapping, setColumnMapping] = useState<CsvMapping>({});
+  const [mappingDialogOpen, setMappingDialogOpen] = useState(false);
+  const [uploadingCsv, setUploadingCsv] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [businessProfile, setBusinessProfile] = useState<BusinessProfile>(EMPTY_BUSINESS_PROFILE);
 
   useEffect(() => {
@@ -62,19 +72,74 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
     }
   };
 
-  const handleUpload = async (file: File) => {
+  const handleCsvFileSelected = async (file: File | null) => {
+    setCsvFile(file);
+    setCsvHeaders([]);
+    setCsvSampleRows([]);
+    setCsvTotalRows(0);
+    setColumnMapping({});
+
+    if (!file) return;
+
     try {
-      const { imported } = await importCustomersCsv(file);
+      const parsed = await parseCustomerCsvFile(file);
+      setCsvHeaders(parsed.headers);
+      setCsvSampleRows(parsed.sampleRows);
+      setCsvTotalRows(parsed.totalRows);
+      setColumnMapping(parsed.suggestedMapping);
+      setMappingDialogOpen(true);
+    } catch (error) {
+      console.error("Failed to parse CSV", error);
+      toast({ title: "Invalid CSV", description: "We could not read this CSV file.", variant: "destructive" });
+    }
+  };
+
+  const handleUpload = async (file: File) => {
+    if (!user) {
+      toast({ title: "Sign in required", description: "Sign in to import customers.", variant: "destructive" });
+      return;
+    }
+
+    if (!Object.values(columnMapping).includes("customer_name")) {
+      toast({ title: "Mapping required", description: "Map at least one CSV column to Customer Name.", variant: "destructive" });
+      return;
+    }
+
+    try {
+      setUploadingCsv(true);
+      const { imported } = await importCustomersCsv(file, columnMapping);
       if (imported === 0) {
         toast({ title: "No customers imported", description: "No valid customer rows were found in the CSV.", variant: "destructive" });
         return;
       }
       toast({ title: "Upload complete", description: `Imported ${imported} customer${imported === 1 ? "" : "s"}.` });
       setCsvFile(null);
+      setCsvHeaders([]);
+      setCsvSampleRows([]);
+      setCsvTotalRows(0);
+      setColumnMapping({});
+      setMappingDialogOpen(false);
     } catch (error) {
       console.error("Customer CSV import failed", error);
-      toast({ title: "Upload failed", description: "Unable to import this CSV file.", variant: "destructive" });
+      const description = error instanceof Error ? error.message : "Unable to import this CSV file.";
+      toast({ title: "Upload failed", description, variant: "destructive" });
+    } finally {
+      setUploadingCsv(false);
     }
+  };
+
+
+
+  const onDropCsv: React.DragEventHandler<HTMLDivElement> = async (event) => {
+    event.preventDefault();
+    setDragActive(false);
+    const file = event.dataTransfer.files?.[0] ?? null;
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      toast({ title: "CSV only", description: "Please drop a .csv file.", variant: "destructive" });
+      return;
+    }
+    await handleCsvFileSelected(file);
   };
 
   const sections: Record<SettingsTab, React.ReactNode> = {
@@ -190,21 +255,112 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
           </div>
           {!user && <p className="text-xs text-muted-foreground">Sign in to save these preferences to Supabase.</p>}
         </div>
-
         <div className="p-3 rounded-lg bg-card border border-border space-y-3">
           <div className="text-xs text-muted-foreground">Import Customers</div>
-          <Input type="file" accept=".csv" onChange={(e) => setCsvFile(e.target.files?.[0] ?? null)} />
-          {csvFile && <p className="text-xs text-card-foreground">Selected: {csvFile.name}</p>}
-          <Button
-            size="sm"
-            onClick={async () => {
-              if (!csvFile) return;
-              await handleUpload(csvFile);
+          <div
+            className={`rounded-lg border border-dashed p-4 transition-colors ${dragActive ? "border-primary bg-primary/5" : "border-border bg-background"}`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragActive(true);
             }}
-            disabled={!csvFile}
+            onDragLeave={() => setDragActive(false)}
+            onDrop={(e) => { void onDropCsv(e); }}
           >
-            Upload CSV
-          </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={(e) => { void handleCsvFileSelected(e.target.files?.[0] ?? null); }}
+            />
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-primary">
+                  <Plus className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm text-card-foreground truncate">{csvFile ? csvFile.name : "Drop CSV here or choose a file"}</p>
+                  <p className="text-xs text-muted-foreground">{csvFile ? `${csvTotalRows} rows detected` : "Drag & drop or click browse"}</p>
+                </div>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                <Upload className="h-4 w-4 mr-1.5" />
+                Browse CSV
+              </Button>
+            </div>
+          </div>
+          {!user && <p className="text-xs text-muted-foreground">Sign in to import customers.</p>}
+
+          <Dialog open={mappingDialogOpen} onOpenChange={setMappingDialogOpen}>
+            <DialogContent className="sm:max-w-5xl">
+              <DialogHeader>
+                <DialogTitle>Match CSV columns</DialogTitle>
+                <DialogDescription>
+                  Match each CSV column to a customer database field before importing.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="rounded border border-border overflow-hidden">
+                <div className="grid grid-cols-[1.4fr_1.2fr_1fr] gap-2 px-3 py-2 bg-muted/40 text-xs font-medium text-muted-foreground">
+                  <span>CSV column</span>
+                  <span>Match to</span>
+                  <span>Preview</span>
+                </div>
+                <div className="max-h-[50vh] overflow-auto">
+                  {csvHeaders.map((header) => (
+                    <div key={header} className="grid grid-cols-[1.4fr_1.2fr_1fr] gap-2 px-3 py-2 border-t border-border items-center">
+                      <div className="text-sm text-card-foreground truncate" title={header}>{header}</div>
+                      <Select
+                        value={columnMapping[header] ?? "__ignore__"}
+                        onValueChange={(value) => {
+                          setColumnMapping((prev) => {
+                            const next: CsvMapping = {};
+                            for (const [k, v] of Object.entries(prev)) {
+                              if (k !== header && v !== value) {
+                                next[k] = v;
+                              }
+                            }
+                            if (value !== "__ignore__") {
+                              next[header] = value as ImportFieldKey;
+                            }
+                            return next;
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Ignore this column" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__ignore__">Ignore</SelectItem>
+                          {IMPORT_FIELD_OPTIONS.map((field) => (
+                            <SelectItem key={field.key} value={field.key}>
+                              {field.label}{field.required ? " *" : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="text-xs text-muted-foreground truncate" title={csvSampleRows[0]?.[header] ?? ""}>
+                        {csvSampleRows[0]?.[header] || "—"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setMappingDialogOpen(false)} disabled={uploadingCsv}>Cancel</Button>
+                <Button
+                  onClick={async () => {
+                    if (!csvFile) return;
+                    await handleUpload(csvFile);
+                  }}
+                  disabled={!csvFile || !user || uploadingCsv}
+                >
+                  {uploadingCsv ? "Importing..." : "Import Customers"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
         <div className="p-3 rounded-lg bg-muted border border-border">
           <div className="text-xs text-muted-foreground">Preview</div>
