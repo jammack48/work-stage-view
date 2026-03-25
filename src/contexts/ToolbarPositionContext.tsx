@@ -41,8 +41,12 @@ export function ToolbarPositionProvider({ children }: { children: ReactNode }) {
       idx = (idx + 1) % POSITION_CYCLE.length;
     } while (skip?.includes(POSITION_CYCLE[idx]));
     const next = POSITION_CYCLE[idx];
+    const previous = position;
     setPosition(next);
-    void saveSettings({ toolbarPosition: next });
+    void saveSettings({ toolbarPosition: next }).catch((error) => {
+      console.error("Failed to save toolbar position", error);
+      setPosition(previous);
+    });
   };
 
   return (

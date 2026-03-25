@@ -15,6 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import type { BusinessProfile } from "@/contexts/UserSettingsContext";
+import type { UserSettings } from "@/contexts/UserSettingsContext";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations" | "documents";
 
@@ -45,6 +46,25 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
       website: "",
     });
   }, [settings.businessProfile]);
+
+  const saveSettingWithFeedback = async (
+    updates: Partial<UserSettings>,
+    options?: { successTitle?: string }
+  ) => {
+    if (!user) {
+      toast({ title: "Sign in required", description: "Sign in to save settings to Supabase.", variant: "destructive" });
+      return;
+    }
+    try {
+      await saveSettings(updates);
+      if (options?.successTitle) {
+        toast({ title: options.successTitle });
+      }
+    } catch (error) {
+      console.error("Failed to persist user setting", error);
+      toast({ title: "Couldn’t save setting", description: "Please try again.", variant: "destructive" });
+    }
+  };
 
   const handleUpload = async (file: File) => {
     const text = await file.text();
@@ -78,8 +98,7 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
           <Button
             size="sm"
             onClick={async () => {
-              await saveSettings({ businessProfile });
-              toast({ title: "Business profile saved" });
+              await saveSettingWithFeedback({ businessProfile }, { successTitle: "Business profile saved" });
             }}
             disabled={!user}
           >
@@ -130,19 +149,35 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
           <div className="text-xs text-muted-foreground">Startup Preferences</div>
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-card-foreground">Enable tutorials</p>
-            <Switch checked={settings.tutorialsEnabled} onCheckedChange={(v) => saveSettings({ tutorialsEnabled: v })} />
+            <Switch
+              checked={settings.tutorialsEnabled}
+              disabled={!user}
+              onCheckedChange={(v) => void saveSettingWithFeedback({ tutorialsEnabled: v })}
+            />
           </div>
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-card-foreground">Show On the Tools mode</p>
-            <Switch checked={settings.showToolsMode} onCheckedChange={(v) => saveSettings({ showToolsMode: v })} />
+            <Switch
+              checked={settings.showToolsMode}
+              disabled={!user}
+              onCheckedChange={(v) => void saveSettingWithFeedback({ showToolsMode: v })}
+            />
           </div>
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-card-foreground">Show Employee mode</p>
-            <Switch checked={settings.showEmployeeMode} onCheckedChange={(v) => saveSettings({ showEmployeeMode: v })} />
+            <Switch
+              checked={settings.showEmployeeMode}
+              disabled={!user}
+              onCheckedChange={(v) => void saveSettingWithFeedback({ showEmployeeMode: v })}
+            />
           </div>
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-card-foreground">Show Timesheet mode</p>
-            <Switch checked={settings.showTimesheetMode} onCheckedChange={(v) => saveSettings({ showTimesheetMode: v })} />
+            <Switch
+              checked={settings.showTimesheetMode}
+              disabled={!user}
+              onCheckedChange={(v) => void saveSettingWithFeedback({ showTimesheetMode: v })}
+            />
           </div>
           {!user && <p className="text-xs text-muted-foreground">Sign in to save these preferences to Supabase.</p>}
         </div>
