@@ -53,7 +53,7 @@ export async function fetchCustomers(): Promise<DemoCustomer[]> {
   await seedCustomersIfEmpty();
 
   const { data, error } = await supabase
-    .from("customers")
+    .from("customers_demo")
     .select("*")
     .order("id", { ascending: true });
 
