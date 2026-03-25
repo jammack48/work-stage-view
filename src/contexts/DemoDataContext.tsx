@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useCallback, type Context, type ReactNode } from "react";
 import type { DemoCustomer, DemoDataset, DemoJob, DemoMaterial, DemoScheduleItem } from "@/types/demoData";
 import type { Stage } from "@/data/dummyJobs";
 import { fetchCustomers, dbAddCustomer } from "@/services/dbDemoService";
@@ -19,7 +19,13 @@ interface DemoDataContextType {
   loading: boolean;
 }
 
-const DemoDataContext = createContext<DemoDataContextType | undefined>(undefined);
+declare global {
+  var __demoDataContextSingleton: Context<DemoDataContextType | undefined> | undefined;
+}
+
+const DemoDataContext = globalThis.__demoDataContextSingleton ?? createContext<DemoDataContextType | undefined>(undefined);
+globalThis.__demoDataContextSingleton = DemoDataContext;
+DemoDataContext.displayName = "DemoDataContext";
 
 /** Jobs always start fresh from seed data (wiped on refresh) */
 function loadSeedJobs(): DemoJob[] {
