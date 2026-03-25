@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 type ContactType = "email" | "phone";
 type AddressType = "site" | "postal" | "other";
