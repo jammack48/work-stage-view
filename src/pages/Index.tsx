@@ -22,7 +22,7 @@ const HOME_TABS = buildTabs(...PIPELINE_EXTRAS);
 
 function getPipelineMode(): PipelineMode {
   const stored = localStorage.getItem("pipeline-mode");
-  return stored === "advanced" ? "advanced" : "simple";
+  return stored === "simple" ? "simple" : "advanced";
 }
 
 const Index = () => {
