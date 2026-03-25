@@ -389,7 +389,6 @@ export async function importCustomersCsv(file: File, mapping?: CsvMapping): Prom
     const primaryAddress = addresses.find((address) => address.isPrimary) ?? addresses[0];
 
     const { data: insertedCustomer, error: customerError } = await (supabase as any)
-      .from(getTable("customers", false))
       .from("customers")
       .insert({
         name,
