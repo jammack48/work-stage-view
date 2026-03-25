@@ -22,7 +22,7 @@ function rowToCustomer(r: any): DemoCustomer {
 /** Seed customers from JSON if table is empty */
 async function seedCustomersIfEmpty(): Promise<void> {
   const { count, error } = await supabase
-    .from("customers")
+    .from("customers_demo")
     .select("id", { count: "exact", head: true });
 
   if (error) throw error;
@@ -43,7 +43,7 @@ async function seedCustomersIfEmpty(): Promise<void> {
 
   for (let i = 0; i < rows.length; i += 20) {
     const batch = rows.slice(i, i + 20);
-    const { error: insertErr } = await supabase.from("customers").insert(batch);
+    const { error: insertErr } = await supabase.from("customers_demo").insert(batch as any);
     if (insertErr) console.error("Seed customers error:", insertErr);
   }
 }
@@ -53,7 +53,7 @@ export async function fetchCustomers(): Promise<DemoCustomer[]> {
   await seedCustomersIfEmpty();
 
   const { data, error } = await supabase
-    .from("customers")
+    .from("customers_demo")
     .select("*")
     .order("id", { ascending: true });
 
@@ -64,7 +64,7 @@ export async function fetchCustomers(): Promise<DemoCustomer[]> {
 /** Add a new customer */
 export async function dbAddCustomer(customer: Omit<DemoCustomer, "id">): Promise<DemoCustomer> {
   const { data, error } = await supabase
-    .from("customers")
+    .from("customers_demo")
     .insert({
       name: customer.name,
       phone: customer.phone,
@@ -99,8 +99,8 @@ export async function dbUpdateCustomer(id: number, updates: Partial<DemoCustomer
   if (updates.jobHistory !== undefined) dbUpdates.job_history = updates.jobHistory;
 
   const { error } = await supabase
-    .from("customers")
-    .update(dbUpdates)
+    .from("customers_demo")
+    .update(dbUpdates as any)
     .eq("id", id);
 
   if (error) throw new Error("Failed to update customer: " + error.message);
