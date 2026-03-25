@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import type { BusinessProfile } from "@/contexts/UserSettingsContext";
 import type { UserSettings } from "@/contexts/UserSettingsContext";
+import { importCustomersCsv } from "@/services/customerImportService";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations" | "documents";
 
@@ -62,8 +63,18 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
   };
 
   const handleUpload = async (file: File) => {
-    const text = await file.text();
-    console.log(text);
+    try {
+      const { imported } = await importCustomersCsv(file);
+      if (imported === 0) {
+        toast({ title: "No customers imported", description: "No valid customer rows were found in the CSV.", variant: "destructive" });
+        return;
+      }
+      toast({ title: "Upload complete", description: `Imported ${imported} customer${imported === 1 ? "" : "s"}.` });
+      setCsvFile(null);
+    } catch (error) {
+      console.error("Customer CSV import failed", error);
+      toast({ title: "Upload failed", description: "Unable to import this CSV file.", variant: "destructive" });
+    }
   };
 
   const sections: Record<SettingsTab, React.ReactNode> = {
@@ -189,7 +200,6 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
             onClick={async () => {
               if (!csvFile) return;
               await handleUpload(csvFile);
-              toast({ title: "Upload complete", description: "CSV uploaded successfully." });
             }}
             disabled={!csvFile}
           >
