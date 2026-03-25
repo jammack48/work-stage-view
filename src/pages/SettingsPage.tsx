@@ -88,8 +88,6 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
       setCsvTotalRows(parsed.totalRows);
       setColumnMapping(parsed.suggestedMapping);
       setMappingDialogOpen(true);
-      setCsvTotalRows(parsed.totalRows);
-      setColumnMapping(parsed.suggestedMapping);
     } catch (error) {
       console.error("Failed to parse CSV", error);
       toast({ title: "Invalid CSV", description: "We could not read this CSV file.", variant: "destructive" });
