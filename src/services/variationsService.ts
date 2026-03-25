@@ -63,7 +63,7 @@ function isMissingVariationColumnError(error: any): boolean {
 
 function isMissingVariationsTableError(error: any): boolean {
   const message = String(error?.message ?? "").toLowerCase();
-  return message.includes("public.variations") || (message.includes("variations") && message.includes("schema cache"));
+  return message.includes("public.variations_demo") || message.includes("public.variations") || (message.includes("variations") && message.includes("schema cache"));
 }
 
 function canUseStorage(): boolean {
