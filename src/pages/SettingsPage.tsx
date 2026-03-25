@@ -16,7 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import type { BusinessProfile } from "@/contexts/UserSettingsContext";
 import type { UserSettings } from "@/contexts/UserSettingsContext";
-import { importCustomersCsv } from "@/services/customerImportService";
+import { IMPORT_FIELD_OPTIONS, importCustomersCsv, parseCustomerCsvFile, type CsvMapping, type ImportFieldKey } from "@/services/customerImportService";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations" | "documents";
 
@@ -37,6 +37,9 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
   const { user, isDemo } = useAuth();
   const { settings, saveSettings } = useUserSettings();
   const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [csvTotalRows, setCsvTotalRows] = useState(0);
+  const [columnMapping, setColumnMapping] = useState<CsvMapping>({});
   const [businessProfile, setBusinessProfile] = useState<BusinessProfile>(EMPTY_BUSINESS_PROFILE);
 
   useEffect(() => {
@@ -62,18 +65,51 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
     }
   };
 
-  const handleUpload = async (file: File) => {
+  const handleCsvFileSelected = async (file: File | null) => {
+    setCsvFile(file);
+    setCsvHeaders([]);
+    setCsvTotalRows(0);
+    setColumnMapping({});
+
+    if (!file) return;
+
     try {
-      const { imported } = await importCustomersCsv(file);
+      const parsed = await parseCustomerCsvFile(file);
+      setCsvHeaders(parsed.headers);
+      setCsvTotalRows(parsed.totalRows);
+      setColumnMapping(parsed.suggestedMapping);
+    } catch (error) {
+      console.error("Failed to parse CSV", error);
+      toast({ title: "Invalid CSV", description: "We could not read this CSV file.", variant: "destructive" });
+    }
+  };
+
+  const handleUpload = async (file: File) => {
+    if (!user) {
+      toast({ title: "Sign in required", description: "Sign in to import customers.", variant: "destructive" });
+      return;
+    }
+
+    if (!Object.values(columnMapping).includes("customer_name")) {
+      toast({ title: "Mapping required", description: "Map at least one CSV column to Customer Name.", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const { imported } = await importCustomersCsv(file, columnMapping);
       if (imported === 0) {
         toast({ title: "No customers imported", description: "No valid customer rows were found in the CSV.", variant: "destructive" });
         return;
       }
       toast({ title: "Upload complete", description: `Imported ${imported} customer${imported === 1 ? "" : "s"}.` });
       setCsvFile(null);
+      setCsvHeaders([]);
+      setCsvTotalRows(0);
+      setColumnMapping({});
     } catch (error) {
       console.error("Customer CSV import failed", error);
-      toast({ title: "Upload failed", description: "Unable to import this CSV file.", variant: "destructive" });
+      const description = error instanceof Error ? error.message : "Unable to import this CSV file.";
+      toast({ title: "Upload failed", description, variant: "destructive" });
     }
   };
 
@@ -193,15 +229,60 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
 
         <div className="p-3 rounded-lg bg-card border border-border space-y-3">
           <div className="text-xs text-muted-foreground">Import Customers</div>
-          <Input type="file" accept=".csv" onChange={(e) => setCsvFile(e.target.files?.[0] ?? null)} />
+          <Input type="file" accept=".csv" onChange={(e) => { void handleCsvFileSelected(e.target.files?.[0] ?? null); }} />
           {csvFile && <p className="text-xs text-card-foreground">Selected: {csvFile.name}</p>}
+          {!!csvTotalRows && <p className="text-xs text-muted-foreground">Rows detected: {csvTotalRows}</p>}
+          {!user && <p className="text-xs text-muted-foreground">Sign in to import customers.</p>}
+
+          {csvHeaders.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-card-foreground">CSV Field Mapping</div>
+              <div className="grid grid-cols-1 gap-2 max-h-64 overflow-auto pr-1">
+                {csvHeaders.map((header) => (
+                  <div key={header} className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center p-2 rounded border border-border bg-background">
+                    <div className="text-xs text-card-foreground truncate">{header}</div>
+                    <Select
+                      value={columnMapping[header] ?? "__ignore__"}
+                      onValueChange={(value) => {
+                        setColumnMapping((prev) => {
+                          const next: CsvMapping = {};
+                          for (const [k, v] of Object.entries(prev)) {
+                            if (k !== header && v !== value) {
+                              next[k] = v;
+                            }
+                          }
+                          if (value !== "__ignore__") {
+                            next[header] = value as ImportFieldKey;
+                          }
+                          return next;
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Ignore this column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__ignore__">Ignore this column</SelectItem>
+                        {IMPORT_FIELD_OPTIONS.map((field) => (
+                          <SelectItem key={field.key} value={field.key}>
+                            {field.label}{field.required ? " *" : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <Button
             size="sm"
             onClick={async () => {
               if (!csvFile) return;
               await handleUpload(csvFile);
             }}
-            disabled={!csvFile}
+            disabled={!csvFile || !user}
           >
             Upload CSV
           </Button>
