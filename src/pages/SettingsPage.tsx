@@ -47,9 +47,6 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
   const [uploadingCsv, setUploadingCsv] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const [csvTotalRows, setCsvTotalRows] = useState(0);
-  const [columnMapping, setColumnMapping] = useState<CsvMapping>({});
   const [businessProfile, setBusinessProfile] = useState<BusinessProfile>(EMPTY_BUSINESS_PROFILE);
 
   useEffect(() => {
