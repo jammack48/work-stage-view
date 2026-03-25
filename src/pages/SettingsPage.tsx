@@ -47,9 +47,6 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
   const [uploadingCsv, setUploadingCsv] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const [csvTotalRows, setCsvTotalRows] = useState(0);
-  const [columnMapping, setColumnMapping] = useState<CsvMapping>({});
   const [businessProfile, setBusinessProfile] = useState<BusinessProfile>(EMPTY_BUSINESS_PROFILE);
 
   useEffect(() => {
@@ -91,8 +88,6 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
       setCsvTotalRows(parsed.totalRows);
       setColumnMapping(parsed.suggestedMapping);
       setMappingDialogOpen(true);
-      setCsvTotalRows(parsed.totalRows);
-      setColumnMapping(parsed.suggestedMapping);
     } catch (error) {
       console.error("Failed to parse CSV", error);
       toast({ title: "Invalid CSV", description: "We could not read this CSV file.", variant: "destructive" });
@@ -124,9 +119,6 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
       setCsvTotalRows(0);
       setColumnMapping({});
       setMappingDialogOpen(false);
-
-      setCsvTotalRows(0);
-      setColumnMapping({});
     } catch (error) {
       console.error("Customer CSV import failed", error);
       const description = error instanceof Error ? error.message : "Unable to import this CSV file.";
@@ -266,76 +258,19 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
         </div>
         <div className="p-3 rounded-lg bg-card border border-border space-y-3">
           <div className="text-xs text-muted-foreground">Import Customers</div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={(e) => { void handleCsvFileSelected(e.target.files?.[0] ?? null); }}
+          />
           <div
             className={`rounded-lg border border-dashed p-4 transition-colors ${dragActive ? "border-primary bg-primary/5" : "border-border bg-background"}`}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragActive(true);
-            }}
+            onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
             onDragLeave={() => setDragActive(false)}
             onDrop={(e) => { void onDropCsv(e); }}
-          <Input type="file" accept=".csv" onChange={(e) => { void handleCsvFileSelected(e.target.files?.[0] ?? null); }} />
-          {csvFile && <p className="text-xs text-card-foreground">Selected: {csvFile.name}</p>}
-          {!!csvTotalRows && <p className="text-xs text-muted-foreground">Rows detected: {csvTotalRows}</p>}
-          {!user && <p className="text-xs text-muted-foreground">Sign in to import customers.</p>}
-
-          {csvHeaders.length > 0 && (
-            <div className="space-y-2">
-              <div className="text-xs font-medium text-card-foreground">CSV Field Mapping</div>
-              <div className="grid grid-cols-1 gap-2 max-h-64 overflow-auto pr-1">
-                {csvHeaders.map((header) => (
-                  <div key={header} className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center p-2 rounded border border-border bg-background">
-                    <div className="text-xs text-card-foreground truncate">{header}</div>
-                    <Select
-                      value={columnMapping[header] ?? "__ignore__"}
-                      onValueChange={(value) => {
-                        setColumnMapping((prev) => {
-                          const next: CsvMapping = {};
-                          for (const [k, v] of Object.entries(prev)) {
-                            if (k !== header && v !== value) {
-                              next[k] = v;
-                            }
-                          }
-                          if (value !== "__ignore__") {
-                            next[header] = value as ImportFieldKey;
-                          }
-                          return next;
-                        });
-                      }}
-                    >
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue placeholder="Ignore this column" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__ignore__">Ignore this column</SelectItem>
-                        {IMPORT_FIELD_OPTIONS.map((field) => (
-                          <SelectItem key={field.key} value={field.key}>
-                            {field.label}{field.required ? " *" : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <Button
-            size="sm"
-            onClick={async () => {
-              if (!csvFile) return;
-              await handleUpload(csvFile);
-            }}
-            disabled={!csvFile || !user}
           >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={(e) => { void handleCsvFileSelected(e.target.files?.[0] ?? null); }}
-            />
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-primary">

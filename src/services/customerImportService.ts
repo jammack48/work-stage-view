@@ -389,7 +389,6 @@ export async function importCustomersCsv(file: File, mapping?: CsvMapping): Prom
     const primaryAddress = addresses.find((address) => address.isPrimary) ?? addresses[0];
 
     const { data: insertedCustomer, error: customerError } = await (supabase as any)
-      .from(getTable("customers", false))
       .from("customers")
       .insert({
         name,
@@ -413,8 +412,6 @@ export async function importCustomersCsv(file: File, mapping?: CsvMapping): Prom
 
     if (contacts.length > 0) {
       const { error: contactsError } = await (supabase as any)
-        .from(getTable("customer_contacts", false))
-
         .from("customer_contacts")
         .insert(
           contacts.map((contact) => ({
@@ -430,7 +427,6 @@ export async function importCustomersCsv(file: File, mapping?: CsvMapping): Prom
 
     if (addresses.length > 0) {
       const { error: addressError } = await (supabase as any)
-        .from(getTable("customer_addresses", false))
         .from("customer_addresses")
         .insert(
           addresses.map((address) => ({
