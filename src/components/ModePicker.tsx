@@ -13,6 +13,10 @@ export function ModePicker() {
   const { setMode, setSoleTraderPrefs } = useAppMode();
   const { setTutorialOn } = useTutorial();
   const { settings } = useUserSettings();
+  const showAllModesForDev = import.meta.env.DEV;
+  const canShowToolsMode = settings.showToolsMode || showAllModesForDev;
+  const canShowEmployeeMode = settings.showEmployeeMode || showAllModesForDev;
+  const canShowTimesheetMode = settings.showTimesheetMode || showAllModesForDev;
   const [subStep, setSubStep] = useState<SubStep>(null);
   const [vanStock, setVanStock] = useState(false);
   const [reconcileDocs, setReconcileDocs] = useState(false);
@@ -74,7 +78,7 @@ export function ModePicker() {
               </div>
             </button>
 
-            {settings.showToolsMode && (
+            {canShowToolsMode && (
               <button onClick={() => setSubStep("sole-trader-setup")} className="group rounded-xl border-2 border-border bg-card p-5 text-left">
                 <div className="flex items-center gap-4">
                   <HardHat className="w-6 h-6 text-primary" />
@@ -111,11 +115,13 @@ export function ModePicker() {
             <div className="flex items-center gap-4"><Building2 className="w-6 h-6 text-primary" /><h2 className="text-base font-bold text-card-foreground">Manager / Owner</h2></div>
           </button>
 
-          <button onClick={() => { setTutorialOn(true); setMode("work"); }} className="group rounded-xl border-2 border-border bg-card p-5 text-left">
-            <div className="flex items-center gap-4"><Wrench className="w-6 h-6 text-primary" /><h2 className="text-base font-bold text-card-foreground">Employee</h2></div>
-          </button>
+          {canShowEmployeeMode && (
+            <button onClick={() => { setTutorialOn(true); setMode("work"); }} className="group rounded-xl border-2 border-border bg-card p-5 text-left">
+              <div className="flex items-center gap-4"><Wrench className="w-6 h-6 text-primary" /><h2 className="text-base font-bold text-card-foreground">Employee</h2></div>
+            </button>
+          )}
 
-          {settings.showTimesheetMode && (
+          {canShowTimesheetMode && (
             <button onClick={() => { setTutorialOn(false); setMode("timesheet"); }} className="group rounded-xl border-2 border-border bg-card p-5 text-left">
               <div className="flex items-center gap-4"><Shield className="w-6 h-6 text-primary" /><h2 className="text-base font-bold text-card-foreground">Timesheet Mode</h2></div>
             </button>

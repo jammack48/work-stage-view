@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { PageToolbar } from "@/components/PageToolbar";
@@ -14,6 +14,7 @@ import { useDemoData } from "@/contexts/DemoDataContext";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
+import type { BusinessProfile } from "@/contexts/UserSettingsContext";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations" | "documents";
 
@@ -25,6 +26,25 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
   const { user } = useAuth();
   const { settings, saveSettings } = useUserSettings();
   const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [businessProfile, setBusinessProfile] = useState<BusinessProfile>({
+    businessName: "",
+    abnNzbn: "",
+    phone: "",
+    email: "",
+    address: "",
+    website: "",
+  });
+
+  useEffect(() => {
+    setBusinessProfile(settings.businessProfile ?? {
+      businessName: "",
+      abnNzbn: "",
+      phone: "",
+      email: "",
+      address: "",
+      website: "",
+    });
+  }, [settings.businessProfile]);
 
   const handleUpload = async (file: File) => {
     const text = await file.text();
@@ -37,19 +57,43 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
         <h2 className="text-lg font-semibold text-card-foreground">Business Profile</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {[
-            ["Business Name", "Thompson Plumbing & Electrical"],
-            ["ABN / NZBN", "12-345-678-901"],
-            ["Phone", "0800 TOOLBELT"],
-            ["Email", "admin@toolbelt.co.nz"],
-            ["Address", "42 Trade Ave, Auckland 1010"],
-            ["Website", "www.toolbelt.co.nz"],
-          ].map(([label, value]) => (
-            <div key={label} className="p-3 rounded-lg bg-card border border-border">
+            ["Business Name", "businessName"],
+            ["ABN / NZBN", "abnNzbn"],
+            ["Phone", "phone"],
+            ["Email", "email"],
+            ["Address", "address"],
+            ["Website", "website"],
+          ].map(([label, key]) => (
+            <div key={label} className="p-3 rounded-lg bg-card border border-border space-y-2">
               <div className="text-xs text-muted-foreground">{label}</div>
-              <div className="text-sm font-medium text-card-foreground mt-0.5">{value}</div>
+              <Input
+                value={businessProfile[key as keyof BusinessProfile]}
+                placeholder={`Add ${label.toLowerCase()}`}
+                onChange={(e) => setBusinessProfile((prev) => ({ ...prev, [key]: e.target.value }))}
+              />
             </div>
           ))}
         </div>
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            onClick={async () => {
+              await saveSettings({ businessProfile });
+              toast({ title: "Business profile saved" });
+            }}
+            disabled={!user}
+          >
+            Save Business Profile
+          </Button>
+        </div>
+        {!user && (
+          <div className="p-3 rounded-lg bg-card border border-border">
+            <div className="text-xs text-muted-foreground">Sign in required</div>
+            <div className="text-sm text-card-foreground mt-0.5">
+              Sign in to save your business profile to Supabase.
+            </div>
+          </div>
+        )}
 
         <h3 className="text-sm font-semibold text-card-foreground pt-4">Job Numbering</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -91,6 +135,10 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-card-foreground">Show On the Tools mode</p>
             <Switch checked={settings.showToolsMode} onCheckedChange={(v) => saveSettings({ showToolsMode: v })} />
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-card-foreground">Show Employee mode</p>
+            <Switch checked={settings.showEmployeeMode} onCheckedChange={(v) => saveSettings({ showEmployeeMode: v })} />
           </div>
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-card-foreground">Show Timesheet mode</p>

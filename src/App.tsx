@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ThresholdProvider } from "@/contexts/ThresholdContext";
 import { NotificationStyleProvider } from "@/contexts/NotificationStyleContext";
@@ -12,8 +12,9 @@ import { TutorialProvider } from "@/contexts/TutorialContext";
 import { AppModeProvider, useAppMode } from "@/contexts/AppModeContext";
 import { DemoDataProvider } from "@/contexts/DemoDataContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { UserSettingsProvider } from "@/contexts/UserSettingsContext";
+import { UserSettingsProvider, useUserSettings } from "@/contexts/UserSettingsContext";
 import { useState, useEffect } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 import { JobPrefixProvider } from "@/contexts/JobPrefixContext";
 import { BackendProvider } from "@/contexts/BackendContext";
 import { BackendLogPanel } from "@/components/BackendLogPanel";
@@ -54,6 +55,8 @@ const queryClient = new QueryClient();
 function AppLayout() {
   const { mode, isWorkMode, isTimesheetOnlyMode, isIntroMode, clearMode } = useAppMode();
   const { user, loading, isDemo, setIsDemo } = useAuth();
+  const { settings, loading: settingsLoading } = useUserSettings();
+  const { setTheme, setIsDark } = useTheme();
   const [showLogin, setShowLogin] = useState(false);
 
   // Each fresh browser session starts at splash → mode picker (clears cached mode)
@@ -64,6 +67,12 @@ function AppLayout() {
       clearMode();
     }
   }, [clearMode]);
+
+  useEffect(() => {
+    if (settingsLoading) return;
+    setTheme(settings.theme);
+    setIsDark(settings.isDark);
+  }, [settingsLoading, settings.theme, settings.isDark, setTheme, setIsDark]);
 
   // Show loading spinner while auth initializes
   if (loading) {

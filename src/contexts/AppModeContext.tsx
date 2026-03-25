@@ -28,13 +28,13 @@ const PREFS_KEY = "tradie-sole-trader-prefs";
 
 export function AppModeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<AppMode>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = sessionStorage.getItem(STORAGE_KEY);
     return stored === "manage" || stored === "work" || stored === "sole-trader" || stored === "timesheet" || stored === "intro" ? stored : null;
   });
 
   const [soleTraderPrefs, setSoleTraderPrefsState] = useState<SoleTraderPrefs>(() => {
     try {
-      const stored = localStorage.getItem(PREFS_KEY);
+      const stored = sessionStorage.getItem(PREFS_KEY);
       if (stored) return JSON.parse(stored);
     } catch {}
     return DEFAULT_PREFS;
@@ -42,17 +42,18 @@ export function AppModeProvider({ children }: { children: ReactNode }) {
 
   const setMode = (m: "manage" | "work" | "sole-trader" | "timesheet" | "intro") => {
     setModeState(m);
-    localStorage.setItem(STORAGE_KEY, m);
+    sessionStorage.setItem(STORAGE_KEY, m);
   };
 
   const setSoleTraderPrefs = (prefs: SoleTraderPrefs) => {
     setSoleTraderPrefsState(prefs);
-    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+    sessionStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
   };
 
   const clearMode = () => {
     setModeState(null);
-    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(PREFS_KEY);
   };
 
   return (
