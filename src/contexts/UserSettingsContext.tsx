@@ -7,6 +7,7 @@ import type { ToolbarPosition } from "@/contexts/ToolbarPositionContext";
 export interface BusinessProfile {
   businessName: string;
   abnNzbn: string;
+  gst: string;
   phone: string;
   email: string;
   address: string;
