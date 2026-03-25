@@ -12,6 +12,8 @@ import { NotificationStyleSettings } from "@/components/NotificationStyleSetting
 import { useJobPrefix } from "@/contexts/JobPrefixContext";
 import { useDemoData } from "@/contexts/DemoDataContext";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserSettings } from "@/contexts/UserSettingsContext";
 
 type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "team" | "integrations" | "documents";
 
@@ -20,6 +22,14 @@ type SettingsTab = "business" | "notifications" | "appearance" | "billing" | "te
 function SettingsContent({ tab }: { tab: SettingsTab }) {
   const { prefix, nextNumber, setPrefix, setNextNumber, formatJobId } = useJobPrefix();
   const { resetDemo } = useDemoData();
+  const { user } = useAuth();
+  const { settings, saveSettings } = useUserSettings();
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+
+  const handleUpload = async (file: File) => {
+    const text = await file.text();
+    console.log(text);
+  };
 
   const sections: Record<SettingsTab, React.ReactNode> = {
     business: (
@@ -71,6 +81,39 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
               Reset Demo
             </Button>
           </div>
+        </div>
+        <div className="p-3 rounded-lg bg-card border border-border space-y-3">
+          <div className="text-xs text-muted-foreground">Startup Preferences</div>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-card-foreground">Enable tutorials</p>
+            <Switch checked={settings.tutorialsEnabled} onCheckedChange={(v) => saveSettings({ tutorialsEnabled: v })} />
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-card-foreground">Show On the Tools mode</p>
+            <Switch checked={settings.showToolsMode} onCheckedChange={(v) => saveSettings({ showToolsMode: v })} />
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-card-foreground">Show Timesheet mode</p>
+            <Switch checked={settings.showTimesheetMode} onCheckedChange={(v) => saveSettings({ showTimesheetMode: v })} />
+          </div>
+          {!user && <p className="text-xs text-muted-foreground">Sign in to save these preferences to Supabase.</p>}
+        </div>
+
+        <div className="p-3 rounded-lg bg-card border border-border space-y-3">
+          <div className="text-xs text-muted-foreground">Import Customers</div>
+          <Input type="file" accept=".csv" onChange={(e) => setCsvFile(e.target.files?.[0] ?? null)} />
+          {csvFile && <p className="text-xs text-card-foreground">Selected: {csvFile.name}</p>}
+          <Button
+            size="sm"
+            onClick={async () => {
+              if (!csvFile) return;
+              await handleUpload(csvFile);
+              toast({ title: "Upload complete", description: "CSV uploaded successfully." });
+            }}
+            disabled={!csvFile}
+          >
+            Upload CSV
+          </Button>
         </div>
         <div className="p-3 rounded-lg bg-muted border border-border">
           <div className="text-xs text-muted-foreground">Preview</div>

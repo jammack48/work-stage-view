@@ -11,6 +11,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToolbarPosition } from "@/contexts/ToolbarPositionContext";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+import { useUserSettings } from "@/contexts/UserSettingsContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +46,8 @@ export function AppHeader() {
   const { isWorkMode, isSoleTrader, isTimesheetOnlyMode, clearMode, setMode } = useAppMode();
   const isMobile = useIsMobile();
   const { position, cyclePosition } = useToolbarPosition();
+  const { isDemo } = useAuth();
+  const { settings } = useUserSettings();
   const [showModeHint, setShowModeHint] = useState(true);
 
   useEffect(() => {
@@ -64,6 +68,9 @@ export function AppHeader() {
         <h1 className="text-base sm:text-lg font-semibold tracking-tight text-foreground/80 truncate hidden min-[360px]:block">
           {isSoleTrader ? "Toolbelt — Solo" : isTimesheetOnlyMode ? "Toolbelt — Timesheet" : isWorkMode ? "Toolbelt — Work" : "Tradie Toolbelt"}
         </h1>
+        <Badge className={cn("hidden sm:inline-flex", isDemo ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/40" : "bg-green-500/20 text-green-700 border-green-500/40")}>
+          {isDemo ? "Demo Mode" : "Production Mode"}
+        </Badge>
       </button>
       <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
         <DropdownMenu onOpenChange={() => setShowModeHint(false)}>
@@ -92,15 +99,15 @@ export function AppHeader() {
             <DropdownMenuItem onClick={() => { setMode("manage"); navigate("/"); }}>
               Manager
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => { setMode("sole-trader"); navigate("/"); }}>
+            {settings.showToolsMode && (<DropdownMenuItem onClick={() => { setMode("sole-trader"); navigate("/"); }}>
               On the Tools
-            </DropdownMenuItem>
+            </DropdownMenuItem>)}
             <DropdownMenuItem onClick={() => { setTutorialOn(true); setMode("work"); navigate("/"); }}>
               Employee
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => { setTutorialOn(false); setMode("timesheet"); navigate("/"); }}>
+            {settings.showTimesheetMode && (<DropdownMenuItem onClick={() => { setTutorialOn(false); setMode("timesheet"); navigate("/"); }}>
               Timesheet Only
-            </DropdownMenuItem>
+            </DropdownMenuItem>)}
             <DropdownMenuItem onClick={() => { clearMode(); navigate("/"); }}>
               Main Menu
             </DropdownMenuItem>
