@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { getTable } from "@/lib/modeTable";
 
 type ContactType = "email" | "phone";
 type AddressType = "site" | "postal" | "other";
@@ -391,6 +390,7 @@ export async function importCustomersCsv(file: File, mapping?: CsvMapping): Prom
 
     const { data: insertedCustomer, error: customerError } = await (supabase as any)
       .from(getTable("customers", false))
+      .from("customers")
       .insert({
         name,
         source: "fergus_csv",
@@ -414,6 +414,8 @@ export async function importCustomersCsv(file: File, mapping?: CsvMapping): Prom
     if (contacts.length > 0) {
       const { error: contactsError } = await (supabase as any)
         .from(getTable("customer_contacts", false))
+
+        .from("customer_contacts")
         .insert(
           contacts.map((contact) => ({
             customer_id: customerId,
@@ -429,6 +431,7 @@ export async function importCustomersCsv(file: File, mapping?: CsvMapping): Prom
     if (addresses.length > 0) {
       const { error: addressError } = await (supabase as any)
         .from(getTable("customer_addresses", false))
+        .from("customer_addresses")
         .insert(
           addresses.map((address) => ({
             customer_id: customerId,
