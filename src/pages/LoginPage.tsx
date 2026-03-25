@@ -35,8 +35,9 @@ export default function LoginPage({ onBack }: LoginPageProps) {
     e.preventDefault();
     if (!authSupabase) return;
     setForgotLoading(true);
+    const redirectTo = `${window.location.origin}/reset-password`;
     const { error } = await authSupabase.auth.resetPasswordForEmail(forgotEmail, {
-      redirectTo: "https://work-stage-view.lovable.app/reset-password",
+      redirectTo,
     });
     setForgotLoading(false);
     if (error) {
