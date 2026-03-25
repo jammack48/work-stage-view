@@ -64,7 +64,7 @@ export async function fetchCustomers(): Promise<DemoCustomer[]> {
 /** Add a new customer */
 export async function dbAddCustomer(customer: Omit<DemoCustomer, "id">): Promise<DemoCustomer> {
   const { data, error } = await supabase
-    .from("customers")
+    .from("customers_demo")
     .insert({
       name: customer.name,
       phone: customer.phone,
