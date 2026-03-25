@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getTable } from "@/lib/modeTable";
 
 type ContactType = "email" | "phone";
 type AddressType = "site" | "postal" | "other";
@@ -206,6 +207,10 @@ export async function importCustomersCsv(file: File): Promise<{ imported: number
 
   let imported = 0;
 
+  const customersTable = getTable("customers", false);
+  const customerContactsTable = getTable("customer_contacts", false);
+  const customerAddressesTable = getTable("customer_addresses", false);
+
   for (const row of rows) {
     const name = readFirstNonEmpty(row, ["CustomerName", "ClientName", "Name"]);
     if (!name) continue;
@@ -222,7 +227,7 @@ export async function importCustomersCsv(file: File): Promise<{ imported: number
     const primaryAddress = addresses.find((address) => address.isPrimary) ?? addresses[0];
 
     const { data: insertedCustomer, error: customerError } = await (supabase as any)
-      .from("customers")
+      .from(customersTable)
       .insert({
         name,
         source: "fergus_csv",
@@ -245,7 +250,7 @@ export async function importCustomersCsv(file: File): Promise<{ imported: number
 
     if (contacts.length > 0) {
       const { error: contactsError } = await (supabase as any)
-        .from("customer_contacts")
+        .from(customerContactsTable)
         .insert(
           contacts.map((contact) => ({
             customer_id: customerId,
@@ -260,7 +265,7 @@ export async function importCustomersCsv(file: File): Promise<{ imported: number
 
     if (addresses.length > 0) {
       const { error: addressError } = await (supabase as any)
-        .from("customer_addresses")
+        .from(customerAddressesTable)
         .insert(
           addresses.map((address) => ({
             customer_id: customerId,
