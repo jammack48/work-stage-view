@@ -63,7 +63,7 @@ function isMissingVariationColumnError(error: any): boolean {
 
 function isMissingVariationsTableError(error: any): boolean {
   const message = String(error?.message ?? "").toLowerCase();
-  return message.includes("public.variations") || (message.includes("variations") && message.includes("schema cache"));
+  return message.includes("public.variations_demo") || message.includes("public.variations") || (message.includes("variations") && message.includes("schema cache"));
 }
 
 function canUseStorage(): boolean {
@@ -105,7 +105,7 @@ export async function fetchVariationCounts(jobIds: string[]): Promise<Record<str
   if (jobIds.length === 0) return {};
   const uniqueJobIds = [...new Set(jobIds)];
   const { data, error } = await (supabase as any)
-    .from("variations")
+    .from("variations_demo")
     .select("job_id")
     .in("job_id", uniqueJobIds);
 
@@ -132,7 +132,7 @@ export async function fetchVariationCounts(jobIds: string[]): Promise<Record<str
 
 export async function fetchVariations(jobId: string): Promise<Variation[]> {
   const { data, error } = await (supabase as any)
-    .from("variations")
+    .from("variations_demo")
     .select("*")
     .eq("job_id", jobId)
     .order("created_at", { ascending: false });
@@ -165,7 +165,7 @@ export async function addVariation(v: VariationInsert): Promise<Variation> {
   };
 
   const { data, error } = await (supabase as any)
-    .from("variations")
+    .from("variations_demo")
     .insert(payload)
     .select("*")
     .single();
@@ -185,7 +185,7 @@ export async function addVariation(v: VariationInsert): Promise<Variation> {
     };
 
     const retry = await (supabase as any)
-      .from("variations")
+      .from("variations_demo")
       .insert(minimalPayload)
       .select("*")
       .single();
@@ -220,7 +220,7 @@ export async function updateVariationStatus(
   status: Variation["status"]
 ): Promise<void> {
   const { error } = await (supabase as any)
-    .from("variations")
+    .from("variations_demo")
     .update({ status })
     .eq("id", id);
 
@@ -238,7 +238,7 @@ export async function updateVariationStatus(
 
 export async function deleteVariation(id: string): Promise<void> {
   const { error } = await (supabase as any)
-    .from("variations")
+    .from("variations_demo")
     .delete()
     .eq("id", id);
 
