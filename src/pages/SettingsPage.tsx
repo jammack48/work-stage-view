@@ -119,9 +119,6 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
       setCsvTotalRows(0);
       setColumnMapping({});
       setMappingDialogOpen(false);
-
-      setCsvTotalRows(0);
-      setColumnMapping({});
     } catch (error) {
       console.error("Customer CSV import failed", error);
       const description = error instanceof Error ? error.message : "Unable to import this CSV file.";
