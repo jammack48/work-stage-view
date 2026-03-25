@@ -12,15 +12,18 @@ export default function ResetPasswordPage() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
-  const [hasRecovery, setHasRecovery] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    if (!authSupabase) return;
-    // Let Supabase handle the recovery session from URL hash automatically
-    authSupabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setHasRecovery(true);
-      }
+    if (!authSupabase) {
+      setChecking(false);
+      return;
+    }
+    // Check if user has an active session (set by recovery link)
+    authSupabase.auth.getSession().then(({ data: { session } }) => {
+      setHasSession(!!session);
+      setChecking(false);
     });
   }, []);
 
