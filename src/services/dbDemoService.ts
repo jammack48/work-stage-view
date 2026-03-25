@@ -99,8 +99,8 @@ export async function dbUpdateCustomer(id: number, updates: Partial<DemoCustomer
   if (updates.jobHistory !== undefined) dbUpdates.job_history = updates.jobHistory;
 
   const { error } = await supabase
-    .from("customers")
-    .update(dbUpdates)
+    .from("customers_demo")
+    .update(dbUpdates as any)
     .eq("id", id);
 
   if (error) throw new Error("Failed to update customer: " + error.message);
