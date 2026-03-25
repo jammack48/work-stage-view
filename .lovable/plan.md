@@ -1,34 +1,46 @@
 
 
-## Fix: SettingsPage.tsx broken JSX in CSV import section
+## Fix: CSV Import targeting wrong database and wrong tables
 
-### Problem
-The "Import Customers" section (lines 267-432) has corrupted JSX from a bad merge of old and new code:
-1. The drag-drop `<div>` (line 269-276) is missing its closing `>` before child elements
-2. Old inline `<Input>` and text elements (lines 277-280) are orphaned outside any parent
-3. A `<Button>` on line 324 wraps a hidden `<input>` + the entire drag-drop UI but is never properly closed
-4. The mapping `<Select>` elements appear twice — once inline (lines 282-322) and once in the `<Dialog>` (lines 357-426)
+### Root Cause (3 issues)
 
-### Fix — Replace lines 267-432
-Replace the entire "Import Customers" card with clean JSX that has:
+1. **Wrong Supabase client** — The import service uses `import { supabase } from "@/integrations/supabase/client"` which is **Lovable Cloud**, not your external Supabase where `customers_prod` lives.
 
-1. **A card wrapper** (`<div className="p-3 rounded-lg bg-card border border-border space-y-3">`)
-2. **A hidden file input** triggered by a "Browse CSV" button
-3. **A drag-drop zone** with proper `onDragOver`/`onDragLeave`/`onDrop` handlers and a closing `>`
-4. **Status text** (selected file name, row count, sign-in notice)
-5. **The mapping `<Dialog>`** (already correct at lines 357-426 — keep as-is)
-6. Remove the duplicate inline mapping grid (lines 282-322) since the Dialog already handles it
+2. **Wrong table name** — It inserts into `"customers"` but your external database table is `customers_prod`.
 
-### Technical details
-- No logic changes — only fixing JSX structure
-- All state variables and handlers (`handleCsvFileSelected`, `handleUpload`, `onDropCsv`, `columnMapping`, `mappingDialogOpen`, etc.) remain unchanged
-- The `customerImportService` import bug (double `.from()` calls) is a separate issue but should also be fixed in the same pass
+3. **Non-existent tables** — It also inserts into `"customer_contacts"` and `"customer_addresses"` which don't exist in your external database. The `customers_prod` table likely has flat columns for email, phone, address — not separate relational tables.
 
-### Secondary fix — customerImportService.ts
-Lines with double `.from()` calls like:
-```ts
-.from(getTable("customers", false))
-.from("customers")
-```
-Need to be corrected to just `.from("customers")` (or use the `getTable` helper properly). Also remove the unused `getTable` import reference since `getTable` is not imported in that file.
+### Fix
+
+**File: `src/services/customerImportService.ts`**
+
+1. Change the import from Lovable Cloud client to the external Supabase client:
+   ```ts
+   import { supabase } from "@/lib/supabase";
+   ```
+
+2. Change the insert target from `"customers"` to `"customers_prod"` and map columns to match `customers_prod` schema (which based on `customers_demo` likely uses: `name`, `email`, `phone`, `address`, `status`, `jobs`, `total_spend`, `notes`, `contacts`, `job_history`).
+
+3. Remove the separate `customer_contacts` and `customer_addresses` inserts. Instead, store contacts and addresses as JSON in the `contacts` column of `customers_prod`, and build the flat `address` field from the primary address.
+
+4. The insert would become:
+   ```ts
+   await supabase
+     .from("customers_prod")
+     .insert({
+       name,
+       email: primaryEmail ?? "",
+       phone: primaryPhone ?? "",
+       address: primaryAddress ? [primaryAddress.line1, primaryAddress.suburb, primaryAddress.city, primaryAddress.postcode].filter(Boolean).join(", ") : "",
+       status: "active",
+       contacts: JSON.stringify(contacts),
+     })
+     .select("id")
+     .single();
+   ```
+
+5. Remove the `customer_contacts` and `customer_addresses` insert blocks entirely.
+
+### Files changed
+- `src/services/customerImportService.ts` — switch client, fix table name, flatten insert
 
