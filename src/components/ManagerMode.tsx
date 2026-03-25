@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { STAGE_LABELS, STAGES, type Stage } from "@/data/dummyJobs";
 import type { DemoJob as Job } from "@/types/demoData";
@@ -325,6 +325,9 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
   const [activePriority, setActivePriority] = useState<PriorityColor>(initialPriority || "red");
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [viewMode, setViewMode] = useState<ViewMode>("swipe");
+  const [pendingMovedJobId, setPendingMovedJobId] = useState<string | null>(null);
+  const [highlightedJobId, setHighlightedJobId] = useState<string | null>(null);
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const thresholds = getThresholds(activeStage);
   const stageJobs = jobsByStage(activeStage);
@@ -351,6 +354,31 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
     emblaApi?.scrollTo(0);
     setCurrentIndex(0);
   }, [activeStage, activePriority, emblaApi]);
+
+  useEffect(() => {
+    if (!pendingMovedJobId) return;
+    const movedIndex = filteredJobs.findIndex((job) => job.id === pendingMovedJobId);
+    if (movedIndex === -1) return;
+
+    if (viewMode === "swipe") {
+      emblaApi?.scrollTo(movedIndex);
+      setCurrentIndex(movedIndex);
+    } else {
+      const card = cardRefs.current[pendingMovedJobId];
+      if (card) {
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightedJobId(pendingMovedJobId);
+      }
+    }
+
+    setPendingMovedJobId(null);
+  }, [pendingMovedJobId, filteredJobs, viewMode, emblaApi]);
+
+  useEffect(() => {
+    if (!highlightedJobId) return;
+    const timeout = window.setTimeout(() => setHighlightedJobId(null), 1200);
+    return () => window.clearTimeout(timeout);
+  }, [highlightedJobId]);
 
   // Scroll to initial index after embla is ready
   useEffect(() => {
@@ -391,6 +419,20 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
     const nextStage = stageMap[action];
     if (nextStage) {
       updateJobStage(job.id, nextStage);
+      setActiveStage(nextStage);
+
+      const preferredPriority: PriorityColor = "green";
+      const nextThresholds = getThresholds(nextStage);
+      const fallbackPriority = getJobColor(job, nextThresholds.greenMax, nextThresholds.orangeMax);
+      const resetAgePriority = getJobColor({ ...job, ageDays: 0 }, nextThresholds.greenMax, nextThresholds.orangeMax);
+      const nextPriority = resetAgePriority === "green" ? preferredPriority : fallbackPriority;
+      setActivePriority(nextPriority);
+      setPendingMovedJobId(job.id);
+
+      toast({
+        title: `Moved to ${nextStage}`,
+        description: `${job.client} — ${job.jobName} is now focused in ${nextStage}.`,
+      });
     }
 
     toast({
@@ -525,16 +567,24 @@ export function ManagerMode({ initialStage, initialPriority, initialIndex }: Man
         /* List View — all jobs stacked vertically */
         <div className="flex flex-col gap-3 px-1">
           {filteredJobs.map((job) => (
-            <JobCard
+            <div
               key={job.id}
-              job={job}
-              activeStage={activeStage}
-              activePriority={activePriority}
-              note={notes[job.id] || ""}
-              setNote={(v) => setNotes(prev => ({ ...prev, [job.id]: v }))}
-              onAction={handleAction}
-              onSaveNote={handleSaveNote}
-            />
+              ref={(el) => { cardRefs.current[job.id] = el; }}
+              className={cn(
+                "transition-shadow duration-500 rounded-xl",
+                highlightedJobId === job.id && "ring-2 ring-primary/70 shadow-lg shadow-primary/20"
+              )}
+            >
+              <JobCard
+                job={job}
+                activeStage={activeStage}
+                activePriority={activePriority}
+                note={notes[job.id] || ""}
+                setNote={(v) => setNotes(prev => ({ ...prev, [job.id]: v }))}
+                onAction={handleAction}
+                onSaveNote={handleSaveNote}
+              />
+            </div>
           ))}
         </div>
       ) : (
