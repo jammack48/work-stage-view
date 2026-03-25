@@ -43,7 +43,7 @@ async function seedCustomersIfEmpty(): Promise<void> {
 
   for (let i = 0; i < rows.length; i += 20) {
     const batch = rows.slice(i, i + 20);
-    const { error: insertErr } = await supabase.from("customers").insert(batch);
+    const { error: insertErr } = await supabase.from("customers_demo").insert(batch as any);
     if (insertErr) console.error("Seed customers error:", insertErr);
   }
 }
