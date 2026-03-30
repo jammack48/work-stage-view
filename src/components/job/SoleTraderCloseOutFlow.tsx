@@ -129,8 +129,8 @@ interface InvoiceLine {
 const ALL_STEPS = [
   { id: "status", label: "Job Status", icon: CheckCircle2 },
   { id: "checklist", label: "Checklist", icon: ClipboardList },
-  { id: "time", label: "Labour", icon: Clock },
   { id: "materials", label: "Materials Used", icon: Package },
+  { id: "time", label: "Labour", icon: Clock },
   { id: "paperwork", label: "Paperwork", icon: FileCheck },
   { id: "photos", label: "Photos", icon: Camera },
   { id: "certificates", label: "Certificates", icon: Shield },
@@ -140,12 +140,12 @@ const ALL_STEPS = [
 
 function buildInvoiceLines(job: JobDetail, parts: PartUsed[], actualHours: number): InvoiceLine[] {
   const lines: InvoiceLine[] = [];
-  // Labour first
-  lines.push({ id: "inv-labour", description: "Labour", qty: actualHours, unitPrice: 85, visible: true });
-  // Then materials
+  // Materials first for tools-mode closeout flow
   parts.filter(p => p.used).forEach((p, i) => {
     lines.push({ id: `inv-mat-${i}`, description: p.name, qty: p.quantity, unitPrice: p.unitPrice, visible: true });
   });
+  // Then labour
+  lines.push({ id: "inv-labour", description: "Labour", qty: actualHours, unitPrice: 85, visible: true });
   return lines;
 }
 
@@ -221,7 +221,7 @@ export function SoleTraderCloseOutFlow({ open, onOpenChange, job, resumeAfterBoo
   const activeSteps = useMemo(() => {
     return ALL_STEPS.filter((s) => {
       if (introMode) {
-        return ["status", "time", "materials", "photos", "invoice"].includes(s.id);
+        return ["status", "materials", "time", "photos", "invoice"].includes(s.id);
       }
       // If coming back and NOT invoicing now, only show status + done
       if (!jobFinished && !invoiceNow) {
